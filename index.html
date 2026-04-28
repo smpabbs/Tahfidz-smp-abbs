@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Capaian Tahfidz - Supabase</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="container">
+    <h1>📖 Aplikasi Capaian Tahfidz</h1>
+    
+    <!-- ============================================ -->
+    <!-- 🎯 TAB NAVIGATION -->
+    <!-- ============================================ -->
+    <div class="tabs">
+      <button class="tab active" onclick="TabManager.show('input')">📝 Input Data</button>
+      <button class="tab" onclick="TabManager.show('output')">📊 Hasil Data</button>
+      <button class="tab" onclick="TabManager.show('target')">🎯 Kelola Target</button>
+      <button class="tab" onclick="TabManager.show('master')">🗂️ Master Data</button>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 🟢 TAB INPUT -->
+    <!-- ============================================ -->
+    <div id="input" class="tab-content active">
+      <form id="tahfidzForm">
+        <div class="form-group">
+          <label>Nama Guru:</label>
+          <select id="guru" required onchange="InputForm.updateToken()">
+            <option value="">-- Pilih Guru --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Token Guru:</label>
+          <input type="text" id="tokenGuru" readonly class="readonly-field" />
+        </div>
+
+        <div class="form-group">
+          <label>Kelas:</label>
+          <select id="kelas" required onchange="InputForm.updateNamaSiswa()">
+            <option value="">-- Pilih Kelas --</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Nama Siswa:</label>
+          <select id="siswa" required onchange="InputForm.updateWhatsApp()">
+            <option value="">-- Pilih Siswa --</option>
+          </select>
+        </div>
+
+        <div class="form-group hidden">
+          <label>Nomor WhatsApp:</label>
+          <input type="tel" id="whatsapp" readonly class="readonly-field" />
+        </div>
+
+        <div class="form-group">
+          <label>Ziyadah?</label>
+          <select id="menghafal" required onchange="InputForm.toggleMenghafalFields()">
+            <option value="">-- Pilih --</option>
+            <option value="ya">Ya</option>
+            <option value="tidak">Tidak</option>
+          </select>
+        </div>
+
+        <div id="alasanField" class="form-group hidden">
+          <label>Alasan:</label>
+          <input type="text" id="alasan" placeholder="Contoh: Sakit, izin, dll" />
+        </div>
+
+        <div id="hafalanFields" class="hidden">
+          <div class="form-inline">
+            <label>Surat:</label>
+            <select id="surat">
+              <option value="">-- Pilih Surat --</option>
+            </select>
+          </div>
+
+          <div class="form-inline">
+            <label>Ayat:</label>
+            <input type="number" id="ayatDari" placeholder="Dari" min="0" step="0.5" />
+            <span>s.d</span>
+            <input type="number" id="ayatSampai" placeholder="Sampai" min="0" step="0.5" />
+          </div>
+
+          <div class="form-inline">
+            <label>Jumlah Baris:</label>
+            <input type="number" id="baris" placeholder="Misal: 5.5" min="0" step="0.5" required />
+          </div>
+
+          <div class="form-inline">
+            <label>Keterangan:</label>
+            <select id="keterangan">
+              <option value="">-- Pilih --</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Tanggal:</label>
+          <input type="date" id="tanggal" required />
+        </div>
+
+        <div class="form-group">
+          <label>Catatan:</label>
+          <textarea id="catatan" placeholder="Tambahkan catatan jika perlu..."></textarea>
+        </div>
+
+        <button type="submit" class="btn-submit">💾 Simpan Data</button>
+      </form>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 🔵 TAB OUTPUT -->
+    <!-- ============================================ -->
+    <div id="output" class="tab-content">
+      <div class="filter">
+        <label>Kelas:</label>
+        <select id="filterKelas" onchange="OutputTable.update()">
+          <option value="">Semua</option>
+        </select>
+
+        <label>Bulan:</label>
+        <select id="filterBulan" onchange="OutputTable.update()">
+          <option value="">Semua Bulan</option>
+        </select>
+
+        <label>Tahun:</label>
+        <select id="filterTahun" onchange="OutputTable.update()">
+          <option value="">Semua Tahun</option>
+        </select>
+
+        <div class="export-buttons">
+          <button type="button" class="btn-export csv" onclick="OutputTable.exportCSV()">
+            📥 Export CSV
+          </button>
+          <button type="button" class="btn-export excel" onclick="OutputTable.exportExcel()">
+            📊 Export Excel
+          </button>
+        </div>
+      </div>
+
+      <div class="table-info">
+        <div id="tableSummary" class="summary">Memuat data...</div>
+      </div>
+
+      <div class="scroll-container">
+        <table id="outputTable" class="student-table">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Nama Siswa</th>
+              <th>Kelas</th>
+              <th>Tanggal</th>
+              <th>Surat</th>
+              <th>Ayat</th>
+              <th>Keterangan</th>
+              <th>Baris</th>
+              <th>Total</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td colspan="10" class="no-data">Memuat data dari Supabase...</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="table-legend">
+        <div class="legend-item">
+          <span class="legend-color" style="background: #5e81ac;"></span> Header Tabel
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #434c5e;"></span> Baris Ganjil
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #3b4252;"></span> Baris Genap
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: rgba(191, 97, 106, 0.1);"></span> Tidak Menghafal
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 🎯 TAB TARGET -->
+    <!-- ============================================ -->
+    <div id="target" class="tab-content">
+      <div class="filter">
+        <label>Kelas:</label>
+        <select id="targetKelas" onchange="TargetManager.loadTable()">
+          <option value="">-- Pilih Kelas --</option>
+        </select>
+        
+        <div class="export-buttons">
+          <button type="button" class="btn-export csv" onclick="TargetManager.sendClassReport()">
+            📧 Rekap Kelas
+          </button>
+          <button type="button" class="btn-export excel" onclick="TargetManager.sendAllReports()">
+            📊 Rekap Semua
+          </button>
+          <button type="button" class="btn-export" onclick="TargetManager.exportCSV()" style="background: linear-gradient(135deg, #d08770, #bf616a);">
+            📥 Export Target
+          </button>
+        </div>
+      </div>
+
+      <div class="scroll-container">
+        <table class="student-table">
+          <thead>
+            <tr>
+              <th>Nama Siswa</th>
+              <th>Target Pekanan</th>
+              <th>Detail Target</th>
+              <th>Progress Terakhir</th>
+              <th>Guru Aktif</th>
+              <th>Aksi</th>
+            </tr>
+          </thead>
+          <tbody id="targetTableBody">
+            <tr>
+              <td colspan="6" class="no-data">Pilih kelas untuk mengelola target</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <button type="button" class="btn-submit" onclick="TargetManager.saveAll()">
+        💾 Simpan Semua Target
+      </button>
+
+      <div class="table-legend">
+        <div class="legend-item">
+          <span class="legend-color" style="background: #a3be8c;"></span> Target Tercapai
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #ebcb8b;"></span> Progress Baik
+        </div>
+        <div class="legend-item">
+          <span class="legend-color" style="background: #bf616a;"></span> Perlu Perhatian
+        </div>
+      </div>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 🗂️ TAB MASTER DATA -->
+    <!-- ============================================ -->
+    <div id="master" class="tab-content">
+      <div class="master-tabs">
+        <button class="master-tab active" onclick="TabManager.showMasterTab('siswa')">👨‍🎓 Siswa</button>
+        <button class="master-tab" onclick="TabManager.showMasterTab('kelas')">🏫 Kelas</button>
+        <button class="master-tab" onclick="TabManager.showMasterTab('guru')">👨‍🏫 Guru</button>
+      </div>
+
+      <!-- SUB-TAB: SISWA -->
+      <div id="master-siswa" class="master-tab-content active">
+        <div class="master-header">
+          <h3>📋 Data Siswa</h3>
+          <div class="master-actions">
+            <button class="btn-export csv" onclick="MasterData.openAddSiswa()">➕ Tambah Siswa</button>
+            <button class="btn-export" onclick="ImportManager.openModal('siswa')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">📥 Import Data</button>
+            <button class="btn-export excel" onclick="MasterData.refreshSiswa()">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <div class="filter">
+          <label>Filter Kelas:</label>
+          <select id="filterKelasSiswa" onchange="MasterData.refreshSiswa()">
+            <option value="">Semua Kelas</option>
+          </select>
+        </div>
+
+        <div class="scroll-container">
+          <table class="student-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">No</th>
+                <th>Nama Siswa</th>
+                <th>Kelas</th>
+                <th>WhatsApp</th>
+                <th style="width: 150px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="masterSiswaTableBody">
+              <tr>
+                <td colspan="5" class="no-data">Memuat data siswa...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUB-TAB: KELAS -->
+      <div id="master-kelas" class="master-tab-content">
+        <div class="master-header">
+          <h3>🏫 Data Kelas</h3>
+          <div class="master-actions">
+            <button class="btn-export csv" onclick="MasterData.openAddKelas()">➕ Tambah Kelas</button>
+            <button class="btn-export" onclick="ImportManager.openModal('kelas')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">📥 Import Data</button>
+            <button class="btn-export excel" onclick="MasterData.refreshKelas()">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <div class="scroll-container">
+          <table class="student-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">No</th>
+                <th>Nama Kelas</th>
+                <th>Jumlah Siswa</th>
+                <th style="width: 150px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="masterKelasTableBody">
+              <tr>
+                <td colspan="4" class="no-data">Memuat data kelas...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SUB-TAB: GURU -->
+      <div id="master-guru" class="master-tab-content">
+        <div class="master-header">
+          <h3>👨‍🏫 Data Guru</h3>
+          <div class="master-actions">
+            <button class="btn-export csv" onclick="MasterData.openAddGuru()">➕ Tambah Guru</button>
+            <button class="btn-export" onclick="ImportManager.openModal('guru')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">📥 Import Data</button>
+            <button class="btn-export excel" onclick="MasterData.refreshGuru()">🔄 Refresh</button>
+          </div>
+        </div>
+
+        <div class="scroll-container">
+          <table class="student-table">
+            <thead>
+              <tr>
+                <th style="width: 50px;">No</th>
+                <th>Nama Guru</th>
+                <th>Token Fonnte</th>
+                <th style="width: 150px;">Aksi</th>
+              </tr>
+            </thead>
+            <tbody id="masterGuruTableBody">
+              <tr>
+                <td colspan="4" class="no-data">Memuat data guru...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 📦 MODALS -->
+  <!-- ============================================ -->
+
+  <!-- Modal Tambah/Edit Siswa -->
+  <div id="modalSiswa" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalSiswaTitle">➕ Tambah Siswa</h3>
+        <span class="close" onclick="Modal.close('modalSiswa')">&times;</span>
+      </div>
+      <div style="padding: 20px;">
+        <form id="formSiswa" onsubmit="MasterData.saveSiswa(event)">
+          <input type="hidden" id="siswaId" value="">
+          
+          <div class="form-group">
+            <label>Nama Siswa:</label>
+            <input type="text" id="siswaName" required placeholder="Contoh: Ahmad">
+          </div>
+          
+          <div class="form-group">
+            <label>Kelas:</label>
+            <select id="siswaKelas" required>
+              <option value="">-- Pilih Kelas --</option>
+            </select>
+          </div>
+          
+          <div class="form-group">
+            <label>WhatsApp:</label>
+            <input type="tel" id="siswaWhatsapp" required placeholder="Contoh: 0812345678">
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="Modal.close('modalSiswa')">Batal</button>
+            <button type="submit" class="btn-submit">💾 Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Tambah/Edit Kelas -->
+  <div id="modalKelas" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalKelasTitle">➕ Tambah Kelas</h3>
+        <span class="close" onclick="Modal.close('modalKelas')">&times;</span>
+      </div>
+      <div style="padding: 20px;">
+        <form id="formKelas" onsubmit="MasterData.saveKelas(event)">
+          <input type="hidden" id="kelasId" value="">
+          
+          <div class="form-group">
+            <label>Nama Kelas:</label>
+            <input type="text" id="kelasName" required placeholder="Contoh: 9A">
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="Modal.close('modalKelas')">Batal</button>
+            <button type="submit" class="btn-submit">💾 Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Tambah/Edit Guru -->
+  <div id="modalGuru" class="modal">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modalGuruTitle">➕ Tambah Guru</h3>
+        <span class="close" onclick="Modal.close('modalGuru')">&times;</span>
+      </div>
+      <div style="padding: 20px;">
+        <form id="formGuru" onsubmit="MasterData.saveGuru(event)">
+          <input type="hidden" id="guruId" value="">
+          
+          <div class="form-group">
+            <label>Nama Guru:</label>
+            <input type="text" id="guruName" required placeholder="Contoh: Ust. Ahmad">
+          </div>
+          
+          <div class="form-group">
+            <label>Token Fonnte:</label>
+            <input type="text" id="guruToken" required placeholder="Token dari Fonnte.com">
+          </div>
+          
+          <div class="modal-actions">
+            <button type="button" class="btn-cancel" onclick="Modal.close('modalGuru')">Batal</button>
+            <button type="submit" class="btn-submit">💾 Simpan</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Import Data -->
+  <div id="modalImport" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+      <div class="modal-header">
+        <h3 id="modalImportTitle">📥 Import Data</h3>
+        <span class="close" onclick="Modal.close('modalImport')">&times;</span>
+      </div>
+      <div style="padding: 20px; max-height: 65vh; overflow-y: auto;">
+        
+        <div class="import-section">
+          <h4>📄 Upload File Excel/CSV</h4>
+          <div class="file-upload-area" onclick="document.getElementById('importFile').click()">
+            <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display: none;">
+            <div class="upload-placeholder">
+              <div style="font-size: 48px; margin-bottom: 10px;">📁</div>
+              <p><strong>Klik untuk pilih file</strong></p>
+              <p style="font-size: 12px; color: #81a1c1;">Format: Excel (.xlsx, .xls) atau CSV (.csv)</p>
+            </div>
+          </div>
+          <div id="fileInfo" class="file-info" style="display: none;">
+            <span id="fileName"></span>
+            <button type="button" class="btn-cancel" onclick="ImportManager.clearFile()" style="padding: 5px 10px; font-size: 12px;">✕ Hapus</button>
+          </div>
+        </div>
+
+        <div class="divider">atau</div>
+
+        <div class="import-section">
+          <h4>📋 Download Template</h4>
+          <p style="font-size: 13px; color: #d8dee9; margin-bottom: 10px;">
+            Gunakan template CSV ini untuk format yang benar
+          </p>
+          <button type="button" class="btn-export csv" onclick="ImportManager.downloadTemplate()" style="width: 100%;">
+            ⬇️ Download Template CSV
+          </button>
+        </div>
+
+        <div id="previewSection" class="import-section" style="display: none;">
+          <h4>👁️ Preview Data</h4>
+          <div id="previewInfo" class="preview-info"></div>
+          <div class="scroll-container" style="max-height: 250px;">
+            <table class="student-table" id="previewTable">
+              <thead id="previewTableHead"></thead>
+              <tbody id="previewTableBody"></tbody>
+            </table>
+          </div>
+          <div id="validationSummary" class="validation-summary"></div>
+        </div>
+
+      </div>
+      
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="Modal.close('modalImport')">Batal</button>
+        <button type="button" class="btn-submit" id="btnImport" onclick="ImportManager.executeImport()" disabled>
+          💾 Import Data
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================ -->
+  <!-- 📦 SCRIPTS - URUTAN PENTING! -->
+  <!-- ============================================ -->
+  
+  <!-- 1. Library eksternal -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <!-- 2. Core -->
+  <script src="js/core/config.js"></script>
+  <script src="js/core/supabase.js"></script>
+  <script src="js/core/state.js"></script>
+  
+  <!-- 3. Services -->
+  <script src="js/services/storage.js"></script>
+  <script src="js/services/database.js"></script>
+  <script src="js/services/notification.js"></script>
+  
+  <!-- 4. UI Components -->
+  <script src="js/ui/modal.js"></script>
+  <script src="js/ui/tabs.js"></script>
+  <script src="js/ui/dropdowns.js"></script>
+  <script src="js/ui/edit-inline.js"></script>
+  
+  <!-- 5. Features -->
+  <script src="js/features/input-form.js"></script>
+  <script src="js/features/output-table.js"></script>
+  <script src="js/features/target.js"></script>
+  <script src="js/features/master-data.js"></script>
+  <script src="js/features/import-data.js"></script>
+  
+  <!-- 6. Entry Point (HARUS PALING AKHIR) -->
+  <script src="js/app.js"></script>
+</body>
+</html>

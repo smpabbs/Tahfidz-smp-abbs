@@ -1,0 +1,372 @@
+﻿// ====================================================
+// js/features/output-table.js - TABEL OUTPUT & EXPORT
+// ====================================================
+
+const OutputTable = {
+  
+  /**
+   * Inisialisasi
+   */
+  init() {
+    this.addSyncUI();
+    this.startAutoSync();
+    console.log('✅ OutputTable initialized');
+  },
+
+  /**
+   * Update tabel dengan data terbaru
+   */
+  async update() {
+    const tbody = document.querySelector('#outputTable tbody');
+    const thead = document.querySelector('#outputTable thead');
+    const summary = document.getElementById('tableSummary');
+
+    if (!tbody || !thead) return;
+
+    // Tampilkan loading
+    tbody.innerHTML = '<tr><td colspan="10" class="no-data">⏳ Memuat data...</td></tr>';
+
+    try {
+      // Load data dari Supabase
+      AppState.tahfidzRecords = await DatabaseService.loadTahfidzRecords();
+      AppState.setSyncStatus('success', `Data terbaru (${AppState.totalRecords} records)`);
+
+      // Render tabel
+      this.render(tbody, thead, summary);
+    } catch (error) {
+      console.error('❌ Failed to load data:', error);
+      tbody.innerHTML = '<tr><td colspan="10" class="no-data">❌ Gagal memuat data</td></tr>';
+      AppState.setSyncStatus('error', 'Gagal memuat data');
+    }
+  },
+
+  /**
+   * Render tabel
+   */
+  render(tbody, thead, summary) {
+    const filtered = this.getFilteredData();
+
+    // Clear
+    tbody.innerHTML = '';
+    thead.innerHTML = '';
+
+    if (filtered.length === 0) {
+      thead.innerHTML = '<tr><th colspan="10">Data Capaian Tahfidz</th></tr>';
+      tbody.innerHTML = '<tr><td colspan="10" class="no-data">Belum ada data</td></tr>';
+      if (summary) summary.textContent = 'Menampilkan 0 data';
+      return;
+    }
+
+    // Header
+    thead.innerHTML = `
+      <tr>
+        <th>No</th><th>Nama Siswa</th><th>Kelas</th><th>Tanggal</th>
+        <th>Surat</th><th>Ayat</th><th>Keterangan</th><th>Baris</th>
+        <th>Total</th><th>Aksi</th>
+      </tr>
+    `;
+
+    // Group by siswa
+    const grouped = this.groupBySiswa(filtered);
+    const sorted = this.sortSiswa(Object.values(grouped));
+
+    // Build rows
+    let globalNo = 1;
+    sorted.forEach(siswa => {
+      const sortedEntries = siswa.entries.sort((a, b) => 
+        a.tanggal.localeCompare(b.tanggal)
+      );
+
+      sortedEntries.forEach((entry, i) => {
+        const isFirst = i === 0;
+        const row = this.createRow(entry, siswa, globalNo, isFirst);
+        tbody.appendChild(row);
+      });
+
+      globalNo++;
+    });
+
+    // Summary
+    if (summary) {
+      const totalSiswa = sorted.length;
+      summary.textContent = `Menampilkan ${totalSiswa} siswa (${filtered.length} data)`;
+    }
+  },
+
+  /**
+   * Dapatkan data terfilter
+   */
+  getFilteredData() {
+    const filterKelas = document.getElementById('filterKelas')?.value || '';
+    const filterBulan = document.getElementById('filterBulan')?.value || '';
+    const filterTahun = document.getElementById('filterTahun')?.value || '';
+
+    return AppState.tahfidzRecords.filter(d => {
+      if (!d || !d.nama) return false;
+      if (filterKelas && d.kelas !== filterKelas) return false;
+
+      if (filterBulan || filterTahun) {
+        if (!d.tanggal) return false;
+        const [tahun, bulan] = d.tanggal.split('-');
+        if (filterBulan && bulan !== filterBulan) return false;
+        if (filterTahun && tahun !== filterTahun) return false;
+      }
+
+      return true;
+    });
+  },
+
+  /**
+   * Group data by siswa
+   */
+  groupBySiswa(data) {
+    const result = {};
+    data.forEach((d, index) => {
+      const key = `${d.nama}-${d.kelas}`;
+      if (!result[key]) {
+        result[key] = {
+          nama: d.nama,
+          kelas: d.kelas,
+          entries: [],
+          totalBaris: 0,
+          rowspan: 0
+        };
+      }
+      result[key].entries.push({ ...d, originalIndex: index });
+      result[key].totalBaris += parseFloat(d.baris) || 0;
+      result[key].rowspan++;
+    });
+    return result;
+  },
+
+  /**
+   * Sort siswa data
+   */
+  sortSiswa(data) {
+    return data.sort((a, b) => {
+      if (a.kelas !== b.kelas) return a.kelas.localeCompare(b.kelas);
+      return a.nama.localeCompare(b.nama);
+    });
+  },
+
+  /**
+   * Buat row tabel
+   */
+  createRow(entry, siswa, globalNo, isFirst) {
+    const row = document.createElement('tr');
+    row.className = (entry.originalIndex % 2 === 0) ? 'even' : 'odd';
+    row.setAttribute('data-original-index', entry.originalIndex);
+    row.setAttribute('data-menghafal', entry.menghafal || 'ya');
+
+    const isTidak = entry.menghafal === 'tidak';
+    const cellClass = isTidak ? 'not-memorizing' : '';
+
+    // Format data
+    const suratDisplay = isTidak ? '—' : (entry.surat || '—');
+    const ayatDisplay = isTidak 
+      ? (entry.alasan || 'Tidak menghafal')
+      : (entry.ayatDari && entry.ayatSampai 
+          ? `${parseFloat(entry.ayatDari)} – ${parseFloat(entry.ayatSampai)}`
+          : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—'));
+    const keteranganDisplay = isTidak ? '—' : (entry.keterangan || '—');
+    const barisDisplay = isTidak ? '0' : (parseFloat(entry.baris) || 0).toString();
+
+    if (isFirst) {
+      row.innerHTML = `
+        <td rowspan="${siswa.rowspan}">${globalNo}</td>
+        <td rowspan="${siswa.rowspan}"><strong>${siswa.nama}</strong></td>
+        <td rowspan="${siswa.rowspan}"><span class="kelas-badge">${siswa.kelas}</span></td>
+        <td>${this.formatTanggal(entry.tanggal)}</td>
+        <td class="${cellClass}">${suratDisplay}</td>
+        <td class="${cellClass}">${ayatDisplay}</td>
+        <td class="${cellClass}">${keteranganDisplay}</td>
+        <td>${barisDisplay}</td>
+        <td rowspan="${siswa.rowspan}" class="total-cell">${siswa.totalBaris}</td>
+        <td>
+          <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit">✏️</button>
+          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus">🗑️</button>
+        </td>
+      `;
+    } else {
+      row.innerHTML = `
+        <td>${this.formatTanggal(entry.tanggal)}</td>
+        <td class="${cellClass}">${suratDisplay}</td>
+        <td class="${cellClass}">${ayatDisplay}</td>
+        <td class="${cellClass}">${keteranganDisplay}</td>
+        <td>${barisDisplay}</td>
+        <td>
+          <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit">✏️</button>
+          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus">🗑️</button>
+        </td>
+      `;
+    }
+
+    return row;
+  },
+
+  /**
+   * Hapus record
+   */
+  async deleteRecord(index) {
+    const data = this.getFilteredData()[index];
+    if (!data) return;
+
+    if (!confirm(`Hapus data:\n\nSiswa: ${data.nama}\nKelas: ${data.kelas}\nTanggal: ${data.tanggal}\n\nData akan dihapus permanen!`)) {
+      return;
+    }
+
+    try {
+      await DatabaseService.deleteTahfidzRecord(data.id);
+      NotificationService.success('Data berhasil dihapus!');
+      this.update();
+    } catch (error) {
+      NotificationService.error('Gagal menghapus data: ' + error.message);
+    }
+  },
+
+  /**
+   * Format tanggal
+   */
+  formatTanggal(dateStr) {
+    if (!dateStr) return '';
+    try {
+      const clean = dateStr.includes('T') ? dateStr.split('T')[0] : dateStr;
+      const [y, m, d] = clean.split('-');
+      return `${d}/${m}/${y.slice(2)}`;
+    } catch {
+      return dateStr;
+    }
+  },
+
+  // ==========================================
+  // EXPORT
+  // ==========================================
+
+  /**
+   * Export ke CSV
+   */
+  exportCSV() {
+    const data = this.getFilteredData();
+    if (data.length === 0) {
+      NotificationService.warning('Tidak ada data untuk di-export!');
+      return;
+    }
+
+    const grouped = this.groupBySiswa(data);
+    const sorted = this.sortSiswa(Object.values(grouped));
+    const rows = [['No', 'Nama', 'Kelas', 'Tanggal', 'Surat', 'Ayat', 'Keterangan', 'Baris', 'Total']];
+
+    let no = 1;
+    sorted.forEach(siswa => {
+      siswa.entries.sort((a, b) => a.tanggal.localeCompare(b.tanggal)).forEach((e, i) => {
+        rows.push([
+          i === 0 ? no : '',
+          i === 0 ? siswa.nama : '',
+          i === 0 ? siswa.kelas : '',
+          this.formatTanggal(e.tanggal),
+          e.menghafal === 'tidak' ? '—' : (e.surat || '—'),
+          e.menghafal === 'tidak' ? (e.alasan || '—') : `${e.ayatDari || ''}${e.ayatSampai ? ' – ' + e.ayatSampai : ''}`,
+          e.menghafal === 'tidak' ? '—' : (e.keterangan || '—'),
+          e.baris || 0,
+          i === 0 ? siswa.totalBaris : ''
+        ]);
+      });
+      no++;
+    });
+
+    const csv = rows.map(r => r.map(f => `"${f}"`).join(',')).join('\n');
+    this.downloadFile(csv, 'capaian-tahfidz.csv', 'text/csv');
+    NotificationService.success('File CSV berhasil diunduh!');
+  },
+
+  /**
+   * Export ke Excel (HTML format)
+   */
+  exportExcel() {
+    const data = this.getFilteredData();
+    if (data.length === 0) {
+      NotificationService.warning('Tidak ada data untuk di-export!');
+      return;
+    }
+
+    const grouped = this.groupBySiswa(data);
+    const sorted = this.sortSiswa(Object.values(grouped));
+    
+    let html = `<html><head><meta charset="UTF-8"><title>Laporan Tahfidz</title></head><body>`;
+    html += `<h2>Laporan Capaian Tahfidz</h2>`;
+    html += `<p>Tanggal: ${new Date().toLocaleDateString('id-ID')}</p>`;
+    html += `<table border="1" cellpadding="5" cellspacing="0">`;
+    html += `<tr><th>No</th><th>Nama</th><th>Kelas</th><th>Tanggal</th><th>Surat</th><th>Ayat</th><th>Ket</th><th>Baris</th><th>Total</th></tr>`;
+
+    let no = 1;
+    sorted.forEach(siswa => {
+      siswa.entries.sort((a, b) => a.tanggal.localeCompare(b.tanggal)).forEach((e, i) => {
+        html += `<tr>`;
+        html += `<td>${i === 0 ? no : ''}</td>`;
+        html += `<td>${i === 0 ? siswa.nama : ''}</td>`;
+        html += `<td>${i === 0 ? siswa.kelas : ''}</td>`;
+        html += `<td>${this.formatTanggal(e.tanggal)}</td>`;
+        html += `<td>${e.menghafal === 'tidak' ? '—' : e.surat || '—'}</td>`;
+        html += `<td>${e.menghafal === 'tidak' ? (e.alasan || '—') : `${e.ayatDari || ''}${e.ayatSampai ? ' – ' + e.ayatSampai : ''}`}</td>`;
+        html += `<td>${e.menghafal === 'tidak' ? '—' : e.keterangan || '—'}</td>`;
+        html += `<td>${e.baris || 0}</td>`;
+        html += `<td>${i === 0 ? siswa.totalBaris : ''}</td>`;
+        html += `</tr>`;
+      });
+      no++;
+    });
+
+    html += `</table></body></html>`;
+    this.downloadFile(html, 'laporan-tahfidz.xls', 'application/vnd.ms-excel');
+    NotificationService.success('File Excel berhasil diunduh!');
+  },
+
+  /**
+   * Download file
+   */
+  downloadFile(content, filename, type) {
+    const blob = new Blob([content], { type });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  },
+
+  // ==========================================
+  // SYNC UI
+  // ==========================================
+
+  /**
+   * Tambah UI sync status
+   */
+  addSyncUI() {
+    const tableInfo = document.querySelector('#output .table-info');
+    if (!tableInfo || document.querySelector('.sync-container')) return;
+
+    const syncDiv = document.createElement('div');
+    syncDiv.className = 'sync-container';
+    syncDiv.innerHTML = `
+      <div class="sync-controls">
+        <button class="btn-sync" onclick="OutputTable.update()">🔄 Refresh Data</button>
+        <div id="syncStatus" class="sync-status">📊 Menunggu sync...</div>
+      </div>
+    `;
+    tableInfo.appendChild(syncDiv);
+  },
+
+  /**
+   * Auto sync setiap 30 detik
+   */
+  startAutoSync() {
+    setInterval(() => {
+      if (AppState.currentTab === 'output') {
+        console.log('🔄 Auto-syncing...');
+        this.update();
+      }
+    }, AppConfig.AUTO_SYNC_INTERVAL);
+  }
+};
+
+console.log('✅ OutputTable module loaded');
