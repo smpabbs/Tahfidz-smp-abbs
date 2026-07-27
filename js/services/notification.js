@@ -170,7 +170,7 @@ const NotificationService = {
 
       const result = await response.json();
       
-      if (result.status === true || result.success === true || result.message_id) {
+      if (result.status == true || result.status == 200 || result.success == true || result.message_id) {
         console.log('✅ WhatsApp sent to:', phone);
         return true;
       } else {

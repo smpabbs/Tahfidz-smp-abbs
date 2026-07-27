@@ -7,23 +7,23 @@ const TargetManager = {
   /**
    * Inisialisasi
    */
-  init() {
+  async init() {
     this.loadFromStorage();
     console.log('✅ TargetManager initialized');
   },
 
   /**
-   * Load target dari localStorage
+   * Load target dari Supabase + localStorage
    */
-  loadFromStorage() {
-    AppState.targetSiswa = StorageService.loadTargetData();
+  async loadFromStorage() {
+    AppState.targetSiswa = await StorageService.loadTargetData();
   },
 
   /**
-   * Simpan target ke localStorage
+   * Simpan target ke Supabase + localStorage
    */
-  saveToStorage() {
-    StorageService.saveTargetData(AppState.targetSiswa);
+  async saveToStorage() {
+    await StorageService.saveTargetData(AppState.targetSiswa);
   },
 
   /**
@@ -159,7 +159,7 @@ const TargetManager = {
   /**
    * Update target single siswa
    */
-  updateSingle(nama, kelas) {
+  async updateSingle(nama, kelas) {
     const input = document.querySelector(`.target-input[data-nama="${nama}"][data-kelas="${kelas}"]`);
     if (!input) return;
 
@@ -198,7 +198,7 @@ const TargetManager = {
       AppState.targetSiswa[kelas].push(entry);
     }
 
-    this.saveToStorage();
+    await this.saveToStorage();
     this.loadTable();
     NotificationService.success(`Target ${nama} diperbarui!`);
   },
@@ -206,7 +206,7 @@ const TargetManager = {
   /**
    * Simpan semua target
    */
-  saveAll() {
+  async saveAll() {
     const inputs = document.querySelectorAll('.target-input');
     let count = 0;
 
@@ -236,7 +236,7 @@ const TargetManager = {
     });
 
     if (count > 0) {
-      this.saveToStorage();
+      await this.saveToStorage();
       NotificationService.success(`${count} target berhasil disimpan!`);
     } else {
       NotificationService.warning('Tidak ada target yang diubah');

@@ -105,16 +105,68 @@ const StorageService = {
   },
 
   /**
-   * Simpan data target
+   * Simpan data target (localStorage + Supabase)
    */
-  saveTargetData(data) {
-    return this.save(AppConfig.STORAGE_KEYS.TAHFIDZ_TARGETS, data);
+  async saveTargetData(data) {
+    this.save(AppConfig.STORAGE_KEYS.TAHFIDZ_TARGETS, data);
+    // Juga simpan ke Supabase biar gak ilang
+    try {
+      const db = SupabaseClient.get();
+      if (!db) return;
+      const rows = [];
+      Object.entries(data).forEach(([kelas, siswaList]) => {
+        siswaList.forEach(s => {
+          rows.push({
+            nama: s.nama, kelas,
+            target_mingguan: s.targetMingguan || 15,
+            surat_mulai: s.suratMulai || '',
+            ayat_mulai: s.ayatMulai || '',
+            surat_selesai: s.suratSelesai || '',
+            ayat_selesai: s.ayatSelesai || ''
+          });
+        });
+      });
+      if (rows.length > 0) {
+        // Hapus existing + insert ulang
+        await db.from('tahfidz_targets').delete().gte('id', '00000000-0000-0000-0000-000000000000');
+        for (let i = 0; i < rows.length; i += 50) {
+          await db.from('tahfidz_targets').upsert(rows.slice(i, i + 50), { onConflict: 'nama,kelas' });
+        }
+        console.log(`✅ ${rows.length} targets saved to Supabase`);
+      }
+    } catch (e) { console.warn('⚠️ Supabase target save failed:', e.message); }
   },
 
   /**
-   * Muat data target
+   * Muat data target (dari Supabase dulu, fallback localStorage)
    */
-  loadTargetData() {
+  async loadTargetData() {
+    // Coba dari Supabase dulu
+    try {
+      const db = SupabaseClient.get();
+      if (db) {
+        const { data, error } = await db.from('tahfidz_targets').select('*');
+        if (!error && data && data.length > 0) {
+          const result = {};
+          data.forEach(item => {
+            if (!result[item.kelas]) result[item.kelas] = [];
+            result[item.kelas].push({
+              nama: item.nama,
+              targetMingguan: item.target_mingguan,
+              suratMulai: item.surat_mulai || '',
+              ayatMulai: item.ayat_mulai || '',
+              suratSelesai: item.surat_selesai || '',
+              ayatSelesai: item.ayat_selesai || ''
+            });
+          });
+          // Sync ke localStorage juga
+          this.save(AppConfig.STORAGE_KEYS.TAHFIDZ_TARGETS, result);
+          console.log('✅ Targets loaded from Supabase');
+          return result;
+        }
+      }
+    } catch (e) { console.warn('⚠️ Supabase target load failed:', e.message); }
+    // Fallback localStorage
     return this.load(AppConfig.STORAGE_KEYS.TAHFIDZ_TARGETS, {});
   },
 
