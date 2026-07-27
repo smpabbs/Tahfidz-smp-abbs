@@ -1,19 +1,18 @@
 // config.js - KONFIGURASI SUPABASE & FONNTE
 const SUPABASE_CONFIG = {
-  URL: 'https://djybwvdjipxftxmtqjbt.supabase.co',
-  KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeWJ3dmRqaXB4ZnR4bXRxamJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODI5NzgsImV4cCI6MjA5NDY1ODk3OH0.vKFaGeIHieNQuXvepaA-GuUqlJ7QjIPmwB7ZKo3Kx8U'
+  URL: 'https://xqidhrdnbfknekesevgk.supabase.co',
+  KEY: 'sb_publishable_8zX6X5Xfswk_JcYYXCGLwQ_sdvMKAcL'
 };
 
 // Konfigurasi Fonnte
 const FONNTE_CONFIG = {
   BASE_URL: 'https://api.fonnte.com',
-  TIMEOUT: 10000, // 10 detik
-  DEFAULT_TOKEN: 'nCkVWGeAvA9zpBRn4ynh' // Token Fonnte untuk semua guru
+  TIMEOUT: 15000,
+  DEFAULT_TOKEN: 'nCkVWGeAvA9zpBRn4ynh'
 };
 
 console.log('✅ Supabase & Fonnte Config Loaded');
 
-// Validasi config
 function validateSupabaseConfig() {
   if (!SUPABASE_CONFIG.URL) {
     console.error('❌ Supabase URL belum dikonfigurasi');
