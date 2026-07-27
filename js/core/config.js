@@ -4,13 +4,13 @@
 
 const AppConfig = {
   // Supabase Configuration
-  SUPABASE_URL: 'https://xqidhrdnbfknekesevgk.supabase.co',
-  SUPABASE_KEY: 'sb_publishable_8zX6X5Xfswk_JcYYXCGLwQ_sdvMKAcL',
+  SUPABASE_URL: 'https://djybwvdjipxftxmtqjbt.supabase.co',
+  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRqeWJ3dmRqaXB4ZnR4bXRxamJ0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkwODI5NzgsImV4cCI6MjA5NDY1ODk3OH0.vKFaGeIHieNQuXvepaA-GuUqlJ7QjIPmwB7ZKo3Kx8U',
 
   // Fonnte Configuration
   FONNTE_URL: 'https://api.fonnte.com',
   FONNTE_DEFAULT_TOKEN: 'nCkVWGeAvA9zpBRn4ynh',
-  FONNTE_TIMEOUT: 15000,
+  FONNTE_TIMEOUT: 10000,
 
   // Anti-Pause Configuration
   ANTIPAUZE_CHECK_INTERVAL: 60 * 60 * 1000,    // 1 jam
