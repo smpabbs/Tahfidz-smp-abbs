@@ -9,25 +9,19 @@
 <body>
   <div class="container">
     <h1>📖 Aplikasi Capaian Tahfidz</h1>
-    
-    <!-- ============================================ -->
-    <!-- 🎯 TAB NAVIGATION -->
-    <!-- ============================================ -->
     <div class="tabs">
-      <button class="tab active" onclick="TabManager.show('input')">📝 Input Data</button>
-      <button class="tab" onclick="TabManager.show('output')">📊 Hasil Data</button>
-      <button class="tab" onclick="TabManager.show('target')">🎯 Kelola Target</button>
-      <button class="tab" onclick="TabManager.show('master')">🗂️ Master Data</button>
+      <button class="tab active" onclick="showTab('input')">Input Data</button>
+      <button class="tab" onclick="showTab('output')">Hasil Data</button>
+      <button class="tab" onclick="showTab('target')">🎯 Kelola Target</button>
+      <button class="tab" onclick="showTab('master')">🗂️ Master Data</button>
     </div>
 
-    <!-- ============================================ -->
     <!-- 🟢 TAB INPUT -->
-    <!-- ============================================ -->
     <div id="input" class="tab-content active">
       <form id="tahfidzForm">
         <div class="form-group">
           <label>Nama Guru:</label>
-          <select id="guru" required onchange="InputForm.updateToken()">
+          <select id="guru" required onchange="updateToken()">
             <option value="">-- Pilih Guru --</option>
           </select>
         </div>
@@ -39,14 +33,14 @@
 
         <div class="form-group">
           <label>Kelas:</label>
-          <select id="kelas" required onchange="InputForm.updateNamaSiswa()">
+          <select id="kelas" required onchange="updateNamaSiswa()">
             <option value="">-- Pilih Kelas --</option>
           </select>
         </div>
 
         <div class="form-group">
           <label>Nama Siswa:</label>
-          <select id="siswa" required onchange="InputForm.updateWhatsApp()">
+          <select id="siswa" required onchange="updateWhatsApp()">
             <option value="">-- Pilih Siswa --</option>
           </select>
         </div>
@@ -58,7 +52,7 @@
 
         <div class="form-group">
           <label>Ziyadah?</label>
-          <select id="menghafal" required onchange="InputForm.toggleMenghafalFields()">
+          <select id="menghafal" required onchange="toggleMenghafalFields()">
             <option value="">-- Pilih --</option>
             <option value="ya">Ya</option>
             <option value="tidak">Tidak</option>
@@ -112,31 +106,29 @@
       </form>
     </div>
 
-    <!-- ============================================ -->
     <!-- 🔵 TAB OUTPUT -->
-    <!-- ============================================ -->
     <div id="output" class="tab-content">
       <div class="filter">
         <label>Kelas:</label>
-        <select id="filterKelas" onchange="OutputTable.update()">
+        <select id="filterKelas" onchange="updateTable()">
           <option value="">Semua</option>
         </select>
 
         <label>Bulan:</label>
-        <select id="filterBulan" onchange="OutputTable.update()">
+        <select id="filterBulan" onchange="updateTable()">
           <option value="">Semua Bulan</option>
         </select>
 
         <label>Tahun:</label>
-        <select id="filterTahun" onchange="OutputTable.update()">
+        <select id="filterTahun" onchange="updateTable()">
           <option value="">Semua Tahun</option>
         </select>
 
         <div class="export-buttons">
-          <button type="button" class="btn-export csv" onclick="OutputTable.exportCSV()">
+          <button type="button" class="btn-export csv" onclick="exportToCSV()">
             📥 Export CSV
           </button>
-          <button type="button" class="btn-export excel" onclick="OutputTable.exportExcel()">
+          <button type="button" class="btn-export excel" onclick="exportToExcel()">
             📊 Export Excel
           </button>
         </div>
@@ -172,40 +164,51 @@
 
       <div class="table-legend">
         <div class="legend-item">
-          <span class="legend-color" style="background: #5e81ac;"></span> Header Tabel
+          <span class="legend-color" style="background: #5e81ac;"></span>
+          <span>Header Tabel</span>
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: #434c5e;"></span> Baris Ganjil
+          <span class="legend-color" style="background: #434c5e;"></span>
+          <span>Baris Ganjil</span>
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: #3b4252;"></span> Baris Genap
+          <span class="legend-color" style="background: #3b4252;"></span>
+          <span>Baris Genap</span>
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: rgba(191, 97, 106, 0.1);"></span> Tidak Menghafal
+          <span class="legend-color" style="background: rgba(191, 97, 106, 0.1);"></span>
+          <span>Tidak Menghafal</span>
         </div>
       </div>
     </div>
 
-    <!-- ============================================ -->
     <!-- 🎯 TAB TARGET -->
-    <!-- ============================================ -->
     <div id="target" class="tab-content">
       <div class="filter">
         <label>Kelas:</label>
-        <select id="targetKelas" onchange="TargetManager.loadTable()">
+        <select id="targetKelas" onchange="loadTargetSiswa()">
           <option value="">-- Pilih Kelas --</option>
         </select>
         
         <div class="export-buttons">
-          <button type="button" class="btn-export csv" onclick="TargetManager.sendClassReport()">
+          <button type="button" class="btn-export csv" onclick="sendClassWeeklyReport(document.getElementById('targetKelas').value)">
             📧 Rekap Kelas
           </button>
-          <button type="button" class="btn-export excel" onclick="TargetManager.sendAllReports()">
+          <button type="button" class="btn-export excel" onclick="sendManualWeeklyReport()">
             📊 Rekap Semua
           </button>
-          <button type="button" class="btn-export" onclick="TargetManager.exportCSV()" style="background: linear-gradient(135deg, #d08770, #bf616a);">
+          <button type="button" class="btn-export" onclick="exportTargetToCSV()" style="background: linear-gradient(135deg, #d08770, #bf616a);">
             📥 Export Target
           </button>
+        </div>
+      </div>
+
+      <div class="table-info">
+        <div class="summary">
+          <strong>Fitur Rekapan Manual:</strong>
+          • 📧 Rekap Kelas: Kirim rekapan ke 1 kelas saja<br>
+          • 📊 Rekap Semua: Kirim ke semua kelas (delay 1-5 menit)<br>
+          • Token otomatis sesuai guru yang paling banyak menginput
         </div>
       </div>
 
@@ -229,31 +232,32 @@
         </table>
       </div>
 
-      <button type="button" class="btn-submit" onclick="TargetManager.saveAll()">
+      <button type="button" class="btn-submit" onclick="saveAllTargets()">
         💾 Simpan Semua Target
       </button>
 
       <div class="table-legend">
         <div class="legend-item">
-          <span class="legend-color" style="background: #a3be8c;"></span> Target Tercapai
+          <span class="legend-color" style="background: #a3be8c;"></span>
+          <span>Target Tercapai</span>
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: #ebcb8b;"></span> Progress Baik
+          <span class="legend-color" style="background: #ebcb8b;"></span>
+          <span>Progress Baik</span>
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: #bf616a;"></span> Perlu Perhatian
+          <span class="legend-color" style="background: #bf616a;"></span>
+          <span>Perlu Perhatian</span>
         </div>
       </div>
     </div>
 
-    <!-- ============================================ -->
     <!-- 🗂️ TAB MASTER DATA -->
-    <!-- ============================================ -->
     <div id="master" class="tab-content">
       <div class="master-tabs">
-        <button class="master-tab active" onclick="TabManager.showMasterTab('siswa')">👨‍🎓 Siswa</button>
-        <button class="master-tab" onclick="TabManager.showMasterTab('kelas')">🏫 Kelas</button>
-        <button class="master-tab" onclick="TabManager.showMasterTab('guru')">👨‍🏫 Guru</button>
+        <button class="master-tab active" onclick="showMasterTab('siswa')">👨‍🎓 Siswa</button>
+        <button class="master-tab" onclick="showMasterTab('kelas')">🏫 Kelas</button>
+        <button class="master-tab" onclick="showMasterTab('guru')">👨‍🏫 Guru</button>
       </div>
 
       <!-- SUB-TAB: SISWA -->
@@ -261,15 +265,21 @@
         <div class="master-header">
           <h3>📋 Data Siswa</h3>
           <div class="master-actions">
-            <button class="btn-export csv" onclick="MasterData.openAddSiswa()">➕ Tambah Siswa</button>
-            <button class="btn-export" onclick="ImportManager.openModal('siswa')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">📥 Import Data</button>
-            <button class="btn-export excel" onclick="MasterData.refreshSiswa()">🔄 Refresh</button>
+            <button class="btn-export csv" onclick="openAddSiswaModal()">
+              ➕ Tambah Siswa
+            </button>
+            <button class="btn-export" onclick="openImportModal('siswa')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">
+              📥 Import Data
+            </button>
+            <button class="btn-export excel" onclick="loadMasterSiswa()">
+              🔄 Refresh
+            </button>
           </div>
         </div>
 
         <div class="filter">
           <label>Filter Kelas:</label>
-          <select id="filterKelasSiswa" onchange="MasterData.refreshSiswa()">
+          <select id="filterKelasSiswa" onchange="loadMasterSiswa()">
             <option value="">Semua Kelas</option>
           </select>
         </div>
@@ -299,9 +309,15 @@
         <div class="master-header">
           <h3>🏫 Data Kelas</h3>
           <div class="master-actions">
-            <button class="btn-export csv" onclick="MasterData.openAddKelas()">➕ Tambah Kelas</button>
-            <button class="btn-export" onclick="ImportManager.openModal('kelas')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">📥 Import Data</button>
-            <button class="btn-export excel" onclick="MasterData.refreshKelas()">🔄 Refresh</button>
+            <button class="btn-export csv" onclick="openAddKelasModal()">
+              ➕ Tambah Kelas
+            </button>
+            <button class="btn-export" onclick="openImportModal('kelas')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">
+              📥 Import Data
+            </button>
+            <button class="btn-export excel" onclick="loadMasterKelas()">
+              🔄 Refresh
+            </button>
           </div>
         </div>
 
@@ -329,9 +345,15 @@
         <div class="master-header">
           <h3>👨‍🏫 Data Guru</h3>
           <div class="master-actions">
-            <button class="btn-export csv" onclick="MasterData.openAddGuru()">➕ Tambah Guru</button>
-            <button class="btn-export" onclick="ImportManager.openModal('guru')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">📥 Import Data</button>
-            <button class="btn-export excel" onclick="MasterData.refreshGuru()">🔄 Refresh</button>
+            <button class="btn-export csv" onclick="openAddGuruModal()">
+              ➕ Tambah Guru
+            </button>
+            <button class="btn-export" onclick="openImportModal('guru')" style="background: linear-gradient(135deg, #b48ead, #a47c9a);">
+              📥 Import Data
+            </button>
+            <button class="btn-export excel" onclick="loadMasterGuru()">
+              🔄 Refresh
+            </button>
           </div>
         </div>
 
@@ -356,19 +378,17 @@
     </div>
   </div>
 
-  <!-- ============================================ -->
-  <!-- 📦 MODALS -->
-  <!-- ============================================ -->
-
-  <!-- Modal Tambah/Edit Siswa -->
+  <!-- ========================================== -->
+  <!-- MODAL: TAMBAH/EDIT SISWA -->
+  <!-- ========================================== -->
   <div id="modalSiswa" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalSiswaTitle">➕ Tambah Siswa</h3>
-        <span class="close" onclick="Modal.close('modalSiswa')">&times;</span>
+        <span class="close" onclick="closeModal('modalSiswa')">&times;</span>
       </div>
       <div style="padding: 20px;">
-        <form id="formSiswa" onsubmit="MasterData.saveSiswa(event)">
+        <form id="formSiswa" onsubmit="saveSiswa(event)">
           <input type="hidden" id="siswaId" value="">
           
           <div class="form-group">
@@ -389,7 +409,7 @@
           </div>
           
           <div class="modal-actions">
-            <button type="button" class="btn-cancel" onclick="Modal.close('modalSiswa')">Batal</button>
+            <button type="button" class="btn-cancel" onclick="closeModal('modalSiswa')">Batal</button>
             <button type="submit" class="btn-submit">💾 Simpan</button>
           </div>
         </form>
@@ -397,15 +417,17 @@
     </div>
   </div>
 
-  <!-- Modal Tambah/Edit Kelas -->
+  <!-- ========================================== -->
+  <!-- MODAL: TAMBAH/EDIT KELAS -->
+  <!-- ========================================== -->
   <div id="modalKelas" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalKelasTitle">➕ Tambah Kelas</h3>
-        <span class="close" onclick="Modal.close('modalKelas')">&times;</span>
+        <span class="close" onclick="closeModal('modalKelas')">&times;</span>
       </div>
       <div style="padding: 20px;">
-        <form id="formKelas" onsubmit="MasterData.saveKelas(event)">
+        <form id="formKelas" onsubmit="saveKelas(event)">
           <input type="hidden" id="kelasId" value="">
           
           <div class="form-group">
@@ -414,7 +436,7 @@
           </div>
           
           <div class="modal-actions">
-            <button type="button" class="btn-cancel" onclick="Modal.close('modalKelas')">Batal</button>
+            <button type="button" class="btn-cancel" onclick="closeModal('modalKelas')">Batal</button>
             <button type="submit" class="btn-submit">💾 Simpan</button>
           </div>
         </form>
@@ -422,15 +444,17 @@
     </div>
   </div>
 
-  <!-- Modal Tambah/Edit Guru -->
+  <!-- ========================================== -->
+  <!-- MODAL: TAMBAH/EDIT GURU -->
+  <!-- ========================================== -->
   <div id="modalGuru" class="modal">
     <div class="modal-content">
       <div class="modal-header">
         <h3 id="modalGuruTitle">➕ Tambah Guru</h3>
-        <span class="close" onclick="Modal.close('modalGuru')">&times;</span>
+        <span class="close" onclick="closeModal('modalGuru')">&times;</span>
       </div>
       <div style="padding: 20px;">
-        <form id="formGuru" onsubmit="MasterData.saveGuru(event)">
+        <form id="formGuru" onsubmit="saveGuru(event)">
           <input type="hidden" id="guruId" value="">
           
           <div class="form-group">
@@ -444,7 +468,7 @@
           </div>
           
           <div class="modal-actions">
-            <button type="button" class="btn-cancel" onclick="Modal.close('modalGuru')">Batal</button>
+            <button type="button" class="btn-cancel" onclick="closeModal('modalGuru')">Batal</button>
             <button type="submit" class="btn-submit">💾 Simpan</button>
           </div>
         </form>
@@ -452,20 +476,23 @@
     </div>
   </div>
 
-  <!-- Modal Import Data -->
+  <!-- ========================================== -->
+  <!-- MODAL: IMPORT DATA -->
+  <!-- ========================================== -->
   <div id="modalImport" class="modal">
     <div class="modal-content" style="max-width: 800px;">
       <div class="modal-header">
         <h3 id="modalImportTitle">📥 Import Data</h3>
-        <span class="close" onclick="Modal.close('modalImport')">&times;</span>
+        <span class="close" onclick="closeModal('modalImport')">&times;</span>
       </div>
-      <div style="padding: 20px; max-height: 65vh; overflow-y: auto;">
+      <div style="padding: 20px;">
         
+        <!-- Upload Section -->
         <div class="import-section">
           <h4>📄 Upload File Excel/CSV</h4>
-          <div class="file-upload-area" onclick="document.getElementById('importFile').click()">
-            <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display: none;">
-            <div class="upload-placeholder">
+          <div class="file-upload-area" id="fileUploadArea">
+            <input type="file" id="importFile" accept=".xlsx,.xls,.csv" onchange="handleFileSelect(event)" style="display: none;">
+            <div class="upload-placeholder" onclick="document.getElementById('importFile').click()">
               <div style="font-size: 48px; margin-bottom: 10px;">📁</div>
               <p><strong>Klik untuk pilih file</strong></p>
               <p style="font-size: 12px; color: #81a1c1;">Format: Excel (.xlsx, .xls) atau CSV (.csv)</p>
@@ -473,26 +500,28 @@
           </div>
           <div id="fileInfo" class="file-info" style="display: none;">
             <span id="fileName"></span>
-            <button type="button" class="btn-cancel" onclick="ImportManager.clearFile()" style="padding: 5px 10px; font-size: 12px;">✕ Hapus</button>
+            <button class="btn-cancel" onclick="clearFile()" style="padding: 5px 10px; font-size: 12px;">✕ Hapus</button>
           </div>
         </div>
 
         <div class="divider">atau</div>
 
+        <!-- Template Section -->
         <div class="import-section">
           <h4>📋 Download Template</h4>
-          <p style="font-size: 13px; color: #d8dee9; margin-bottom: 10px;">
-            Gunakan template CSV ini untuk format yang benar
+          <p style="font-size: 14px; color: #d8dee9; margin-bottom: 10px;">
+            Gunakan template Excel ini untuk format yang benar
           </p>
-          <button type="button" class="btn-export csv" onclick="ImportManager.downloadTemplate()" style="width: 100%;">
-            ⬇️ Download Template CSV
+          <button class="btn-export csv" onclick="downloadTemplate()" style="width: 100%;">
+            ⬇️ Download Template Excel
           </button>
         </div>
 
+        <!-- Preview Section -->
         <div id="previewSection" class="import-section" style="display: none;">
           <h4>👁️ Preview Data</h4>
           <div id="previewInfo" class="preview-info"></div>
-          <div class="scroll-container" style="max-height: 250px;">
+          <div class="scroll-container" style="max-height: 300px;">
             <table class="student-table" id="previewTable">
               <thead id="previewTableHead"></thead>
               <tbody id="previewTableBody"></tbody>
@@ -501,48 +530,46 @@
           <div id="validationSummary" class="validation-summary"></div>
         </div>
 
-      </div>
-      
-      <div class="modal-actions">
-        <button type="button" class="btn-cancel" onclick="Modal.close('modalImport')">Batal</button>
-        <button type="button" class="btn-submit" id="btnImport" onclick="ImportManager.executeImport()" disabled>
-          💾 Import Data
-        </button>
+        <!-- Action Buttons -->
+        <div class="modal-actions">
+          <button type="button" class="btn-cancel" onclick="closeModal('modalImport')">Batal</button>
+          <button type="button" class="btn-submit" id="btnImport" onclick="executeImport()" disabled>
+            💾 Import Data
+          </button>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <!-- ============================================ -->
-  <!-- 📦 SCRIPTS - URUTAN PENTING! -->
-  <!-- ============================================ -->
-  
-  <!-- 1. Library eksternal -->
+  <!-- ✅ LIBRARY UNTUK IMPORT -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+
+  <!-- ✅ SUPABASE CLIENT & APLIKASI -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   
-  <!-- 2. Core -->
-  <script src="js/core/config.js"></script>
-  <script src="js/core/supabase.js"></script>
-  <script src="js/core/state.js"></script>
+  <!-- File JavaScript Lokal -->
+  <script src="config.js"></script>
+  <script src="script.js"></script>
+  <script src="master-data.js"></script>
+  <script src="import-data.js"></script>
   
-  <!-- 3. Services -->
-  <script src="js/services/storage.js"></script>
-  <script src="js/services/database.js"></script>
-  <script src="js/services/notification.js"></script>
-  
-  <!-- 4. UI Components -->
-  <script src="js/ui/modal.js"></script>
-  <script src="js/ui/tabs.js"></script>
-  <script src="js/ui/dropdowns.js"></script>
-  <script src="js/ui/edit-inline.js"></script>
-  
-  <!-- 5. Features -->
-  <script src="js/features/input-form.js"></script>
-  <script src="js/features/output-table.js"></script>
-  <script src="js/features/target.js"></script>
-  <script src="js/features/master-data.js"></script>
-  <script src="js/features/import-data.js"></script>
-  
-  <!-- 6. Entry Point (HARUS PALING AKHIR) -->
-  <script src="js/app.js"></script>
+  <!-- Debug Script -->
+  <script>
+    console.log('🔍 DEBUG: Checking script loading...');
+    window.addEventListener('load', function() {
+      console.log('✅ Page fully loaded');
+      console.log('- showTab available:', typeof showTab !== 'undefined');
+      console.log('- updateToken available:', typeof updateToken !== 'undefined');
+      console.log('- initAllDropdowns available:', typeof initAllDropdowns !== 'undefined');
+      
+      // Force initialize dropdowns
+      if (typeof initAllDropdowns === 'function') {
+        initAllDropdowns();
+        setDefaultTanggal();
+      }
+    });
+  </script>
 </body>
 </html>
