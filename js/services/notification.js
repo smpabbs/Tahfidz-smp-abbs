@@ -4,24 +4,20 @@
 
 const NotificationService = {
   
-  _activeNotification: null,
-  _notificationTimer: null,
+  _toastTimer: null,
 
   // ==========================================
-  // UI NOTIFICATIONS
+  // TOAST NOTIFICATIONS
   // ==========================================
 
   /**
-   * Tampilkan notifikasi UI
+   * Tampilkan toast notification di pojok kanan
    * @param {string} type - 'success' | 'error' | 'warning' | 'info' | 'loading'
    * @param {string} message - Pesan notifikasi
    * @param {number} duration - Durasi dalam ms (0 = tidak auto-hilang)
-   * @returns {HTMLElement} - Element notifikasi
+   * @returns {HTMLElement} - Element toast
    */
   show(type, message, duration = 5000) {
-    // Hapus notifikasi yang sedang aktif
-    this.hide();
-
     const icons = {
       success: '✅',
       error: '❌',
@@ -30,56 +26,50 @@ const NotificationService = {
       loading: '🔄'
     };
 
-    // Buat element notifikasi
-    const notification = document.createElement('div');
-    notification.className = `notification notification-${type}`;
-    notification.innerHTML = `
-      <div class="notification-content">
-        <div class="notification-icon">${icons[type] || '📢'}</div>
-        <div class="notification-message">${message}</div>
-        <button class="notification-close" onclick="NotificationService.hide()">×</button>
-      </div>
+    // Cari atau buat container
+    let container = document.getElementById('toastContainer');
+    if (!container) {
+      container = document.createElement('div');
+      container.className = 'toast-container';
+      container.id = 'toastContainer';
+      document.body.appendChild(container);
+    }
+
+    // Buat element toast
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${icons[type] || '📢'}</span>
+      <span>${message}</span>
     `;
+    toast.style.cursor = 'pointer';
+    toast.addEventListener('click', () => toast.remove());
 
-    // Tambahkan ke body
-    document.body.appendChild(notification);
+    // Tambahkan ke container
+    container.appendChild(toast);
 
-    // Tampilkan dengan animasi
-    setTimeout(() => {
-      notification.classList.add('show');
-    }, 10);
+    // Simpan referensi (hanya untuk 1 notifikasi loading aktif)
+    if (type === 'loading') {
+      this._toastTimer = toast;
+    }
 
-    // Simpan referensi
-    this._activeNotification = notification;
-
-    // Auto-hide setelah durasi
+    // Auto-hide
     if (duration > 0) {
-      this._notificationTimer = setTimeout(() => {
-        this.hide();
+      setTimeout(() => {
+        if (toast.parentNode) toast.remove();
       }, duration);
     }
 
-    return notification;
+    return toast;
   },
 
   /**
-   * Sembunyikan notifikasi yang sedang aktif
+   * Hapus toast loading yang aktif
    */
   hide() {
-    if (this._notificationTimer) {
-      clearTimeout(this._notificationTimer);
-      this._notificationTimer = null;
-    }
-
-    if (this._activeNotification) {
-      this._activeNotification.classList.remove('show');
-      
-      setTimeout(() => {
-        if (this._activeNotification && this._activeNotification.parentNode) {
-          this._activeNotification.parentNode.removeChild(this._activeNotification);
-        }
-        this._activeNotification = null;
-      }, 300);
+    if (this._toastTimer && this._toastTimer.parentNode) {
+      this._toastTimer.remove();
+      this._toastTimer = null;
     }
   },
 
