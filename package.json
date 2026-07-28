@@ -1,13 +1,15 @@
 {
-  "name": "form-ke-supabase",
-  "version": "1.0.0",
-  "description": "",
-  "main": "config.js",
+  "name": "tahfidz-smp-abbs",
+  "version": "1.1.0",
+  "description": "Aplikasi monitoring setoran tahfidz SMP ABBS",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "deploy": "npx vercel --prod --yes"
   },
   "keywords": [],
-  "author": "",
+  "author": "smpabbs",
   "license": "ISC",
-  "type": "commonjs"
+  "devDependencies": {
+    "supabase": "^2.110.0",
+    "vercel": "^41.0.0"
+  }
 }

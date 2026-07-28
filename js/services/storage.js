@@ -106,6 +106,7 @@ const StorageService = {
 
   /**
    * Simpan data target (localStorage + Supabase)
+   * Strategi: UPSERT langsung, tanpa delete dulu — biar tidak hilang kalau gagal
    */
   async saveTargetData(data) {
     this.save(AppConfig.STORAGE_KEYS.TAHFIDZ_TARGETS, data);
@@ -127,14 +128,21 @@ const StorageService = {
         });
       });
       if (rows.length > 0) {
-        // Hapus existing + insert ulang
-        await db.from('tahfidz_targets').delete().gte('id', '00000000-0000-0000-0000-000000000000');
+        // UPSERT langsung — tidak perlu hapus existing dulu
+        // onConflict:nama,kelas akan replace data lama jika sudah ada
         for (let i = 0; i < rows.length; i += 50) {
-          await db.from('tahfidz_targets').upsert(rows.slice(i, i + 50), { onConflict: 'nama,kelas' });
+          const { error } = await db.from('tahfidz_targets').upsert(rows.slice(i, i + 50), { 
+            onConflict: 'nama,kelas',
+            ignoreDuplicates: false
+          });
+          if (error) throw error;
         }
         console.log(`✅ ${rows.length} targets saved to Supabase`);
       }
-    } catch (e) { console.warn('⚠️ Supabase target save failed:', e.message); }
+    } catch (e) { 
+      console.warn('⚠️ Supabase target save failed:', e.message);
+      // Data masih aman di localStorage — tidak hilang
+    }
   },
 
   /**

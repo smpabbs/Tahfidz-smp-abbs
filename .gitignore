@@ -1,0 +1,5 @@
+node_modules/
+_key_debug.txt
+_real_key.txt
+.env
+.env.*

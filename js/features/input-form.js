@@ -246,13 +246,13 @@ const InputForm = {
       if (result) {
         // Kirim notifikasi WhatsApp
         if (formData.whatsapp) {
-          NotificationService.info('📱 Mengirim notifikasi ke orang tua...', 2000);
+          NotificationService.info('📱 Mengirim notifikasi WA ke orang tua...', 3000);
           
           const message = formData.menghafal === 'tidak'
             ? NotificationService.formatTidakMenghafalMessage(formData)
             : NotificationService.formatTahfidzMessage(formData);
 
-          // Kirim async (tidak perlu ditunggu)
+          // Kirim async — beri feedback hasilnya ke user
           NotificationService.sendWhatsApp(
             formData.whatsapp, 
             message, 
@@ -260,10 +260,22 @@ const InputForm = {
           ).then(sent => {
             if (sent) {
               console.log('✅ WhatsApp notification sent');
+              NotificationService.success('📱 Notifikasi WA berhasil dikirim!', 4000);
             } else {
-              console.warn('⚠️ Failed to send WhatsApp notification');
+              console.warn('⚠️ Gagal kirim WA — token mungkin tidak valid');
+              NotificationService.warning(
+                '⚠️ Data tersimpan, tapi notifikasi WA gagal. ' +
+                'Cek token Fonnte guru di Master Data > Guru.',
+                8000
+              );
             }
           });
+        } else {
+          // Siswa tidak punya nomor WA
+          NotificationService.warning(
+            'ℹ️ Data tersimpan. Siswa tidak punya nomor WhatsApp.',
+            5000
+          );
         }
 
         NotificationService.success('✅ Data berhasil disimpan!');

@@ -134,7 +134,11 @@ const NotificationService = {
       const fonnteToken = token || AppConfig.FONNTE_DEFAULT_TOKEN;
 
       if (!fonnteToken || !recipient || !message) {
-        console.error('❌ WhatsApp: Data tidak lengkap');
+        console.error('❌ WhatsApp: Data tidak lengkap', { 
+          hasToken: !!fonnteToken, 
+          hasRecipient: !!recipient, 
+          hasMessage: !!message 
+        });
         return false;
       }
 
@@ -159,22 +163,89 @@ const NotificationService = {
       payload.append('message', message);
       payload.append('countryCode', '62');
 
-      const response = await fetch(`${AppConfig.FONNTE_URL}/send`, {
-        method: 'POST',
-        headers: {
-          'Authorization': fonnteToken,
-          'Content-Type': 'application/x-www-form-urlencoded'
-        },
-        body: payload
-      });
+      // AbortController untuk timeout
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), AppConfig.FONNTE_TIMEOUT || 15000);
 
-      const result = await response.json();
-      
-      if (result.status == true || result.status == 200 || result.success == true || result.message_id) {
-        console.log('✅ WhatsApp sent to:', phone);
-        return true;
-      } else {
-        console.error('❌ WhatsApp API error:', result);
+      try {
+        // Coba via proxy dulu (atasi CORS), fallback ke direct
+        const proxyUrl = '/api/fonnte-proxy';
+        const isProxyAvailable = window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' && !window.location.protocol.includes('file');
+        
+        let response;
+        
+        if (isProxyAvailable) {
+          // Kirim via proxy server (Vercel serverless)
+          response = await fetch(proxyUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              target: phone,
+              message: message,
+              countryCode: '62',
+              token: fonnteToken
+            }),
+            signal: controller.signal
+          });
+        } else {
+          // Langsung ke Fonnte (local development)
+          response = await fetch(`${AppConfig.FONNTE_URL}/send`, {
+            method: 'POST',
+            headers: {
+              'Authorization': fonnteToken,
+              'Content-Type': 'application/x-www-form-urlencoded'
+            },
+            body: payload,
+            signal: controller.signal
+          });
+        }
+
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+          console.error('❌ WhatsApp API error HTTP:', response.status);
+          return false;
+        }
+        
+        const result = await response.json();
+        
+        if (result.status == true || result.status == 200 || result.success == true || result.message_id) {
+          console.log('✅ WhatsApp sent to:', phone);
+          return true;
+        } else {
+          console.error('❌ WhatsApp API error:', result, 'HTTP:', response.status);
+          return false;
+        }
+      } catch (fetchError) {
+        clearTimeout(timeoutId);
+        if (fetchError.name === 'AbortError') {
+          console.error('❌ WhatsApp: Request timeout (15 detik)');
+        } else if (fetchError.name === 'TypeError' && fetchError.message.includes('fetch')) {
+          console.error('❌ WhatsApp: CORS error — browser memblokir request ke Fonnte.');
+          // Coba langsung fallback kalau proxy gagal
+          if (isProxyAvailable) {
+            console.log('🔄 Retry langsung ke Fonnte API...');
+            try {
+              const retryResp = await fetch(`${AppConfig.FONNTE_URL}/send`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': fonnteToken,
+                  'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: payload
+              });
+              const retryResult = await retryResp.json();
+              if (retryResult.status == true || retryResult.success == true || retryResult.message_id) {
+                console.log('✅ WhatsApp sent via direct fallback');
+                return true;
+              }
+            } catch (e) {
+              console.error('❌ WhatsApp: Direct fallback juga gagal:', e.message);
+            }
+          }
+        } else {
+          console.error('❌ WhatsApp: Network error:', fetchError.message);
+        }
         return false;
       }
 
