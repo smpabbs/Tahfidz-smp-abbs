@@ -7,7 +7,6 @@
   <link rel="stylesheet" href="style.css" />
 </head>
 <body>
-  <div class="container">
   <div class="app-header">
     <div class="header-left">
       <div class="header-icon">﷽</div>
@@ -24,15 +23,15 @@
     </div>
   </div>
     
-    <!-- ============================================ -->
     <!-- 🎯 TAB NAVIGATION -->
-    <!-- ============================================ -->
     <div class="tabs">
       <button class="tab active" onclick="TabManager.show('input')">📝 Input Data</button>
       <button class="tab" onclick="TabManager.show('output')">📊 Hasil Data</button>
       <button class="tab" onclick="TabManager.show('target')">🎯 Kelola Target</button>
       <button class="tab" onclick="TabManager.show('master')">🗂️ Master Data</button>
     </div>
+
+  <div class="container">
 
     <!-- 🟢 TAB INPUT -->
     <div id="input" class="tab-content active">
