@@ -1,0 +1,96 @@
+name: Build APK Tahfidz
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 17
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Add Android platform
+        run: npx cap add android || true
+
+      - name: Sync web assets
+        run: npx cap sync android
+
+      - name: Restore release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 -d > android/release.jks
+            echo "keystore dipulihkan ($(wc -c < android/release.jks) bytes)"
+          else
+            echo "WARNING: KEYSTORE_BASE64 kosong - lanjut pakai debug signing"
+          fi
+
+      - name: Configure release signing + versionCode
+        env:
+          VC: ${{ github.run_number }}
+        run: |
+          cd android
+          if [ -f release.jks ]; then
+            python3 ../.github/scripts/configure-signing.py
+          else
+            echo "tanpa keystore - build debug biasa"
+          fi
+
+      - name: Build APK (release)
+        env:
+          KEYSTORE_PASS: ${{ secrets.KEYSTORE_PASS }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASS: ${{ secrets.KEY_PASS }}
+        run: |
+          cd android
+          chmod +x gradlew
+          if [ -f release.jks ]; then
+            ./gradlew assembleRelease
+          else
+            ./gradlew assembleDebug
+          fi
+
+      - name: Get version
+        id: version
+        run: echo "version=v$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Rename APK
+        run: |
+          if [ -f android/app/build/outputs/apk/release/app-release.apk ]; then
+            cp android/app/build/outputs/apk/release/app-release.apk "Tahfidz-${{ steps.version.outputs.version }}.apk"
+          else
+            cp android/app/build/outputs/apk/debug/app-debug.apk "Tahfidz-${{ steps.version.outputs.version }}.apk"
+          fi
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Tahfidz-APK
+          path: "Tahfidz-*.apk"
+
+      - name: Publish to Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: "Tahfidz SMP ABBS ${{ steps.version.outputs.version }} - Build ${{ github.run_number }}"
+          body: "APK otomatis dari GitHub Actions. Unduh file .apk di bawah, kirim ke HP, lalu instal."
+          files: "Tahfidz-*.apk"

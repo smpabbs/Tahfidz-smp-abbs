@@ -1,14 +1,23 @@
 {
   "name": "tahfidz-smp-abbs",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Aplikasi monitoring setoran tahfidz SMP ABBS",
   "scripts": {
-    "deploy": "npx vercel --prod --yes"
+    "deploy": "npx vercel --prod --yes",
+    "sync": "npx cap sync",
+    "build:android": "cd android && ./gradlew assembleRelease"
   },
   "keywords": [],
   "author": "smpabbs",
   "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^6.2.0",
+    "@capacitor/app": "^6.1.0",
+    "@capacitor/core": "^6.2.0"
+  },
   "devDependencies": {
+    "@capacitor/assets": "^3.0.5",
+    "@capacitor/cli": "^6.2.0",
     "supabase": "^2.110.0",
     "vercel": "^41.0.0"
   }

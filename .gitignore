@@ -1,6 +1,20 @@
+# Dependencies
 node_modules/
-_key_debug.txt
-_real_key.txt
+
+# Build output
+android/
+www-backup/
+*.apk
+dist/
+
+# Backup
+*.bak
+*.bak-*
+
+# Env
 .env
-.env.*
-.vercel
+.env.local
+
+# OS
+.DS_Store
+Thumbs.db
