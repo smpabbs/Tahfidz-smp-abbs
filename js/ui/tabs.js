@@ -6,7 +6,7 @@ const TabManager = {
   
   /**
    * Pindah ke tab utama
-   * @param {string} tabName - Nama tab ('input' | 'output' | 'target' | 'master')
+   * @param {string} tabName - Nama tab ('input' | 'output' | 'target' | 'master' | 'template')
    */
   show(tabName) {
     console.log(`🔍 Switching to tab: ${tabName}`);
@@ -49,7 +49,7 @@ const TabManager = {
 
     // Fallback: jika tidak ada button yang match, aktifkan berdasarkan index
     if (!buttonActivated) {
-      const tabIndex = { input: 0, output: 1, target: 2, master: 3 };
+      const tabIndex = { input: 0, output: 1, target: 2, master: 3, template: 4 };
       const idx = tabIndex[tabName] || 0;
       if (tabButtons[idx]) {
         tabButtons[idx].classList.add('active');
@@ -123,6 +123,13 @@ const TabManager = {
         console.log('🗂️ Loading master data...');
         if (typeof MasterData !== 'undefined' && MasterData.loadAll) {
           setTimeout(() => MasterData.loadAll(), 100);
+        }
+        break;
+
+      case 'template':
+        console.log('✉️ Loading WA template data...');
+        if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.load) {
+          setTimeout(() => TemplateWaManager.load(), 100);
         }
         break;
 

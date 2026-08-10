@@ -31,6 +31,11 @@ const AppState = {
   targetSiswa: {},       // { "kelas": [{nama, targetMingguan, ...}] }
 
   // ==========================================
+  // TEMPLATE WA (global, dikelola 1 guru)
+  // ==========================================
+  waTemplates: {},        // { setoran: string, tidak: string, edit: string }
+
+  // ==========================================
   // UI STATE
   // ==========================================
   currentTab: 'input',
@@ -59,6 +64,7 @@ const AppState = {
     this.masterGuru = [];
     this.tahfidzRecords = [];
     this.targetSiswa = {};
+    this.waTemplates = {};
     this.isEditMode = false;
     this.currentEditingRow = null;
     this.lastSyncTime = null;

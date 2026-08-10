@@ -37,14 +37,15 @@ const App = {
       await this.loadSupabaseData();
 
       // 6. Init features
-      console.log('⚙️  Step 6: Initializing features...');
-      InputForm.init();
-      OutputTable.init();
-      TargetManager.init();
+            console.log('⚙️  Step 6: Initializing features...');
+            InputForm.init();
+            OutputTable.init();
+            TargetManager.init();
+            await TemplateWaManager.init();
 
-      // 7. Init anti-pause system
-      console.log('⏰ Step 7: Starting anti-pause system...');
-      this.initAntiPause();
+            // 7. Init anti-pause system
+            console.log('⏰ Step 7: Starting anti-pause system...');
+            this.initAntiPause();
 
       // 8. Set default tab
       console.log('📑 Step 8: Setting default tab...');

@@ -1507,6 +1507,215 @@ textarea {
   }
 
   .table-wrap table {
-    min-width: 600px;
+      min-width: 600px;
+    }
   }
-}
+
+  /* ============================================= */
+  /* ✉️ TEMPLATE WA (tab pengaturan pesan global)  */
+  /* ============================================= */
+
+  .badge-new {
+    background: #a3be8c;
+    color: #2e3440;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 8px;
+    vertical-align: middle;
+    margin-left: 4px;
+  }
+
+  .template-info {
+    background: #3b4252;
+    border-left: 4px solid #88c0d0;
+    border-radius: 8px;
+    padding: 12px 16px;
+    margin-bottom: 18px;
+    font-size: 13px;
+    color: #d8dee9;
+  }
+
+  /* Pilih jenis pesan */
+  .tpl-jenis {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 18px;
+  }
+
+  .tpl-jenis-btn {
+    background: #434c5e;
+    border: 2px solid #4c566a;
+    border-radius: 10px;
+    padding: 12px 14px;
+    cursor: pointer;
+    color: #eceff4;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 3px;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.25s ease;
+    text-align: left;
+  }
+
+  .tpl-jenis-btn:hover {
+    border-color: #5e81ac;
+    transform: translateY(-1px);
+  }
+
+  .tpl-jenis-btn.active {
+    border-color: #88c0d0;
+    background: #4c566a;
+    box-shadow: 0 0 0 3px rgba(136, 192, 208, 0.15);
+  }
+
+  .tpl-j-ico {
+    font-size: 18px;
+  }
+
+  .tpl-j-sub {
+    font-size: 11px;
+    font-weight: 400;
+    color: #81a1c1;
+  }
+
+  /* Grid editor + preview */
+  .tpl-grid {
+    display: grid;
+    grid-template-columns: 1.1fr 1fr;
+    gap: 18px;
+  }
+
+  .tpl-editor-col .form-group,
+  .tpl-preview-col .form-group {
+    display: block;
+    margin-bottom: 16px;
+  }
+
+  .tpl-editor-col .form-group label,
+  .tpl-preview-col .form-group label {
+    display: block;
+    width: 100%;
+    text-align: left;
+    margin-bottom: 6px;
+  }
+
+  #tplEditor {
+    width: 100%;
+    min-height: 260px;
+    resize: vertical;
+    line-height: 1.7;
+    font-size: 13px;
+  }
+
+  /* Chips variabel */
+  .tpl-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  .tpl-chip {
+    background: #3b4252;
+    border: 1px solid #81a1c1;
+    color: #88c0d0;
+    font-size: 12px;
+    font-family: "Consolas", monospace;
+    padding: 4px 10px;
+    border-radius: 14px;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease;
+  }
+
+  .tpl-chip:hover {
+    background: #5e81ac;
+    color: #fff;
+  }
+
+  /* Aksi simpan/reset */
+  .tpl-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+
+  .tpl-actions .btn-submit,
+  .tpl-actions .btn-cancel {
+    flex: 0 0 auto;
+  }
+
+  /* Preview bubble WA */
+  .wa-bubble-wrap {
+    background: #3b4252;
+    border-radius: 12px;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .wa-bubble {
+    background: #005c4b;
+    color: #e5e9f0;
+    border-radius: 10px;
+    border-top-left-radius: 2px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-word;
+    max-width: 100%;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  }
+
+  .wa-time {
+    align-self: flex-end;
+    font-size: 11px;
+    color: #81a1c1;
+    margin-top: 6px;
+  }
+
+  /* Test kirim */
+  .tpl-test-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+  }
+
+  .tpl-test-row input {
+    flex: 1;
+  }
+
+  .tpl-test-row .btn-export {
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 10px 16px;
+  }
+
+  .tpl-hint {
+    display: block;
+    color: #81a1c1;
+    font-size: 11px;
+    margin-top: 6px;
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .tpl-jenis {
+      grid-template-columns: 1fr;
+    }
+    .tpl-grid {
+      grid-template-columns: 1fr;
+    }
+    .tpl-test-row {
+      flex-direction: column;
+      align-items: stretch;
+    }
+    .tpl-test-row .btn-export {
+      text-align: center;
+    }
+  }

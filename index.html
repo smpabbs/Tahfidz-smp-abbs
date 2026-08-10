@@ -29,7 +29,8 @@
       <button class="tab" onclick="TabManager.show('output')">📊 Hasil Data</button>
       <button class="tab" onclick="TabManager.show('target')">🎯 Kelola Target</button>
       <button class="tab" onclick="TabManager.show('master')">🗂️ Master Data</button>
-    </div>
+            <button class="tab" onclick="TabManager.show('template')">✉️ Template WA <span class="badge-new">BARU</span></button>
+          </div>
 
   <div class="container">
 
@@ -391,11 +392,68 @@
           </table>
         </div>
       </div>
-    </div>
-  </div>
+          </div>
+        </div>
 
-  <!-- ============================================ -->
-  <!-- 📦 MODALS -->
+        <!-- ============================================ -->
+        <!-- ✉️ TAB TEMPLATE WA -->
+        <!-- ============================================ -->
+        <div id="template" class="tab-content">
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">✉️ Template Pesan WhatsApp</div>
+            </div>
+            <div class="template-info">
+              <p>📌 Template ini <strong>GLOBAL</strong> — cukup diatur oleh <strong>1 guru</strong>, dipakai untuk <strong>semua guru</strong> saat mengirim notifikasi ke orang tua siswa.</p>
+            </div>
+
+            <!-- Pilih Jenis Pesan -->
+            <div id="tplJenis" class="tpl-jenis"></div>
+
+            <!-- Editor -->
+            <div class="tpl-grid">
+              <div class="tpl-editor-col">
+                <div class="form-group">
+                  <label>🧩 Sisipkan Variabel (klik untuk menambah)</label>
+                  <div id="tplChips" class="tpl-chips"></div>
+                </div>
+
+                <div class="form-group">
+                  <label>✍️ Template Pesan</label>
+                  <textarea id="tplEditor" rows="14" oninput="TemplateWaManager.preview()" placeholder="Tulis template pesan di sini..."></textarea>
+                </div>
+
+                <div class="tpl-actions">
+                  <button class="btn-cancel" onclick="TemplateWaManager.resetDefault()">↩️ Kembalikan Bawaan</button>
+                  <button class="btn-submit" onclick="TemplateWaManager.simpan()">💾 Simpan Template</button>
+                </div>
+              </div>
+
+              <div class="tpl-preview-col">
+                <div class="form-group">
+                  <label>👀 Preview (seperti di WhatsApp orang tua)</label>
+                  <div class="wa-bubble-wrap">
+                    <div id="tplPreview" class="wa-bubble"></div>
+                    <div class="wa-time" id="tplTime"></div>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label>📤 Kirim Test</label>
+                  <div class="tpl-test-row">
+                    <input type="tel" id="tplTestNomor" placeholder="Nomor WA (contoh: 0812345678)" />
+                    <button class="btn-export" onclick="TemplateWaManager.kirimTest()">🚀 Kirim Test</button>
+                  </div>
+                  <small class="tpl-hint">Mengirim contoh pesan ke nomormu untuk memastikan token Fonnte & proxy jalan.</small>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        </div>
+
+        <!-- ============================================ -->
+        <!-- 📦 MODALS -->
   <!-- ============================================ -->
 
   <!-- Modal Tambah/Edit Siswa -->
@@ -584,6 +642,7 @@
   <script src="js/features/target.js"></script>
   <script src="js/features/master-data.js"></script>
   <script src="js/features/import-data.js"></script>
+  <script src="js/features/template-wa.js"></script>
   
   <!-- 6. Entry Point (HARUS PALING AKHIR) -->
   <script src="js/app.js"></script>

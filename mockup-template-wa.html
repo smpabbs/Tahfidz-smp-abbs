@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tahfidz SMP ABBS — Mockup Template WA</title>
+<style>
+  :root{
+    --bg1:#1e1e2e; --bg2:#2d3a4b;
+    --card:#3b4252; --card2:#434c5e; --card3:#4c566a;
+    --line:#4c566a; --line2:#5e81ac;
+    --text:#e5e9f0; --muted:#a3b1c6;
+    --accent:#5e81ac; --accent2:#81a1c1; --cyan:#88c0d0;
+    --green:#a3be8c; --red:#bf616a; --yellow:#ebcb8b;
+    --radius:12px;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{
+    font-family:'Segoe UI',system-ui,-apple-system,sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:var(--text); min-height:100vh; padding-bottom:40px;
+  }
+  /* ===== HEADER ===== */
+  .app-header{
+    max-width:1160px; margin:16px auto 0; padding:14px 20px;
+    background:linear-gradient(135deg,var(--card),var(--card2));
+    border:1px solid var(--line); border-radius:var(--radius);
+    display:flex; align-items:center; gap:12px; flex-wrap:wrap;
+  }
+  .app-header .bismillah{font-size:22px;}
+  .app-header h1{font-size:17px; font-weight:600; flex:1;}
+  .badge-online{
+    font-size:11px; padding:3px 10px; border-radius:99px;
+    background:rgba(163,190,140,.12); border:1px solid var(--green);
+    color:var(--green); display:inline-flex; align-items:center; gap:5px;
+  }
+  .badge-online::before{content:''; width:7px; height:7px; border-radius:50%; background:var(--green);}
+  .badge-mockup{
+    font-size:11px; padding:3px 10px; border-radius:99px;
+    background:rgba(235,203,139,.15); border:1px dashed var(--yellow);
+    color:var(--yellow);
+  }
+  /* ===== TABS ===== */
+  .tabs{
+    max-width:1160px; margin:14px auto 0; display:flex; gap:6px; flex-wrap:wrap;
+  }
+  .tab{
+    padding:9px 16px; border-radius:10px 10px 0 0; border:1px solid var(--line);
+    background:var(--card); color:var(--muted); cursor:pointer;
+    font-size:13px; font-family:inherit; transition:.15s;
+  }
+  .tab:hover{color:var(--text); border-color:var(--line2);}
+  .tab.active{
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff; border-color:transparent; font-weight:600;
+  }
+  .tab .dot-new{
+    display:inline-block; margin-left:6px; padding:1px 7px; border-radius:99px;
+    background:var(--yellow); color:#3b2f0a; font-size:10px; font-weight:700;
+  }
+  /* ===== CONTAINER ===== */
+  .container{max-width:1160px; margin:0 auto; padding:16px 20px 0;}
+  .info-banner{
+    display:flex; align-items:flex-start; gap:10px;
+    background:rgba(136,192,208,.08); border:1px solid rgba(136,192,208,.35);
+    border-radius:var(--radius); padding:12px 16px; margin-bottom:16px; font-size:13px;
+  }
+  .info-banner .ico{font-size:17px; line-height:1.3;}
+  .info-banner b{color:var(--cyan);}
+  /* ===== LAYOUT 2 KOLOM ===== */
+  .layout{display:grid; grid-template-columns:1.15fr .85fr; gap:16px; align-items:start;}
+  @media(max-width:860px){ .layout{grid-template-columns:1fr;} }
+  .card{
+    background:var(--card); border:1px solid var(--line); border-radius:var(--radius);
+    padding:18px; margin-bottom:16px;
+  }
+  .card h3{font-size:14px; margin-bottom:4px; display:flex; align-items:center; gap:8px;}
+  .card .sub{font-size:12px; color:var(--muted); margin-bottom:14px;}
+  /* ===== PILIH JENIS PESAN ===== */
+  .jenis{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:16px;}
+  .jenis button{
+    padding:10px 8px; border-radius:10px; border:1px solid var(--line);
+    background:var(--card2); color:var(--text); cursor:pointer; font-family:inherit;
+    font-size:12.5px; display:flex; flex-direction:column; align-items:center; gap:3px; transition:.15s;
+  }
+  .jenis button .j-ico{font-size:19px;}
+  .jenis button .j-sub{font-size:10.5px; color:var(--muted);}
+  .jenis button:hover{border-color:var(--line2);}
+  .jenis button.active{
+    border-color:var(--accent2);
+    background:linear-gradient(135deg,rgba(94,129,172,.35),rgba(129,161,193,.2));
+    box-shadow:0 0 0 1px var(--accent2);
+  }
+  /* ===== CHIPS VARIABEL ===== */
+  .chips-label{font-size:11px; text-transform:uppercase; letter-spacing:.6px; color:var(--muted); margin-bottom:7px;}
+  .chips{display:flex; flex-wrap:wrap; gap:6px; margin-bottom:12px;}
+  .chip{
+    font-size:11.5px; font-family:Consolas,monospace; padding:4px 10px; cursor:pointer;
+    border-radius:99px; border:1px dashed var(--line2); background:rgba(94,129,172,.12);
+    color:var(--accent2); transition:.12s; user-select:none;
+  }
+  .chip:hover{background:rgba(94,129,172,.3); color:#fff;}
+  .chip:active{transform:scale(.95);}
+  textarea{
+    width:100%; min-height:230px; resize:vertical; padding:12px 14px; font-size:13px;
+    line-height:1.55; border-radius:10px; border:1px solid var(--line);
+    background:#2e3440; color:var(--text); font-family:Consolas,monospace;
+  }
+  textarea:focus{outline:none; border-color:var(--accent2);}
+  /* ===== TOMBOL AKSI ===== */
+  .actions{display:flex; gap:8px; margin-top:12px; flex-wrap:wrap;}
+  .btn{
+    padding:9px 16px; border-radius:10px; border:1px solid transparent;
+    font-size:12.5px; cursor:pointer; font-family:inherit; font-weight:600; transition:.15s;
+  }
+  .btn-primary{background:linear-gradient(135deg,var(--accent),var(--accent2)); color:#fff;}
+  .btn-primary:hover{filter:brightness(1.1);}
+  .btn-ghost{background:transparent; border-color:var(--line); color:var(--muted);}
+  .btn-ghost:hover{color:var(--text); border-color:var(--line2);}
+  .btn-send{background:linear-gradient(135deg,var(--green),#8fbc8b); color:#1f3013; flex:1;}
+  .btn-send:hover{filter:brightness(1.08);}
+  /* ===== PREVIEW WA ===== */
+  .wa-header{
+    display:flex; align-items:center; gap:10px; padding-bottom:11px;
+    border-bottom:1px solid var(--line); margin-bottom:14px;
+  }
+  .wa-avatar{
+    width:34px; height:34px; border-radius:50%; flex-shrink:0;
+    background:linear-gradient(135deg,#a3be8c,#88c0d0);
+    display:flex; align-items:center; justify-content:center; font-size:15px;
+  }
+  .wa-header b{font-size:13px; display:block;}
+  .wa-header span{font-size:11px; color:var(--muted);}
+  .wa-bubble{
+    background:var(--card2); border:1px solid var(--line);
+    border-radius:12px 12px 12px 4px; padding:13px 15px;
+    font-size:12.8px; line-height:1.6; white-space:pre-wrap; word-break:break-word;
+    font-family:'Segoe UI',sans-serif;
+  }
+  .wa-time{font-size:10px; color:var(--muted); text-align:right; margin-top:6px;}
+  .test-box{margin-top:16px; padding-top:14px; border-top:1px dashed var(--line);}
+  .test-box label{font-size:11.5px; color:var(--muted); display:block; margin-bottom:6px;}
+  .test-row{display:flex; gap:8px;}
+  .test-row input{
+    flex:1; padding:9px 12px; border-radius:10px; border:1px solid var(--line);
+    background:#2e3440; color:var(--text); font-size:12.5px;
+  }
+  .test-row input:focus{outline:none; border-color:var(--accent2);}
+  /* ===== TOAST ===== */
+  .toast-container{position:fixed; top:18px; right:18px; z-index:99; display:flex; flex-direction:column; gap:8px;}
+  .toast{
+    background:var(--card3); border:1px solid var(--line2); border-radius:10px;
+    padding:11px 16px; font-size:12.5px; box-shadow:0 6px 20px rgba(0,0,0,.4);
+    display:flex; gap:8px; align-items:center; animation:slideIn .25s ease;
+  }
+  .toast.success{border-color:var(--green);}
+  .toast.loading{border-color:var(--yellow);}
+  @keyframes slideIn{from{opacity:0; transform:translateX(20px);} to{opacity:1; transform:none;}}
+  /* ===== FOOTER CATATAN ===== */
+  .design-note{
+    font-size:12px; color:var(--muted); margin-top:6px;
+    background:rgba(76,86,106,.3); border:1px dashed var(--line);
+    border-radius:var(--radius); padding:12px 16px; line-height:1.7;
+  }
+  .design-note b{color:var(--yellow);}
+  .hidden{display:none !important;}
+</style>
+</head>
+<body>
+
+<!-- ============ HEADER ============ -->
+<div class="app-header">
+  <span class="bismillah">﷽</span>
+  <h1>Tahfidz SMP ABBS</h1>
+  <span class="badge-online">Online</span>
+  <span class="badge-mockup">MOCKUP — Template WA</span>
+</div>
+
+<!-- ============ TABS ============ -->
+<div class="tabs">
+  <button class="tab">📝 Input Data</button>
+  <button class="tab">📊 Hasil Data</button>
+  <button class="tab">🎯 Kelola Target</button>
+  <button class="tab">🗂️ Master Data</button>
+  <button class="tab active">✉️ Template WA <span class="dot-new">BARU</span></button>
+</div>
+
+<div class="container">
+  <!-- ============ INFO GLOBAL ============ -->
+  <div class="info-banner">
+    <span class="ico">🌍</span>
+    <div>
+      <b>Template GLOBAL</b> — pesan diatur oleh <b>1 admin/guru pembimbing</b> dan berlaku untuk <b>semua guru</b>.
+      Guru lain tidak perlu (dan tidak bisa) mengubah template ini. Kalau template kosong, sistem otomatis memakai pesan bawaan.
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- ============ KIRI: EDITOR ============ -->
+    <div class="card">
+      <h3>✏️ Editor Pesan</h3>
+      <div class="sub">Pilih jenis pesan, susun teks, sisipkan variabel dengan klik. Klik "Simpan" saat sudah cocok.</div>
+
+      <div class="jenis">
+        <button class="active" data-jenis="setoran" onclick="pilihJenis('setoran')">
+          <span class="j-ico">📖</span> Setoran Hafalan
+          <span class="j-sub">hafalan baru masuk</span>
+        </button>
+        <button data-jenis="tidak" onclick="pilihJenis('tidak')">
+          <span class="j-ico">🤒</span> Tidak Menghafal
+          <span class="j-sub">izin / alasan</span>
+        </button>
+        <button data-jenis="edit" onclick="pilihJenis('edit')">
+          <span class="j-ico">🔄</span> Pembaruan Data
+          <span class="j-sub">edit setoran</span>
+        </button>
+      </div>
+
+      <div class="chips-label">💡 Klik variabel untuk menyisipkan ke pesan:</div>
+      <div class="chips" id="chips"></div>
+
+      <textarea id="editor" spellcheck="false" oninput="preview()"></textarea>
+
+      <div class="actions">
+        <button class="btn btn-ghost" onclick="resetDefault()">↩️ Kembalikan Bawaan</button>
+        <button class="btn btn-primary" onclick="simpan()">💾 Simpan Template</button>
+      </div>
+    </div>
+
+    <!-- ============ KANAN: PREVIEW + TEST ============ -->
+    <div>
+      <div class="card" style="margin-bottom:12px;">
+        <div class="wa-header">
+          <div class="wa-avatar">👩‍👦</div>
+          <div>
+            <b>Preview — WA ke Orang Tua</b>
+            <span>Ibu Fatimah &#8226; ortu Ahmad Ramadhan (7A)</span>
+          </div>
+        </div>
+        <div class="wa-bubble" id="preview"></div>
+        <div class="wa-time" id="wa-time"></div>
+      </div>
+
+      <div class="card">
+        <h3>🚀 Uji Kirim (Test)</h3>
+        <div class="sub">Kirim pesan versi ini ke nomor sendiri dulu sebelum dipakai. Ini juga mengecek token Fonnte.</div>
+        <div class="test-box">
+          <label>Nomor WhatsApp untuk test (contoh: 0812xxxx)</label>
+          <div class="test-row">
+            <input id="testnomor" type="tel" placeholder="08xxxxxxxxxx" value="081234567890">
+            <button class="btn btn-send" onclick="kirimTest()">📤 Kirim Test</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="design-note">
+        <b>Catatan desain yang akan diimplementasikan:</b><br>
+        • Penyimpanan: Supabase (kolom template global) + fallback localStorage offline<br>
+        • Variabel: <b>{nama} {kelas} {surat} {ayat} {baris} {nilai} {guru} {tanggal} {alasan}</b> (+ <b>{…_lama}/{…_baru}</b> utk pesan pembaruan)<br>
+        • Kalau template kosong → pakai pesan bawaan (seperti sekarang), tidak ada guru yang "kehilangan" notifikasi
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="toast-container" id="toasts"></div>
+
+<script>
+// ============ DATA CONTOH UNTUK PREVIEW ============
+const SAMPLE = {
+  nama:'Ahmad Ramadhan', kelas:'7A', surat:'Al-Mulk', ayat:'1 - 10', baris:'15',
+  nilai:'A (Mumtaz)', guru:'Ust. Abdurrahman', tanggal:'10/08/2026',
+  alasan:'Sakit (demam)',
+  tanggal_lama:'08/08/2026', tanggal_baru:'10/08/2026',
+  surat_lama:"An-Naba'", surat_baru:'Al-Mulk',
+  nilai_lama:'B (Jayyid)', nilai_baru:'A (Mumtaz)',
+  baris_lama:'10', baris_baru:'15'
+};
+
+// ============ TEMPLATE BAWAAN (default) ============
+const DEFAULTS = {
+  setoran: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Alhamdulillah, hari ini ananda {nama} telah menyelesaikan setoran hafalan:
+
+📖 Surat    : {surat}
+📍 Ayat     : {ayat}
+📊 Jumlah   : {baris} baris
+⭐ Nilai    : {nilai}
+👨‍🏫 Guru     : {guru}
+
+Terus dukung semangat menghafal ananda {nama} di rumah ya.
+
+Wassalamu'alaikum,
+{guru}`,
+
+  tidak: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak dapat mengikuti setoran hafalan karena:
+
+📝 {alasan}
+
+Kami doakan semoga ananda lekas sehat dan bisa kembali menghafal.
+
+Wassalamu'alaikum,
+{guru}`,
+
+  edit: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Ada pembaruan data hafalan ananda {nama}:
+
+• Tanggal : {tanggal_lama} → {tanggal_baru}
+• Surat   : {surat_lama} → {surat_baru}
+• Nilai   : {nilai_lama} → {nilai_baru}
+• Jumlah  : {baris_lama} → {baris_baru} baris
+
+Terima kasih atas perhatiannya.
+
+Wassalamu'alaikum,
+{guru}`
+};
+
+// Variabel yang tersedia per jenis pesan
+const VARS = {
+  setoran: ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
+  tidak:   ['nama','kelas','alasan','guru','tanggal'],
+  edit:    ['nama','tanggal_lama','tanggal_baru','surat_lama','surat_baru','nilai_lama','nilai_baru','baris_lama','baris_baru','guru']
+};
+
+// Template hasil edit user (mock penyimpanan, dimulai dari bawaan)
+const USER_TEMPLATES = {
+  setoran: DEFAULTS.setoran,
+  tidak: DEFAULTS.tidak,
+  edit: DEFAULTS.edit
+};
+
+let jenisAktif = 'setoran';
+
+// ============ RENDER ============
+function pilihJenis(j){
+  jenisAktif = j;
+  document.querySelectorAll('.jenis button').forEach(b=>b.classList.toggle('active', b.dataset.jenis===j));
+  document.getElementById('editor').value = USER_TEMPLATES[j];
+  renderChips();
+  preview();
+}
+
+function renderChips(){
+  const el = document.getElementById('chips');
+  el.innerHTML = '';
+  VARS[jenisAktif].forEach(v=>{
+    const c = document.createElement('span');
+    c.className = 'chip';
+    c.textContent = '{'+v+'}';
+    c.onclick = () => sisipkan('{'+v+'}');
+    el.appendChild(c);
+  });
+}
+
+function sisipkan(teks){
+  const ta = document.getElementById('editor');
+  const start = ta.selectionStart, end = ta.selectionEnd;
+  const baru = ta.value.slice(0,start) + teks + ta.value.slice(end);
+  ta.value = baru;
+  ta.selectionStart = ta.selectionEnd = start + teks.length;
+  ta.focus();
+  preview();
+}
+
+function renderTeks(t){
+  return t.replace(/\{(\w+)\}/g, (m,k)=> SAMPLE[k]!==undefined ? SAMPLE[k] : m);
+}
+
+function preview(){
+  const t = document.getElementById('editor').value;
+  document.getElementById('preview').textContent = renderTeks(t || '(template kosong — sistem akan memakai pesan bawaan)');
+  const now = new Date();
+  document.getElementById('wa-time').textContent =
+    now.getHours().toString().padStart(2,'0')+':'+now.getMinutes().toString().padStart(2,'0');
+}
+
+// ============ AKSI ============
+function simpan(){
+  USER_TEMPLATES[jenisAktif] = document.getElementById('editor').value;
+  toast('💾 Template "'+labelJenis(jenisAktif)+'" tersimpan (global — berlaku utk semua guru)', 'success');
+}
+
+function resetDefault(){
+  if(!confirm('Kembalikan template "'+labelJenis(jenisAktif)+'" ke pesan bawaan?')) return;
+  USER_TEMPLATES[jenisAktif] = DEFAULTS[jenisAktif];
+  document.getElementById('editor').value = USER_TEMPLATES[jenisAktif];
+  preview();
+  toast('↩️ Template dikembalikan ke bawaan', 'success');
+}
+
+function kirimTest(){
+  const no = document.getElementById('testnomor').value.trim();
+  if(!no){ toast('⚠️ Isi nomor WA test dulu', 'loading'); return; }
+  toast('📤 Mengirim test ke '+no+' …', 'loading');
+  setTimeout(()=>{
+    // Simulasi: di implementasi nyata ini akan POST ke /api/fonnte-proxy
+    toast('✅ Test terkirim ke '+no+' (cek WhatsApp kamu)', 'success');
+  }, 1600);
+}
+
+function labelJenis(j){
+  return {setoran:'Setoran Hafalan', tidak:'Tidak Menghafal', edit:'Pembaruan Data'}[j];
+}
+
+// ============ TOAST ============
+function toast(isi, tipe='success'){
+  const wrap = document.getElementById('toasts');
+  const t = document.createElement('div');
+  t.className = 'toast '+tipe;
+  t.innerHTML = '<span>'+(tipe==='success'?'✅':tipe==='loading'?'🔄':'')+'</span><span>'+isi+'</span>';
+  wrap.appendChild(t);
+  setTimeout(()=>{ t.style.opacity='0'; t.style.transition='opacity .3s'; setTimeout(()=>t.remove(), 300); }, 2600);
+}
+
+// ============ INIT ============
+pilihJenis('setoran');
+</script>
+</body>
+</html>

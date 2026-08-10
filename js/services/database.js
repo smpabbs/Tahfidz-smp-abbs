@@ -471,6 +471,64 @@ const DatabaseService = {
   },
 
   // ==========================================
+  // APP SETTINGS (tabel app_settings - template WA global)
+  // ==========================================
+
+  /**
+   * Muat semua setting WA templates dari Supabase
+   * @returns {Promise<object>} - { setoran: string, tidak: string, edit: string }
+   */
+  async loadWASettings() {
+    try {
+      const db = SupabaseClient.get();
+      if (!db) throw new Error('Database client not available');
+
+      const { data, error } = await db
+        .from('app_settings')
+        .select('key, value')
+        .in('key', ['wa_template_setoran', 'wa_template_tidak', 'wa_template_edit']);
+
+      if (error) throw error;
+
+      const result = {};
+      (data || []).forEach(row => {
+        const key = row.key.replace('wa_template_', '');
+        result[key] = row.value || '';
+      });
+
+      console.log(`✅ Loaded ${Object.keys(result).length} WA settings`);
+      return result;
+    } catch (error) {
+      console.error('❌ Failed to load WA settings:', error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Simpan satu setting ke Supabase (upsert)
+   * @param {string} key - key lengkap, mis. 'wa_template_setoran'
+   * @param {string} value - isi template
+   * @returns {Promise<boolean>}
+   */
+  async saveWASetting(key, value) {
+    try {
+      const db = SupabaseClient.get();
+      if (!db) throw new Error('Database client not available');
+
+      const { error } = await db
+        .from('app_settings')
+        .upsert({ key, value }, { onConflict: 'key' });
+
+      if (error) throw error;
+      console.log(`✅ WA setting saved: ${key}`);
+      return true;
+    } catch (error) {
+      console.error('❌ Failed to save WA setting:', error.message);
+      return false;
+    }
+  },
+
+  // ==========================================
   // BATCH OPERATIONS
   // ==========================================
 

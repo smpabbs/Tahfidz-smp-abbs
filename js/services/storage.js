@@ -179,13 +179,49 @@ const StorageService = {
   },
 
   /**
-   * Update waktu aktivitas terakhir (anti-pause)
-   */
-  updateLastActive() {
-    return this.save(AppConfig.STORAGE_KEYS.LAST_ACTIVE, new Date().toISOString());
-  },
+     * Update waktu aktivitas terakhir (anti-pause)
+     */
+    updateLastActive() {
+      return this.save(AppConfig.STORAGE_KEYS.LAST_ACTIVE, new Date().toISOString());
+    },
 
-  /**
+    // ==========================================
+    // WA TEMPLATES (global, dikelola 1 guru)
+    // ==========================================
+
+    /**
+     * Simpan template WA global ke localStorage
+     * @param {object} templates - { setoran: string, tidak: string, edit: string }
+     * @returns {boolean}
+     */
+    saveWATemplates(templates) {
+      return this.save(AppConfig.STORAGE_KEYS.WA_TEMPLATES, templates || {});
+    },
+
+    /**
+     * Muat template WA global: dari Supabase dulu, fallback localStorage
+     * @returns {Promise<object>}
+     */
+    async loadWATemplates() {
+      // Coba dari Supabase dulu (semua guru lihat template yang sama)
+      try {
+        const tpl = await DatabaseService.loadWASettings();
+        if (tpl && Object.keys(tpl).length > 0) {
+          // Sync ke localStorage
+          this.saveWATemplates(tpl);
+          console.log('✅ WA templates loaded from Supabase');
+          return tpl;
+        }
+      } catch (e) {
+        console.warn('⚠️ Supabase WA templates load failed:', e.message);
+      }
+      // Fallback localStorage
+      const local = this.load(AppConfig.STORAGE_KEYS.WA_TEMPLATES, {});
+      console.log(`✅ WA templates loaded from localStorage (${Object.keys(local).length} jenis)`);
+      return local;
+    },
+
+    /**
    * Dapatkan waktu aktivitas terakhir
    */
   getLastActive() {

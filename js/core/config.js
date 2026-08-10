@@ -20,6 +20,7 @@ const AppConfig = {
   STORAGE_KEYS: {
     TAHFIDZ_DATA: 'tahfidz_data',
     TAHFIDZ_TARGETS: 'tahfidz_targets',
+    WA_TEMPLATES: 'tahfidz_wa_templates',
     LAST_ACTIVE: 'tahfidz_last_active',
     LAST_UPDATE: 'tahfidz_last_update'
   },

@@ -38,6 +38,7 @@ const NotificationService = {
     // Buat element toast
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
+
     toast.innerHTML = `
       <span class="toast-icon">${icons[type] || '📢'}</span>
       <span>${message}</span>
@@ -247,10 +248,15 @@ const NotificationService = {
 
   /**
    * Format pesan untuk data menghafal baru
+   * Memakai template GLOBAL (TemplateWaManager) — fallback ke bawaan
    * @param {object} data - Data tahfidz
    * @returns {string} - Pesan terformat
    */
   formatTahfidzMessage(data) {
+    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
+      return TemplateWaManager.buildMessage('setoran', data);
+    }
+    // Fallback pesan bawaan (kalau manager belum dimuat)
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
     msg += `Alhamdulillah, hari ini ananda ${data.nama} telah menyelesaikan setoran hafalan:\n\n`;
     msg += `📖 Surat    : ${data.surat || '-'}\n`;
@@ -272,10 +278,14 @@ const NotificationService = {
 
   /**
    * Format pesan untuk data tidak menghafal
+   * Memakai template GLOBAL (TemplateWaManager) — fallback ke bawaan
    * @param {object} data - Data tahfidz
    * @returns {string} - Pesan terformat
    */
   formatTidakMenghafalMessage(data) {
+    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
+      return TemplateWaManager.buildMessage('tidak', data);
+    }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
     msg += `Hari ini ananda ${data.nama} tidak dapat mengikuti setoran hafalan karena:\n`;
     msg += `📝 ${data.alasan || 'Tidak disebutkan'}\n\n`;
@@ -287,11 +297,15 @@ const NotificationService = {
 
   /**
    * Format pesan untuk edit data
+   * Memakai template GLOBAL (TemplateWaManager) — fallback ke bawaan
    * @param {object} oldData - Data lama
    * @param {object} newData - Data baru
    * @returns {string} - Pesan terformat
    */
   formatEditMessage(oldData, newData) {
+    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
+      return TemplateWaManager.buildMessage('edit', newData, oldData);
+    }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${newData.nama},\n\n`;
     msg += `Ada pembaruan data hafalan ananda ${newData.nama}:\n\n`;
     
