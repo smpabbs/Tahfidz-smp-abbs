@@ -459,7 +459,7 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   }
   .tab{flex-direction:column;gap:3px;padding:8px 4px;font-size:9.5px;min-width:0}
   .tab-icon{width:19px;height:19px}
-  .tab .badge-new{position:absolute;top:2px;font-size:7.5px;padding:1px 5px}
+  .tab .badge-new{font-size:7.5px;padding:1px 5px}
 
   .container{padding:0 12px}
   .card{padding:16px;margin-bottom:12px;border-radius:12px}

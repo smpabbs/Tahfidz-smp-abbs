@@ -217,16 +217,16 @@
 
       <div class="table-legend">
         <div class="legend-item">
-          <span class="legend-color" style="background: #5e81ac;"></span> Header Tabel
+          <span class="legend-color" style="background: #33447D;"></span> Header Tabel
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: #434c5e;"></span> Baris Ganjil
+          <span class="legend-color" style="background: #FFFCF4;"></span> Baris Ganjil
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: #3b4252;"></span> Baris Genap
+          <span class="legend-color" style="background: #EFE7CE;"></span> Baris Genap
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: rgba(191, 97, 106, 0.1);"></span> Tidak Menghafal
+          <span class="legend-color" style="background: rgba(177, 79, 62, 0.15);"></span> Tidak Menghafal
         </div>
       </div>
     </div>
@@ -272,18 +272,18 @@
       </div>
 
       <button type="button" class="btn-submit" onclick="TargetManager.saveAll()">
-        💾 Simpan Semua Target
+        Simpan Semua Target
       </button>
 
       <div class="table-legend">
         <div class="legend-item">
-          <span class="legend-color" style="background: #a3be8c;"></span> Target Tercapai
+          <span class="legend-color" style="background: #2E8F5C;"></span> Target Tercapai
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: #ebcb8b;"></span> Progress Baik
+          <span class="legend-color" style="background: #BD7E2A;"></span> Progress Baik
         </div>
         <div class="legend-item">
-          <span class="legend-color" style="background: #bf616a;"></span> Perlu Perhatian
+          <span class="legend-color" style="background: #B14F3E;"></span> Perlu Perhatian
         </div>
       </div>
     </div>
@@ -339,7 +339,7 @@
       <!-- SUB-TAB: KELAS -->
       <div id="master-kelas" class="master-tab-content">
         <div class="master-header">
-          <h3>🏫 Data Kelas</h3>
+          <h3>Data Kelas</h3>
           <div class="master-actions">
             <button class="btn-export csv" onclick="MasterData.openAddKelas()">Tambah Kelas</button>
             <button class="btn-export" onclick="ImportManager.openModal('kelas')">Import Data</button>
@@ -369,7 +369,7 @@
       <!-- SUB-TAB: GURU -->
       <div id="master-guru" class="master-tab-content">
         <div class="master-header">
-          <h3>👨‍🏫 Data Guru</h3>
+          <h3>Data Guru</h3>
           <div class="master-actions">
             <button class="btn-export csv" onclick="MasterData.openAddGuru()">Tambah Guru</button>
             <button class="btn-export" onclick="ImportManager.openModal('guru')">Import Data</button>
@@ -463,7 +463,7 @@
   <div id="modalSiswa" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalSiswaTitle">➕ Tambah Siswa</h3>
+        <h3 id="modalSiswaTitle">Tambah Siswa</h3>
         <span class="close" onclick="Modal.close('modalSiswa')">&times;</span>
       </div>
       <div style="padding: 20px;">
@@ -489,7 +489,7 @@
           
           <div class="modal-actions">
             <button type="button" class="btn-cancel" onclick="Modal.close('modalSiswa')">Batal</button>
-            <button type="submit" class="btn-submit">💾 Simpan</button>
+            <button type="submit" class="btn-submit">Simpan</button>
           </div>
         </form>
       </div>
@@ -500,7 +500,7 @@
   <div id="modalKelas" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalKelasTitle">➕ Tambah Kelas</h3>
+        <h3 id="modalKelasTitle">Tambah Kelas</h3>
         <span class="close" onclick="Modal.close('modalKelas')">&times;</span>
       </div>
       <div style="padding: 20px;">
@@ -514,7 +514,7 @@
           
           <div class="modal-actions">
             <button type="button" class="btn-cancel" onclick="Modal.close('modalKelas')">Batal</button>
-            <button type="submit" class="btn-submit">💾 Simpan</button>
+            <button type="submit" class="btn-submit">Simpan</button>
           </div>
         </form>
       </div>
@@ -525,7 +525,7 @@
   <div id="modalGuru" class="modal">
     <div class="modal-content">
       <div class="modal-header">
-        <h3 id="modalGuruTitle">➕ Tambah Guru</h3>
+        <h3 id="modalGuruTitle">Tambah Guru</h3>
         <span class="close" onclick="Modal.close('modalGuru')">&times;</span>
       </div>
       <div style="padding: 20px;">
@@ -544,7 +544,7 @@
           
           <div class="modal-actions">
             <button type="button" class="btn-cancel" onclick="Modal.close('modalGuru')">Batal</button>
-            <button type="submit" class="btn-submit">💾 Simpan</button>
+            <button type="submit" class="btn-submit">Simpan</button>
           </div>
         </form>
       </div>
@@ -555,41 +555,41 @@
   <div id="modalImport" class="modal">
     <div class="modal-content" style="max-width: 800px;">
       <div class="modal-header">
-        <h3 id="modalImportTitle">📥 Import Data</h3>
+        <h3 id="modalImportTitle">Import Data</h3>
         <span class="close" onclick="Modal.close('modalImport')">&times;</span>
       </div>
       <div style="padding: 20px; max-height: 65vh; overflow-y: auto;">
         
         <div class="import-section">
-          <h4>📄 Upload File Excel/CSV</h4>
+          <h4>Upload File Excel/CSV</h4>
           <div class="file-upload-area" onclick="document.getElementById('importFile').click()">
             <input type="file" id="importFile" accept=".xlsx,.xls,.csv" style="display: none;">
             <div class="upload-placeholder">
-              <div style="font-size: 48px; margin-bottom: 10px;">📁</div>
+              <div style="margin-bottom:10px"><svg width="40" height="40" viewBox="0 0 24 24" stroke="var(--gold)" fill="none" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15V8a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2Z"/><path d="M12 11v6M9 14l3-3 3 3"/></svg></div>
               <p><strong>Klik untuk pilih file</strong></p>
               <p style="font-size: 12px; color: #81a1c1;">Format: Excel (.xlsx, .xls) atau CSV (.csv)</p>
             </div>
           </div>
           <div id="fileInfo" class="file-info" style="display: none;">
             <span id="fileName"></span>
-            <button type="button" class="btn-cancel" onclick="ImportManager.clearFile()" style="padding: 5px 10px; font-size: 12px;">✕ Hapus</button>
+            <button type="button" class="btn-cancel" onclick="ImportManager.clearFile()" style="padding: 5px 10px; font-size: 12px;">Hapus</button>
           </div>
         </div>
 
         <div class="divider">atau</div>
 
         <div class="import-section">
-          <h4>📋 Download Template</h4>
+          <h4>Download Template</h4>
           <p style="font-size: 13px; color: #d8dee9; margin-bottom: 10px;">
             Gunakan template CSV ini untuk format yang benar
           </p>
           <button type="button" class="btn-export csv" onclick="ImportManager.downloadTemplate()" style="width: 100%;">
-            ⬇️ Download Template CSV
+            Download Template CSV
           </button>
         </div>
 
         <div id="previewSection" class="import-section" style="display: none;">
-          <h4>👁️ Preview Data</h4>
+          <h4>Preview Data</h4>
           <div id="previewInfo" class="preview-info"></div>
           <div class="scroll-container" style="max-height: 250px;">
             <table class="student-table" id="previewTable">
@@ -605,7 +605,7 @@
       <div class="modal-actions">
         <button type="button" class="btn-cancel" onclick="Modal.close('modalImport')">Batal</button>
         <button type="button" class="btn-submit" id="btnImport" onclick="ImportManager.executeImport()" disabled>
-          💾 Import Data
+          Import Data
         </button>
       </div>
     </div>
