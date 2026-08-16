@@ -324,9 +324,11 @@ const OutputTable = {
     const data = this.getFilteredData()[index];
     if (!data) return;
 
-    if (!confirm(`Hapus data:\n\nSiswa: ${data.nama}\nKelas: ${data.kelas}\nTanggal: ${data.tanggal}\n\nData akan dihapus permanen!`)) {
-      return;
-    }
+    const ok = await ConfirmDialog.show(
+      `Siswa  : ${data.nama}\nKelas  : ${data.kelas}\nTanggal: ${data.tanggal}\n\nData akan dihapus permanen!`,
+      { title: 'Hapus Data?', confirmText: 'Ya, Hapus', danger: true }
+    );
+    if (!ok) return;
 
     try {
       await DatabaseService.deleteTahfidzRecord(data.id);

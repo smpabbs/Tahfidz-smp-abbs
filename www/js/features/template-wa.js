@@ -224,7 +224,8 @@ Wassalamu'alaikum,
   async resetDefault() {
     const jenis = this.jenisAktif;
     const label = this.JENIS.find(j => j.id === jenis)?.label || jenis;
-    if (!confirm(`Kembalikan template "${label}" ke pesan bawaan?`)) return;
+    const ok = await ConfirmDialog.show(`Template "${label}" akan dikembalikan ke pesan bawaan.`, { title: 'Kembalikan ke Bawaan?', confirmText: 'Ya, Kembalikan' });
+    if (!ok) return;
 
     if (AppState.waTemplates) AppState.waTemplates[jenis] = '';
     StorageService.saveWATemplates(AppState.waTemplates || {});

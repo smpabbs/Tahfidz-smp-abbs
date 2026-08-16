@@ -433,8 +433,7 @@ const TargetManager = {
     const totalSiswa = Object.keys(weeklyData).length;
     const estimasiWaktu = Math.ceil(totalSiswa * 2 / 60); // rata-rata 2 menit per siswa
     
-    const confirmMessage = 
-      `📧 KIRIM REKAPAN MINGGUAN\n\n` +
+    const confirmMessage =
       `Kelas       : ${kelas}\n` +
       `Total Siswa : ${totalSiswa} orang\n` +
       `Estimasi    : ${estimasiWaktu} menit\n` +
@@ -444,10 +443,10 @@ const TargetManager = {
       `⚠️ Perhatian:\n` +
       `• Pastikan token Fonnte masih aktif\n` +
       `• Nomor WhatsApp siswa harus valid\n` +
-      `• Proses tidak bisa dibatalkan\n\n` +
-      `Lanjutkan pengiriman?`;
+      `• Proses tidak bisa dibatalkan`;
 
-    if (!confirm(confirmMessage)) {
+    const ok = await ConfirmDialog.show(confirmMessage, { title: '📧 Kirim Rekapan Mingguan', confirmText: 'Ya, Kirim' });
+    if (!ok) {
       console.log('❌ Pengiriman dibatalkan oleh user');
       return;
     }

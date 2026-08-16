@@ -631,6 +631,23 @@
     </div>
   </div>
 
+  <!-- Modal Konfirmasi generik — pengganti window.confirm() bawaan browser -->
+  <div id="confirmModal" class="modal">
+    <div class="modal-content" style="max-width: 420px;">
+      <div class="modal-header">
+        <h3 id="confirmModalTitle">Konfirmasi</h3>
+        <span class="close" onclick="ConfirmDialog.resolve(false)">&times;</span>
+      </div>
+      <div style="padding: 20px;">
+        <p id="confirmModalMessage" style="white-space:pre-line;color:var(--ink);line-height:1.6;margin:0;"></p>
+      </div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" id="confirmModalCancel" onclick="ConfirmDialog.resolve(false)">Batal</button>
+        <button type="button" class="btn-submit" id="confirmModalOk" onclick="ConfirmDialog.resolve(true)">Ya, Lanjutkan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============================================ -->
   <!-- 🔔 TOAST CONTAINER -->
   <!-- ============================================ -->
@@ -658,6 +675,7 @@
   <script src="js/ui/tabs.js"></script>
   <script src="js/ui/dropdowns.js"></script>
   <script src="js/ui/edit-inline.js"></script>
+  <script src="js/ui/confirm-dialog.js"></script>
   <script src="js/ui/sidebar.js"></script>
   
   <!-- 5. Features -->

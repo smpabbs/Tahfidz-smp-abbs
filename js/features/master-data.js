@@ -623,7 +623,8 @@ async saveGuru(event) {
   // ==========================================
 
   async deleteSiswa(id, nama) {
-    if (!confirm(`Hapus siswa "${nama}"?\nData akan dihapus permanen!`)) return;
+    const ok = await ConfirmDialog.show(`Data siswa "${nama}" akan dihapus permanen!`, { title: 'Hapus Siswa?', confirmText: 'Ya, Hapus', danger: true });
+    if (!ok) return;
     try {
       await DatabaseService.deleteMasterSiswa(id);
       NotificationService.success('Siswa dihapus!');
@@ -636,7 +637,8 @@ async saveGuru(event) {
 
   async deleteKelas(id, nama, count) {
     if (count > 0) return NotificationService.error(`Kelas ${nama} masih memiliki ${count} siswa!`);
-    if (!confirm(`Hapus kelas "${nama}"?\nData akan dihapus permanen!`)) return;
+    const ok = await ConfirmDialog.show(`Data kelas "${nama}" akan dihapus permanen!`, { title: 'Hapus Kelas?', confirmText: 'Ya, Hapus', danger: true });
+    if (!ok) return;
     try {
       await DatabaseService.deleteMasterKelas(id);
       NotificationService.success('Kelas dihapus!');
@@ -647,7 +649,8 @@ async saveGuru(event) {
   },
 
   async deleteGuru(id, nama) {
-    if (!confirm(`Hapus guru "${nama}"?\nData akan dihapus permanen!`)) return;
+    const ok = await ConfirmDialog.show(`Data guru "${nama}" akan dihapus permanen!`, { title: 'Hapus Guru?', confirmText: 'Ya, Hapus', danger: true });
+    if (!ok) return;
     try {
       await DatabaseService.deleteMasterGuru(id);
       NotificationService.success('Guru dihapus!');

@@ -338,12 +338,11 @@ const ImportManager = {
       return;
     }
 
-    const confirmed = confirm(
-      `Import Data ${this.currentType.toUpperCase()}\n\n` +
+    const confirmed = await ConfirmDialog.show(
       `✅ ${this.validatedData.filter(d => !d.isDuplicate).length} data baru akan diimport\n` +
       `🔄 ${this.validatedData.filter(d => d.isDuplicate).length} data duplikat dilewati\n` +
-      `${this.errors.length > 0 ? `❌ ${this.errors.length} error dilewati\n` : ''}` +
-      `\nLanjutkan?`
+      `${this.errors.length > 0 ? `❌ ${this.errors.length} error dilewati\n` : ''}`,
+      { title: `Import Data ${this.currentType.toUpperCase()}`, confirmText: 'Ya, Import' }
     );
 
     if (!confirmed) return;

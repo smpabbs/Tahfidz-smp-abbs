@@ -31,6 +31,13 @@ const Modal = {
       return;
     }
 
+    // confirmModal punya promise yang harus di-resolve — biarkan
+    // ConfirmDialog yang menutupnya (lewat backdrop klik/Escape/tombol ×)
+    if (modalId === 'confirmModal' && typeof ConfirmDialog !== 'undefined') {
+      ConfirmDialog.resolve(false);
+      return;
+    }
+
     modal.style.display = 'none';
     document.body.style.overflow = ''; // Kembalikan scroll
 
