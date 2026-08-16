@@ -486,7 +486,7 @@ const DatabaseService = {
       const { data, error } = await db
         .from('app_settings')
         .select('key, value')
-        .in('key', ['wa_template_setoran', 'wa_template_tidak', 'wa_template_edit']);
+        .in('key', ['wa_template_setoran', 'wa_template_tidak', 'wa_template_sertifikasi', 'wa_template_lainnya', 'wa_template_edit']);
 
       if (error) throw error;
 

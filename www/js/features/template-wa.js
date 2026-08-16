@@ -9,16 +9,20 @@ const TemplateWaManager = {
 
   // Jenis pesan yang bisa dikustom
   JENIS: [
-    { id: 'setoran', label: 'Setoran Hafalan', ico: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>', desc: 'hafalan baru masuk' },
-    { id: 'tidak',   label: 'Tidak Menghafal', ico: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>', desc: 'izin / alasan' },
-    { id: 'edit',    label: 'Pembaruan Data',   ico: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>', desc: 'edit setoran' }
+    { id: 'setoran',     label: 'Setoran Hafalan',        ico: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>', desc: 'hafalan baru masuk' },
+    { id: 'tidak',       label: 'Sakit',                  ico: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>', desc: 'ananda sakit / tidak ziyadah' },
+    { id: 'sertifikasi', label: 'Persiapan Sertifikasi',  ico: '<svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>', desc: 'sedang persiapan sertifikasi' },
+    { id: 'lainnya',     label: 'Lainnya',                ico: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>', desc: 'alasan lain (bebas)' },
+    { id: 'edit',        label: 'Pembaruan Data',         ico: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>', desc: 'edit setoran' }
   ],
 
   // Variabel yang tersedia per jenis pesan
   VARS: {
-    setoran: ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
-    tidak:   ['nama','kelas','alasan','guru','tanggal'],
-    edit:    ['nama','kelas','guru','tanggal','surat_lama','surat_baru','nilai_lama','nilai_baru','baris_lama','baris_baru']
+    setoran:     ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
+    tidak:       ['nama','kelas','alasan','guru','tanggal'],
+    sertifikasi: ['nama','kelas','guru','tanggal'],
+    lainnya:     ['nama','kelas','alasan','guru','tanggal'],
+    edit:        ['nama','kelas','guru','tanggal','surat_lama','surat_baru','nilai_lama','nilai_baru','baris_lama','baris_baru']
   },
 
   // Template BAWAAN (default) - sama dengan yang dulu hardcoded di notification.js
@@ -45,6 +49,24 @@ Hari ini ananda {nama} tidak dapat mengikuti setoran hafalan karena:
 📝 {alasan}
 
 Kami doakan semoga ananda lekas sehat dan bisa kembali menghafal.
+
+Wassalamu'alaikum,
+{guru}`,
+
+    sertifikasi: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak mengikuti setoran hafalan karena sedang mempersiapkan sertifikasi tahfidz.
+
+Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.
+
+Wassalamu'alaikum,
+{guru}`,
+
+    lainnya: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak mengikuti setoran hafalan dengan keterangan:
+
+📝 {alasan}
 
 Wassalamu'alaikum,
 {guru}`,
@@ -138,10 +160,15 @@ Wassalamu'alaikum,
         nilai_lama: oldData.keterangan || '-', nilai_baru: data.keterangan || '-',
         baris_lama: oldData.baris || 0, baris_baru: data.baris || 0
       };
-    } else if (jenis === 'tidak') {
+    } else if (jenis === 'tidak' || jenis === 'lainnya') {
       vars = {
         nama: data.nama || '', kelas: data.kelas || '', guru: data.guru || '',
         tanggal: data.tanggal || '', alasan: data.alasan || 'Tidak disebutkan'
+      };
+    } else if (jenis === 'sertifikasi') {
+      vars = {
+        nama: data.nama || '', kelas: data.kelas || '', guru: data.guru || '',
+        tanggal: data.tanggal || ''
       };
     } else { // setoran
       vars = {

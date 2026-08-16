@@ -114,7 +114,7 @@ const OutputTable = {
 
     const setoranCount = monthRecords.length;
     const totalBaris = monthRecords.reduce((sum, d) => sum + (parseFloat(d.baris) || 0), 0);
-    const graded = monthRecords.filter(d => d.menghafal !== 'tidak' && d.keterangan);
+    const graded = monthRecords.filter(d => d.menghafal === 'ya' && d.keterangan);
     const mumtazCount = graded.filter(d => d.keterangan === 'Mumtaz').length;
     const pctMumtaz = graded.length > 0 ? Math.round((mumtazCount / graded.length) * 100) : 0;
 
@@ -157,12 +157,13 @@ const OutputTable = {
         .slice()
         .sort((a, b) => a.tanggal.localeCompare(b.tanggal))
         .map(entry => {
-          const isTidak = entry.menghafal === 'tidak';
+          const isTidak = entry.menghafal !== 'ya';
           if (isTidak) {
+            const label = entry.alasan || AppConfig.MENGHAFAL_LABELS[entry.menghafal] || 'tanpa alasan';
             return `
               <div class="oerow absent">
                 <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
-                <div class="omid"><div class="osurat">Tidak setoran — ${entry.alasan || 'tanpa alasan'}</div></div>
+                <div class="omid"><div class="osurat">Tidak setoran — ${label}</div></div>
               </div>
             `;
           }
@@ -270,14 +271,14 @@ const OutputTable = {
     row.setAttribute('data-original-index', entry.originalIndex);
     row.setAttribute('data-menghafal', entry.menghafal || 'ya');
 
-    const isTidak = entry.menghafal === 'tidak';
+    const isTidak = entry.menghafal !== 'ya';
     const cellClass = isTidak ? 'not-memorizing' : '';
 
     // Format data
     const suratDisplay = isTidak ? '—' : (entry.surat || '—');
-    const ayatDisplay = isTidak 
-      ? (entry.alasan || 'Tidak menghafal')
-      : (entry.ayatDari && entry.ayatSampai 
+    const ayatDisplay = isTidak
+      ? (entry.alasan || AppConfig.MENGHAFAL_LABELS[entry.menghafal] || 'Tidak menghafal')
+      : (entry.ayatDari && entry.ayatSampai
           ? `${parseFloat(entry.ayatDari)} – ${parseFloat(entry.ayatSampai)}`
           : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—'));
     const keteranganDisplay = isTidak ? '—' : (entry.keterangan || '—');
@@ -376,9 +377,9 @@ const OutputTable = {
           i === 0 ? siswa.nama : '',
           i === 0 ? siswa.kelas : '',
           this.formatTanggal(e.tanggal),
-          e.menghafal === 'tidak' ? '—' : (e.surat || '—'),
-          e.menghafal === 'tidak' ? (e.alasan || '—') : `${e.ayatDari || ''}${e.ayatSampai ? ' – ' + e.ayatSampai : ''}`,
-          e.menghafal === 'tidak' ? '—' : (e.keterangan || '—'),
+          e.menghafal !== 'ya' ? '—' : (e.surat || '—'),
+          e.menghafal !== 'ya' ? (e.alasan || AppConfig.MENGHAFAL_LABELS[e.menghafal] || '—') : `${e.ayatDari || ''}${e.ayatSampai ? ' – ' + e.ayatSampai : ''}`,
+          e.menghafal !== 'ya' ? '—' : (e.keterangan || '—'),
           e.baris || 0,
           i === 0 ? siswa.totalBaris : ''
         ]);
@@ -418,9 +419,9 @@ const OutputTable = {
         html += `<td>${i === 0 ? siswa.nama : ''}</td>`;
         html += `<td>${i === 0 ? siswa.kelas : ''}</td>`;
         html += `<td>${this.formatTanggal(e.tanggal)}</td>`;
-        html += `<td>${e.menghafal === 'tidak' ? '—' : e.surat || '—'}</td>`;
-        html += `<td>${e.menghafal === 'tidak' ? (e.alasan || '—') : `${e.ayatDari || ''}${e.ayatSampai ? ' – ' + e.ayatSampai : ''}`}</td>`;
-        html += `<td>${e.menghafal === 'tidak' ? '—' : e.keterangan || '—'}</td>`;
+        html += `<td>${e.menghafal !== 'ya' ? '—' : e.surat || '—'}</td>`;
+        html += `<td>${e.menghafal !== 'ya' ? (e.alasan || AppConfig.MENGHAFAL_LABELS[e.menghafal] || '—') : `${e.ayatDari || ''}${e.ayatSampai ? ' – ' + e.ayatSampai : ''}`}</td>`;
+        html += `<td>${e.menghafal !== 'ya' ? '—' : e.keterangan || '—'}</td>`;
         html += `<td>${e.baris || 0}</td>`;
         html += `<td>${i === 0 ? siswa.totalBaris : ''}</td>`;
         html += `</tr>`;

@@ -90,12 +90,15 @@ const InputForm = {
       alasanField.classList.add('hidden');
       if (barisInput) barisInput.required = true;
       if (alasanInput) alasanInput.required = false;
-    } else if (value === 'tidak') {
+    } else if (value === 'lainnya') {
+      // Hanya 'Lainnya' yang perlu alasan bebas — Sakit & Persiapan
+      // Sertifikasi cukup dari pilihan dropdown (pesan WA pakai teks tetap)
       hafalanFields.classList.add('hidden');
       alasanField.classList.remove('hidden');
       if (barisInput) barisInput.required = false;
       if (alasanInput) alasanInput.required = true;
     } else {
+      // 'sakit', 'sertifikasi', atau belum dipilih
       hafalanFields.classList.add('hidden');
       alasanField.classList.add('hidden');
       if (barisInput) barisInput.required = false;
@@ -182,7 +185,7 @@ const InputForm = {
       }
     }
 
-    if (data.menghafal === 'tidak' && !data.alasan) {
+    if (data.menghafal === 'lainnya' && !data.alasan) {
       NotificationService.warning('Alasan harus diisi!');
       document.getElementById('alasan')?.focus();
       return false;
@@ -211,7 +214,7 @@ const InputForm = {
       tanggal: formData.tanggal,
       baris: formData.menghafal === 'ya' ? formData.baris : 0,
       menghafal: formData.menghafal,
-      alasan: formData.menghafal === 'tidak' ? formData.alasan : '',
+      alasan: formData.menghafal === 'lainnya' ? formData.alasan : '',
       surat: formData.menghafal === 'ya' ? suratFinal : '',
       ayat_dari: formData.menghafal === 'ya' ? formData.ayatDari : null,
       ayat_sampai: formData.menghafal === 'ya' ? formData.ayatSampai : null,
@@ -254,9 +257,20 @@ const InputForm = {
         if (formData.whatsapp) {
           NotificationService.info('📱 Mengirim notifikasi WA ke orang tua...', 3000);
           
-          const message = formData.menghafal === 'tidak'
-            ? NotificationService.formatTidakMenghafalMessage(formData)
-            : NotificationService.formatTahfidzMessage(formData);
+          let message;
+          switch (formData.menghafal) {
+            case 'sakit':
+              message = NotificationService.formatSakitMessage(formData);
+              break;
+            case 'sertifikasi':
+              message = NotificationService.formatSertifikasiMessage(formData);
+              break;
+            case 'lainnya':
+              message = NotificationService.formatLainnyaMessage(formData);
+              break;
+            default:
+              message = NotificationService.formatTahfidzMessage(formData);
+          }
 
           // Kirim async — beri feedback hasilnya ke user
           NotificationService.sendWhatsApp(

@@ -284,19 +284,56 @@ const NotificationService = {
   },
 
   /**
-   * Format pesan untuk data tidak menghafal
-   * Memakai template GLOBAL (TemplateWaManager) — fallback ke bawaan
+   * Format pesan untuk ananda yang sakit (tidak ziyadah)
+   * Memakai template GLOBAL jenis 'tidak' (dipakai ulang dari template lama) — fallback ke bawaan
    * @param {object} data - Data tahfidz
    * @returns {string} - Pesan terformat
    */
-  formatTidakMenghafalMessage(data) {
+  formatSakitMessage(data) {
+    const payload = { ...data, alasan: 'Sakit' };
     if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('tidak', data);
+      return TemplateWaManager.buildMessage('tidak', payload);
     }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
     msg += `Hari ini ananda ${data.nama} tidak dapat mengikuti setoran hafalan karena:\n`;
-    msg += `📝 ${data.alasan || 'Tidak disebutkan'}\n\n`;
+    msg += `📝 Sakit\n\n`;
     msg += `Kami doakan semoga ananda lekas sehat dan bisa kembali menghafal.\n\n`;
+    msg += `Wassalamu'alaikum,\n${data.guru}`;
+
+    return msg;
+  },
+
+  /**
+   * Format pesan untuk ananda yang sedang persiapan sertifikasi tahfidz
+   * Memakai template GLOBAL jenis 'sertifikasi' — fallback ke bawaan
+   * @param {object} data - Data tahfidz
+   * @returns {string} - Pesan terformat
+   */
+  formatSertifikasiMessage(data) {
+    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
+      return TemplateWaManager.buildMessage('sertifikasi', data);
+    }
+    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
+    msg += `Hari ini ananda ${data.nama} tidak mengikuti setoran hafalan karena sedang mempersiapkan sertifikasi tahfidz.\n\n`;
+    msg += `Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.\n\n`;
+    msg += `Wassalamu'alaikum,\n${data.guru}`;
+
+    return msg;
+  },
+
+  /**
+   * Format pesan untuk alasan tidak ziyadah lainnya (bebas)
+   * Memakai template GLOBAL jenis 'lainnya' — fallback ke bawaan
+   * @param {object} data - Data tahfidz
+   * @returns {string} - Pesan terformat
+   */
+  formatLainnyaMessage(data) {
+    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
+      return TemplateWaManager.buildMessage('lainnya', data);
+    }
+    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
+    msg += `Hari ini ananda ${data.nama} tidak mengikuti setoran hafalan dengan keterangan:\n`;
+    msg += `📝 ${data.alasan || 'Tidak disebutkan'}\n\n`;
     msg += `Wassalamu'alaikum,\n${data.guru}`;
 
     return msg;

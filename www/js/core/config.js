@@ -26,6 +26,13 @@ const AppConfig = {
     LAST_UPDATE: 'tahfidz_last_update'
   },
 
+  // Label tampilan untuk tiap alasan tidak ziyadah (selain 'ya')
+  MENGHAFAL_LABELS: {
+    sakit: 'Sakit',
+    sertifikasi: 'Persiapan Sertifikasi',
+    lainnya: 'Lainnya'
+  },
+
   // Default Values
   DEFAULT_TARGET_BARIS: 15,
   MIN_TARGET_BARIS: 5,
@@ -38,5 +45,6 @@ const AppConfig = {
 // Freeze config agar tidak bisa diubah
 Object.freeze(AppConfig);
 Object.freeze(AppConfig.STORAGE_KEYS);
+Object.freeze(AppConfig.MENGHAFAL_LABELS);
 
 console.log('✅ AppConfig loaded');

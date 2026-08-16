@@ -168,7 +168,7 @@ const EditInline = {
     if (!originalData) return;
 
     const cells = row.querySelectorAll('td');
-    const isTidakMenghafal = originalData.menghafal === 'tidak';
+    const isTidakMenghafal = originalData.menghafal !== 'ya';
 
     // Tentukan posisi cell berdasarkan jenis baris
     let tanggalCell, suratCell, ayatCell, keteranganCell, barisCell;
@@ -197,7 +197,8 @@ const EditInline = {
     // Edit Surat
     if (suratCell) {
       if (isTidakMenghafal) {
-        suratCell.innerHTML = '<span class="not-memorizing">— (Tidak Menghafal)</span>';
+        const label = AppConfig.MENGHAFAL_LABELS[originalData.menghafal] || 'Tidak Menghafal';
+        suratCell.innerHTML = `<span class="not-memorizing">— (${label})</span>`;
       } else {
         let selectHTML = '<select class="edit-input edit-select surat-edit"><option value="">-- Pilih Surat --</option>';
         // Jika surat tersimpan berupa gabungan lintas surat ("A → B"), tampilkan sebagai opsi agar tidak hilang saat edit
@@ -216,7 +217,12 @@ const EditInline = {
     // Edit Ayat / Alasan
     if (ayatCell) {
       if (isTidakMenghafal) {
-        ayatCell.innerHTML = `<input type="text" value="${originalData.alasan || ''}" class="edit-input alasan-edit" placeholder="Alasan tidak menghafal">`;
+        if (originalData.menghafal === 'lainnya') {
+          ayatCell.innerHTML = `<input type="text" value="${originalData.alasan || ''}" class="edit-input alasan-edit" placeholder="Alasan">`;
+        } else {
+          const label = AppConfig.MENGHAFAL_LABELS[originalData.menghafal] || '—';
+          ayatCell.innerHTML = `<span class="not-memorizing">${label}</span>`;
+        }
       } else {
         let value = '';
         if (originalData.ayatDari && originalData.ayatSampai) {
@@ -257,7 +263,7 @@ const EditInline = {
    * Kumpulkan data dari form edit
    */
   collectEditData(row, originalData) {
-    const isTidakMenghafal = originalData.menghafal === 'tidak';
+    const isTidakMenghafal = originalData.menghafal !== 'ya';
 
     const tanggalInput = row.querySelector('input[type="date"]');
     const suratSelect = row.querySelector('.surat-edit');
@@ -279,7 +285,7 @@ const EditInline = {
     let baris = originalData.baris || 0;
 
     if (isTidakMenghafal) {
-      alasan = alasanInput ? alasanInput.value.trim() : '';
+      alasan = (originalData.menghafal === 'lainnya' && alasanInput) ? alasanInput.value.trim() : '';
       surat = '';
       ayatDari = null;
       ayatSampai = null;
@@ -340,7 +346,7 @@ const EditInline = {
       }
     }
 
-    if (originalData.menghafal === 'tidak' && !editData.alasan) {
+    if (originalData.menghafal === 'lainnya' && !editData.alasan) {
       NotificationService.error('Alasan harus diisi!');
       return false;
     }
