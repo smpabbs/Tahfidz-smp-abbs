@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Laporan Guru — Preview</title>
+<link rel="stylesheet" href="../style.css">
+<style>
+  .mock-banner{
+    max-width:1160px;margin:14px auto 0;padding:10px 16px;border-radius:10px;
+    background:rgba(173,126,55,.12);border:1px dashed var(--gold);color:var(--gold);
+    font-size:12.5px;font-weight:700;text-align:center;
+  }
+
+  .lap-filter{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow);
+  }
+  .lap-week-nav{display:flex;align-items:center;gap:10px}
+  .lap-week-btn{
+    width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--surface-3);
+    color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  }
+  .lap-week-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2}
+  .lap-week-label{text-align:center}
+  .lap-week-label .lw-title{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--ink)}
+  .lap-week-label .lw-sub{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+  .lap-refresh{
+    display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
+    background:var(--surface-3);color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer;flex-shrink:0;
+  }
+  .lap-refresh svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2}
+
+  .lap-note{
+    display:flex;align-items:center;gap:8px;background:var(--accent-dim);border-left:4px solid var(--accent);
+    border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:12.5px;color:var(--ink-soft);
+  }
+  .lap-note svg{width:15px;height:15px;stroke:var(--accent);fill:none;stroke-width:2.2;flex-shrink:0}
+  .lap-note.warn{background:rgba(177,79,62,.1);border-left-color:var(--danger)}
+  .lap-note.warn svg{stroke:var(--danger)}
+
+  .lap-legend{
+    display:flex;gap:16px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--ink-soft);
+  }
+  .lap-legend b{color:var(--ink)}
+  .lap-legend-item{display:flex;align-items:center;gap:6px}
+  .lap-legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+  .gcard{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:16px;margin-bottom:14px;
+    overflow:hidden;box-shadow:0 1px 2px rgba(37,33,49,.05);
+  }
+  .gcard-h{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line-soft)}
+  .gcard-av{
+    width:42px;height:42px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:13.5px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  }
+  .gcard-who{flex:1;min-width:0}
+  .gcard-nm{font-size:14.5px;font-weight:700;color:var(--ink);font-family:var(--serif)}
+  .gcard-role{font-size:10.5px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gcard-pct{text-align:right;flex-shrink:0}
+  .gcard-pct .gp-v{font-family:var(--serif);font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .gcard-pct .gp-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:700}
+  .gcard-bar{padding:0 16px;margin-top:12px}
+  .gcard-sessions{padding:12px 16px 14px}
+  .gcard-baru{padding:4px 0;color:var(--muted);font-size:12.5px;font-style:italic}
+
+  .lap-session{
+    display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line-soft);
+    cursor:pointer;border-radius:8px;transition:.15s ease;
+  }
+  .lap-session:last-child{border-bottom:none}
+  .lap-session:hover{background:var(--accent-dim)}
+  .lap-session:active{transform:scale(.99)}
+  .ls-day{flex-shrink:0;width:44px;text-align:center}
+  .ls-day .lsd-d{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--ink)}
+  .ls-day .lsd-m{font-size:9.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+  .ls-mid{flex:1;min-width:0}
+  .ls-kelas{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .ls-jam{font-size:11px;color:var(--muted);margin-top:2px}
+  .ls-mate{font-size:10.5px;color:var(--muted-2);margin-top:1px}
+  .ls-status{flex-shrink:0;text-align:right}
+  .ls-pill{
+    display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:4px 10px;
+    border-radius:20px;white-space:nowrap;
+  }
+  .ls-pill svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.6}
+  .ls-count{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700}
+  .ls-tap-hint{font-size:9px;color:var(--muted-2);margin-top:2px}
+
+  .ls-done .ls-pill{color:var(--good);background:rgba(46,143,92,.12)}
+  .ls-partial .ls-pill{color:var(--warn);background:rgba(189,126,42,.12)}
+  .ls-missing .ls-pill{color:var(--danger);background:rgba(177,79,62,.12)}
+  .ls-future .ls-pill{color:var(--muted);background:var(--surface-3)}
+  .ls-noroster .ls-pill{color:var(--muted-2);background:var(--surface-3)}
+
+  .lap-no-session{
+    background:var(--surface-2);border:1px dashed var(--line);border-radius:12px;
+    padding:12px 16px;font-size:12px;color:var(--muted);line-height:1.7;
+  }
+
+  .lap-siswa-row{
+    display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft);
+  }
+  .lap-siswa-row:last-child{border-bottom:none}
+  .lsr-nama{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ink)}
+  .lsr-pj{font-size:10.5px;color:var(--muted);margin-top:2px}
+  .lsr-pj strong{color:var(--ink-soft)}
+  .pj-src{font-style:italic;margin-left:3px}
+  .lsr-status{flex-shrink:0}
+  .pill-done{color:var(--good);background:rgba(46,143,92,.12)}
+  .pill-missing{color:var(--danger);background:rgba(177,79,62,.12)}
+
+  #loadingState,#errorState{max-width:1160px;margin:14px auto}
+
+  @media (max-width:640px){
+    .lap-filter{flex-direction:column;align-items:stretch}
+    .lap-week-nav{justify-content:space-between}
+    .lap-refresh{justify-content:center}
+    .lap-legend{gap:10px 16px}
+  }
+</style>
+</head>
+<body>
+
+  <div class="mock-banner">🔧 PRATINJAU LOKAL — data real dari Supabase &amp; jadwal GitHub, belum di-commit. Klik satu baris sesi untuk lihat detail per siswa.</div>
+
+  <div class="app-header">
+    <div class="header-left">
+      <div class="header-icon">﷽</div>
+      <div>
+        <div class="header-title">Laporan <span>Guru</span></div>
+        <div class="header-sub">Monitoring Pengisian Setoran Tahfidz — dari Jadwal Mengajar</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-online" id="statusBadge"><span class="dot"></span> Memuat...</div>
+      <div class="user-avatar" title="Admin">A</div>
+    </div>
+  </div>
+
+  <div id="loadingState" style="padding:40px;text-align:center;color:var(--muted)">⏳ Memuat data dari Supabase &amp; jadwal GitHub...</div>
+  <div id="errorState" class="lap-note warn" style="display:none">
+    <svg viewBox="0 0 24 24"><path d="M12 3l10 18H2Z"/><path d="M12 10v4M12 17h.01"/></svg>
+    <span id="errorText"></span>
+  </div>
+
+  <div class="container" id="mainContent" style="display:none">
+
+    <div class="master-tabs" id="periodTabs">
+      <button class="master-tab" data-period="harian">Harian</button>
+      <button class="master-tab active" data-period="pekanan">Pekanan</button>
+      <button class="master-tab" data-period="bulanan">Bulanan</button>
+      <button class="master-tab" data-period="semester">Semester</button>
+    </div>
+
+    <div class="lap-filter">
+      <div class="lap-week-nav">
+        <button type="button" class="lap-week-btn" id="btnPrev" title="Sebelumnya">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="lap-week-label">
+          <div class="lw-title" id="periodLabel">–</div>
+          <div class="lw-sub" id="periodSub">–</div>
+        </div>
+        <button type="button" class="lap-week-btn" id="btnNext" title="Berikutnya">
+          <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <button type="button" class="lap-refresh" id="btnRefresh">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>
+        Refresh Jadwal
+      </button>
+    </div>
+
+    <div class="lap-note" id="firstDataNote" style="display:none">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
+      <span id="firstDataText"></span>
+    </div>
+
+    <div class="lap-note warn" id="unmappedNote" style="display:none">
+      <svg viewBox="0 0 24 24"><path d="M12 3l10 18H2Z"/><path d="M12 10v4M12 17h.01"/></svg>
+      <span id="unmappedText"></span>
+    </div>
+
+    <div class="master-tabs" id="povTabs">
+      <button class="master-tab active" data-pov="guru">👤 Per Guru</button>
+      <button class="master-tab" data-pov="kelas">🏫 Per Kelas</button>
+    </div>
+
+    <div class="lap-legend">
+      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--good)"></span> <b>Selesai</b> — semua siswa tercatat</div>
+      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--warn)"></span> <b>Sebagian</b> — ada yang belum tercatat</div>
+      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--danger)"></span> <b>Belum Diisi</b> — belum ada data</div>
+      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--muted-2)"></span> <b>Belum Waktunya</b> — jadwal belum lewat</div>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat-tile">
+        <div class="stat-l">Total Sesi Periode Ini</div>
+        <div class="stat-v" id="statTotal">–</div>
+        <div class="stat-d">dari jadwal Quran/Tahfidz</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-l">Sesi Selesai</div>
+        <div class="stat-v" id="statSelesai" style="color:var(--good)">–</div>
+        <div class="stat-d">semua siswa tercatat</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-l">Perlu Ditindaklanjuti</div>
+        <div class="stat-v" id="statTindak" style="color:var(--danger)">–</div>
+        <div class="stat-d">sebagian / belum diisi</div>
+      </div>
+    </div>
+
+    <div id="povGuru"></div>
+    <div id="povKelas" style="display:none"></div>
+
+  </div>
+
+  <!-- Detail per siswa -->
+  <div id="detailModal" class="modal">
+    <div class="modal-content" style="max-width:520px">
+      <div class="modal-header">
+        <h3 id="detailTitle">Detail Kelas</h3>
+        <span class="close" onclick="closeDetail()">&times;</span>
+      </div>
+      <div style="padding:16px 20px;max-height:60vh;overflow-y:auto" id="detailBody"></div>
+    </div>
+  </div>
+
+  <script src="../js/vendor/supabase.min.js"></script>
+  <script src="../js/core/config.js"></script>
+  <script src="../js/core/supabase.js"></script>
+  <script src="../js/services/database.js"></script>
+<script>
+  // ================= KONFIGURASI =================
+  const JADWAL_URL = 'https://raw.githubusercontent.com/smpabbs/jadwalguruabbs/main/index.html';
+  const JADWAL_NAME_MAP = {
+    'Ust Fahmi':  'Us Fahmi',
+    'Ust Ida':    'Ustadzah Ida',
+    'Us Naya':    'Ustadzah Naya',
+    'Us Usaidah': 'Ustadzah Usaidah',
+    'Ust Andi':   'Ustadz Andi',
+    'Ust Rizqia': 'Ustadzah Rizqia',
+    'Ust Amin':   'Ust Amiin',
+    // TODO: konfirmasi nama persis di master_guru setelah "Ust Yoki" ditambahkan
+    'Ust Yoki':   'Ust Yoki'
+  };
+  const HARI_ID = { Monday:'Senin', Tuesday:'Selasa', Wednesday:'Rabu', Thursday:'Kamis', Friday:'Jumat', Saturday:'Sabtu' };
+  const HARI_BY_GETDAY = { 1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thursday', 5:'Friday', 6:'Saturday' }; // 0=Minggu diabaikan
+  const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+
+  const STATUS_META = {
+    selesai:       { cls:'ls-done',    label:'Selesai',        icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>' },
+    sebagian:      { cls:'ls-partial', label:'Sebagian',       icon:'<svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>' },
+    belum:         { cls:'ls-missing', label:'Belum Diisi',    icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>' },
+    'akan-datang': { cls:'ls-future',  label:'Belum Waktunya', icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>' },
+    'tanpa-siswa': { cls:'ls-noroster',label:'Tanpa Roster',   icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>' }
+  };
+
+  const STATE = {
+    DATA: null, siswa: [], guru: [], records: [],
+    kelasSet: new Set(), quranSessions: [],
+    period: 'pekanan', pov: 'guru', refDate: new Date(),
+    firstDataDate: null, unmappedClasses: new Set(), unmappedGuru: new Set()
+  };
+
+  // ================= FETCH JADWAL (jadwalguruabbs) =================
+  function extractDataBlob(html){
+    const marker = 'var DATA = ';
+    const start = html.indexOf(marker);
+    if (start === -1) throw new Error('Marker "var DATA = " tidak ditemukan di jadwalguruabbs');
+    const braceStart = html.indexOf('{', start);
+    let depth = 0, inStr = false, strCh = '', esc = false;
+    for (let i = braceStart; i < html.length; i++) {
+      const c = html[i];
+      if (inStr) {
+        if (esc) esc = false;
+        else if (c === '\\') esc = true;
+        else if (c === strCh) inStr = false;
+        continue;
+      }
+      if (c === '"' || c === "'") { inStr = true; strCh = c; continue; }
+      if (c === '{') depth++;
+      else if (c === '}') { depth--; if (depth === 0) return html.slice(braceStart, i + 1); }
+    }
+    throw new Error('DATA blob tidak balanced');
+  }
+
+  async function fetchJadwal(){
+    const res = await fetch(JADWAL_URL, { cache: 'no-store' });
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' saat ambil jadwal dari GitHub');
+    const html = await res.text();
+    return JSON.parse(extractDataBlob(html));
+  }
+
+  function normalizeKelas(raw){
+    const m = String(raw || '').trim().toUpperCase().match(/^([789][A-F])/);
+    return m ? m[1] : null;
+  }
+
+  function buildQuranSessions(DATA, validKelasSet){
+    const sessions = new Map();
+    Object.values(DATA.teachers || {}).forEach(teacher => {
+      Object.entries(teacher.cells || {}).forEach(([cellKey, entries]) => {
+        const [day, period] = cellKey.split('|');
+        (entries || []).forEach(entry => {
+          if (entry.subject !== 'Quran') return;
+          const kelasNorm = normalizeKelas(entry.class);
+          if (!kelasNorm || !validKelasSet.has(kelasNorm)) {
+            if (entry.class) STATE.unmappedClasses.add(entry.class);
+            return;
+          }
+          const key = day + '|' + period + '|' + kelasNorm;
+          if (!sessions.has(key)) {
+            sessions.set(key, { day, period, start: entry.start, end: entry.end, kelas: kelasNorm, guruNick: new Set() });
+          }
+          sessions.get(key).guruNick.add(teacher.nickname);
+        });
+      });
+    });
+    return Array.from(sessions.values()).map(s => {
+      const guru = Array.from(s.guruNick).map(nick => {
+        const mapped = JADWAL_NAME_MAP[nick];
+        if (!mapped) STATE.unmappedGuru.add(nick);
+        return mapped || nick;
+      });
+      return { ...s, guru };
+    });
+  }
+
+  // ================= LOAD DATA =================
+  async function loadAllData(){
+    const [DATA, siswa, guru, records] = await Promise.all([
+      fetchJadwal(),
+      DatabaseService.loadMasterSiswa(),
+      DatabaseService.loadMasterGuru(),
+      DatabaseService.loadTahfidzRecords()
+    ]);
+
+    STATE.DATA = DATA;
+    STATE.siswa = siswa;
+    STATE.guru = guru;
+    STATE.records = records; // sudah terurut created_at desc (terbaru dulu) dari DatabaseService
+
+    STATE.kelasSet = new Set(siswa.map(s => s.kelas_name).filter(Boolean));
+    STATE.quranSessions = buildQuranSessions(DATA, STATE.kelasSet);
+
+    STATE.firstDataDate = records.length
+      ? new Date(Math.min(...records.map(r => new Date(r.tanggal + 'T00:00:00')).filter(d => !isNaN(d))))
+      : null;
+  }
+
+  // ================= PERIODE & TANGGAL =================
+  function toDateStr(d){
+    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
+    return `${y}-${m}-${dd}`;
+  }
+  function formatTanggalIndo(d){ return `${d.getDate()} ${BULAN_ID[d.getMonth()]} ${d.getFullYear()}`; }
+  function getCurrentWeekMonday(ref){
+    const day = ref.getDay();
+    const monday = new Date(ref);
+    monday.setDate(ref.getDate() - (day === 0 ? 6 : day - 1));
+    monday.setHours(0,0,0,0);
+    return monday;
+  }
+
+  function getPeriodRange(period, ref){
+    if (period === 'harian') {
+      const d = new Date(ref); d.setHours(0,0,0,0);
+      return { start: d, end: d, label: formatTanggalIndo(d), sub: 'Tanggal Terpilih', note:false };
+    }
+    if (period === 'pekanan') {
+      const monday = getCurrentWeekMonday(ref);
+      const saturday = new Date(monday); saturday.setDate(monday.getDate() + 5);
+      return { start: monday, end: saturday, label: `Senin, ${formatTanggalIndo(monday)} – Sabtu, ${formatTanggalIndo(saturday)}`, sub: 'Pekan Aktif Berjalan', note:false };
+    }
+    if (period === 'bulanan') {
+      const first = new Date(ref.getFullYear(), ref.getMonth(), 1);
+      const last = new Date(ref.getFullYear(), ref.getMonth()+1, 0);
+      const start = (STATE.firstDataDate && STATE.firstDataDate > first) ? STATE.firstDataDate : first;
+      return { start, end: last, label: `${BULAN_ID[ref.getMonth()]} ${ref.getFullYear()}`, sub: 'Bulan Berjalan', note:true };
+    }
+    // semester — Ganjil: Jul-Des, Genap: Jan-Jun
+    const isGanjil = ref.getMonth() >= 6;
+    const first = isGanjil ? new Date(ref.getFullYear(),6,1) : new Date(ref.getFullYear(),0,1);
+    const last  = isGanjil ? new Date(ref.getFullYear(),11,31) : new Date(ref.getFullYear(),5,30);
+    const start = (STATE.firstDataDate && STATE.firstDataDate > first) ? STATE.firstDataDate : first;
+    const label = isGanjil ? `Semester Ganjil ${ref.getFullYear()}/${ref.getFullYear()+1}` : `Semester Genap ${ref.getFullYear()-1}/${ref.getFullYear()}`;
+    return { start, end: last, label, sub: `${formatTanggalIndo(first)} – ${formatTanggalIndo(last)}`, note:true };
+  }
+
+  function generateOccurrences(range){
+    const occ = [];
+    const cur = new Date(range.start); cur.setHours(0,0,0,0);
+    const end = new Date(range.end); end.setHours(0,0,0,0);
+    while (cur <= end) {
+      const dayName = HARI_BY_GETDAY[cur.getDay()];
+      if (dayName) {
+        STATE.quranSessions.forEach(s => {
+          if (s.day === dayName) occ.push({ ...s, date: new Date(cur), dateStr: toDateStr(cur) });
+        });
+      }
+      cur.setDate(cur.getDate() + 1);
+    }
+    return occ;
+  }
+
+  function computeOccurrence(occ){
+    const todayStr = toDateStr(new Date());
+    const roster = STATE.siswa.filter(s => s.kelas_name === occ.kelas);
+    if (occ.dateStr > todayStr) return { ...occ, status:'akan-datang', total: roster.length, tercatat:0, roster, recordedNames:new Set() };
+    if (roster.length === 0) return { ...occ, status:'tanpa-siswa', total:0, tercatat:0, roster, recordedNames:new Set() };
+    const recordedNames = new Set(
+      STATE.records.filter(r => r.kelas === occ.kelas && r.tanggal === occ.dateStr).map(r => r.nama)
+    );
+    const tercatat = roster.filter(s => recordedNames.has(s.nama)).length;
+    const status = tercatat === roster.length ? 'selesai' : tercatat === 0 ? 'belum' : 'sebagian';
+    return { ...occ, status, total: roster.length, tercatat, roster, recordedNames };
+  }
+
+  // ================= PJ (Penanggung Jawab) =================
+  function getPJ(namaSiswa, scheduleGuru){
+    const rec = STATE.records.find(r => r.nama === namaSiswa && r.guru);
+    if (rec) return { nama: rec.guru, sumber: 'riwayat input terakhir' };
+    if (scheduleGuru && scheduleGuru.length) return { nama: scheduleGuru.join(' & '), sumber: 'jadwal mengajar' };
+    return { nama: '–', sumber: 'tidak diketahui' };
+  }
+
+  // ================= RENDER =================
+  function initials(nama){
+    const p = nama.split(' ');
+    return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : nama.slice(0,2).toUpperCase();
+  }
+  function tierOf(p){
+    if (p >= 100) return { label:'Tercapai', color:'var(--good)' };
+    if (p >= 70)  return { label:'Progres Baik', color:'var(--info)' };
+    if (p >= 40)  return { label:'Cukup', color:'var(--warn)' };
+    return               { label:'Perlu Perhatian', color:'var(--danger)' };
+  }
+  function pct(o){ return o.total ? Math.round(o.tercatat / o.total * 100) : 0; }
+
+  let CURRENT_OCC = [];
+
+  function sessionRowHtml(o, mateName){
+    const meta = STATUS_META[o.status];
+    const idx = CURRENT_OCC.indexOf(o);
+    return `
+      <div class="lap-session ${meta.cls}" onclick="openDetailByIndex(${idx})">
+        <div class="ls-day"><div class="lsd-d">${o.date.getDate()}</div><div class="lsd-m">${HARI_ID[o.day].slice(0,3)}</div></div>
+        <div class="ls-mid">
+          <div class="ls-kelas"><span class="kelas-badge">${o.kelas}</span></div>
+          <div class="ls-jam">Jam ${o.period} · ${o.start || ''}${o.end ? '–'+o.end : ''}</div>
+          ${mateName ? `<div class="ls-mate">bareng ${mateName}</div>` : ''}
+          <div class="ls-tap-hint">Tap untuk detail per siswa</div>
+        </div>
+        <div class="ls-status">
+          <span class="ls-pill">${meta.icon}${meta.label}</span>
+          ${o.status !== 'akan-datang' ? `<div class="ls-count">${o.tercatat}/${o.total} siswa</div>` : ''}
+        </div>
+      </div>`;
+  }
+
+  function renderGuruView(){
+    const rows = STATE.guru.map(g => {
+      const nama = g.nama;
+      const occ = CURRENT_OCC.filter(o => o.guru.includes(nama)).sort((a,b) => a.dateStr.localeCompare(b.dateStr));
+      const scored = occ.filter(o => o.status !== 'akan-datang' && o.status !== 'tanpa-siswa');
+      const avgPct = scored.length ? Math.round(scored.reduce((a,o) => a + pct(o), 0) / scored.length) : null;
+      return { nama, occ, avgPct };
+    }).sort((a,b) => (a.avgPct ?? -1) - (b.avgPct ?? -1));
+
+    document.getElementById('povGuru').innerHTML = rows.map(r => {
+      const tier = r.avgPct === null ? null : tierOf(r.avgPct);
+      const body = r.occ.length
+        ? r.occ.map(o => sessionRowHtml(o, o.guru.find(g => g !== r.nama))).join('')
+        : `<div class="gcard-baru">Tidak ada jadwal Qur'an pada periode ini.</div>`;
+      return `
+        <div class="gcard">
+          <div class="gcard-h">
+            <div class="gcard-av">${initials(r.nama)}</div>
+            <div class="gcard-who">
+              <div class="gcard-nm">${r.nama}</div>
+              <div class="gcard-role">Guru Tahfidz</div>
+            </div>
+            <div class="gcard-pct">
+              <div class="gp-v" style="color:${tier ? tier.color : 'var(--muted)'}">${tier ? r.avgPct + '%' : '–'}</div>
+              <div class="gp-l">${tier ? tier.label : 'Tidak ada jadwal'}</div>
+            </div>
+          </div>
+          ${tier ? `<div class="gcard-bar"><div class="progress-bar"><div class="progress-fill" style="width:${r.avgPct}%;background:${tier.color}"></div></div></div>` : ''}
+          <div class="gcard-sessions">${body}</div>
+        </div>`;
+    }).join('');
+  }
+
+  function renderKelasView(){
+    const byKelas = {};
+    CURRENT_OCC.forEach(o => (byKelas[o.kelas] ||= []).push(o));
+    const kelasList = Object.keys(byKelas).sort();
+    const noSession = Array.from(STATE.kelasSet).filter(k => !byKelas[k]).sort();
+
+    const cards = kelasList.map(kelas => {
+      const occ = byKelas[kelas].sort((a,b) => a.dateStr.localeCompare(b.dateStr));
+      const guruPair = occ[0].guru;
+      const scored = occ.filter(o => o.status !== 'akan-datang' && o.status !== 'tanpa-siswa');
+      const avgPct = scored.length ? Math.round(scored.reduce((a,o) => a + pct(o), 0) / scored.length) : null;
+      const tier = avgPct === null ? null : tierOf(avgPct);
+      return `
+        <div class="gcard">
+          <div class="gcard-h">
+            <div class="gcard-av" style="background:linear-gradient(135deg,var(--gold-soft),var(--gold))">${kelas}</div>
+            <div class="gcard-who">
+              <div class="gcard-nm">Kelas ${kelas}</div>
+              <div class="gcard-role">${guruPair.join(' & ')}</div>
+            </div>
+            <div class="gcard-pct">
+              <div class="gp-v" style="color:${tier ? tier.color : 'var(--muted)'}">${tier ? avgPct+'%' : '–'}</div>
+              <div class="gp-l">${tier ? tier.label : '–'}</div>
+            </div>
+          </div>
+          <div class="gcard-sessions">${occ.map(o => sessionRowHtml(o)).join('')}</div>
+        </div>`;
+    }).join('');
+
+    const footer = noSession.length ? `
+      <div class="lap-no-session">
+        <strong>${noSession.length} kelas</strong> tidak ada jadwal Qur'an pada periode ini: ${noSession.join(', ')}
+      </div>` : '';
+
+    document.getElementById('povKelas').innerHTML = cards + footer;
+  }
+
+  function updateStats(){
+    const scored = CURRENT_OCC.filter(o => o.status !== 'akan-datang' && o.status !== 'tanpa-siswa');
+    const selesai = scored.filter(o => o.status === 'selesai').length;
+    document.getElementById('statTotal').textContent = scored.length;
+    document.getElementById('statSelesai').textContent = selesai;
+    document.getElementById('statTindak').textContent = scored.length - selesai;
+  }
+
+  function renderAll(){
+    const range = getPeriodRange(STATE.period, STATE.refDate);
+    CURRENT_OCC = generateOccurrences(range).map(computeOccurrence);
+
+    document.getElementById('periodLabel').textContent = range.label;
+    document.getElementById('periodSub').textContent = range.sub;
+
+    if (range.note) {
+      document.getElementById('firstDataText').textContent =
+        STATE.firstDataDate
+          ? `Dihitung sejak data pertama diinput guru: ${formatTanggalIndo(STATE.firstDataDate)} — periode sebelum tanggal itu tidak dihitung sebagai "belum diisi".`
+          : `Belum ada data tahfidz yang pernah diinput sama sekali.`;
+      document.getElementById('firstDataNote').style.display = 'flex';
+    } else {
+      document.getElementById('firstDataNote').style.display = 'none';
+    }
+
+    const unmapped = [];
+    if (STATE.unmappedClasses.size) unmapped.push('kelas: ' + Array.from(STATE.unmappedClasses).join(', '));
+    if (STATE.unmappedGuru.size) unmapped.push('guru: ' + Array.from(STATE.unmappedGuru).join(', '));
+    if (unmapped.length) {
+      document.getElementById('unmappedText').textContent = '⚠️ Ada entri jadwal yang tidak dikenali — ' + unmapped.join(' | ') + '. Perbarui pemetaan di script halaman ini.';
+      document.getElementById('unmappedNote').style.display = 'flex';
+    }
+
+    renderGuruView();
+    renderKelasView();
+    updateStats();
+  }
+
+  // ================= DETAIL MODAL =================
+  function openDetailByIndex(idx){ openDetail(CURRENT_OCC[idx]); }
+  function openDetail(o){
+    document.getElementById('detailTitle').textContent = `Kelas ${o.kelas} — ${HARI_ID[o.day]}, ${formatTanggalIndo(o.date)}`;
+    if (o.roster.length === 0) {
+      document.getElementById('detailBody').innerHTML = '<p style="color:var(--muted);font-size:13px">Tidak ada siswa terdaftar di kelas ini.</p>';
+    } else {
+      document.getElementById('detailBody').innerHTML = o.roster
+        .slice()
+        .sort((a,b) => a.nama.localeCompare(b.nama))
+        .map(s => {
+          const done = o.recordedNames.has(s.nama);
+          const pj = getPJ(s.nama, o.guru);
+          return `
+            <div class="lap-siswa-row">
+              <div style="flex:1;min-width:0">
+                <div class="lsr-nama">${s.nama}</div>
+                <div class="lsr-pj">PJ: <strong>${pj.nama}</strong><span class="pj-src">(${pj.sumber})</span></div>
+              </div>
+              <span class="ls-pill lsr-status ${done ? 'pill-done' : 'pill-missing'}">${done ? 'Sudah' : 'Belum'}</span>
+            </div>`;
+        }).join('');
+    }
+    document.getElementById('detailModal').style.display = 'block';
+    document.body.style.overflow = 'hidden';
+  }
+  function closeDetail(){
+    document.getElementById('detailModal').style.display = 'none';
+    document.body.style.overflow = '';
+  }
+  window.addEventListener('click', e => { if (e.target.id === 'detailModal') closeDetail(); });
+
+  // ================= TAB HANDLERS =================
+  document.getElementById('periodTabs').addEventListener('click', e => {
+    const btn = e.target.closest('.master-tab');
+    if (!btn) return;
+    document.querySelectorAll('#periodTabs .master-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    STATE.period = btn.dataset.period;
+    renderAll();
+  });
+  document.getElementById('povTabs').addEventListener('click', e => {
+    const btn = e.target.closest('.master-tab');
+    if (!btn) return;
+    document.querySelectorAll('#povTabs .master-tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const pov = btn.dataset.pov;
+    document.getElementById('povGuru').style.display = pov === 'guru' ? 'block' : 'none';
+    document.getElementById('povKelas').style.display = pov === 'kelas' ? 'block' : 'none';
+  });
+  document.getElementById('btnRefresh').addEventListener('click', () => init(true));
+
+  // ================= INIT =================
+  async function init(forceReload){
+    document.getElementById('loadingState').style.display = 'block';
+    document.getElementById('errorState').style.display = 'none';
+    document.getElementById('mainContent').style.display = 'none';
+    try {
+      await loadAllData();
+      document.getElementById('statusBadge').innerHTML = '<span class="dot"></span> Terhubung';
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('mainContent').style.display = 'block';
+      renderAll();
+    } catch (err) {
+      console.error('❌ Gagal memuat data:', err);
+      document.getElementById('loadingState').style.display = 'none';
+      document.getElementById('statusBadge').innerHTML = '<span class="dot" style="background:var(--danger)"></span> Gagal';
+      document.getElementById('errorText').textContent =
+        'Gagal memuat data: ' + err.message + '. Kalau ini dibuka langsung dari file (bukan lewat server), ' +
+        'kemungkinan browser memblokir permintaan ke GitHub/Supabase dari file lokal (CORS). ' +
+        'Coba buka lewat server lokal sebentar, atau cek koneksi internet.';
+      document.getElementById('errorState').style.display = 'flex';
+    }
+  }
+  init();
+</script>
+</body>
+</html>
