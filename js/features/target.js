@@ -131,7 +131,7 @@ const TargetManager = {
       </td>
       <td data-label="Guru Aktif"><small>-</small></td>
       <td data-label="Aksi">
-        <button class="btn-save" onclick="TargetManager.updateSingle('${nama}', '${kelas}')" title="Simpan">💾</button>
+        <button class="btn-save" onclick="TargetManager.updateSingle('${nama}', '${kelas}')" title="Simpan"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/><path d="M17 21v-8H7v8M7 3v5h8"/></svg></button>
       </td>
     `;
 

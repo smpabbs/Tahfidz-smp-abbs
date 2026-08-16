@@ -97,8 +97,8 @@ const MasterData = {
         <td data-label="Kelas"><span class="kelas-badge">${s.kelas_name}</span></td>
         <td data-label="WhatsApp">${s.whatsapp || '-'}</td>
         <td data-label="Aksi">
-          <button class="btn-edit" onclick="MasterData.openEditSiswa('${s.id}')">✏️</button>
-          <button class="btn-delete" onclick="MasterData.deleteSiswa('${s.id}', '${s.nama}')">🗑️</button>
+          <button class="btn-edit" onclick="MasterData.openEditSiswa('${s.id}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="MasterData.deleteSiswa('${s.id}', '${s.nama}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </td>
       </tr>
     `).join('');
@@ -111,8 +111,8 @@ const MasterData = {
           <div class="rowitem-sub"><span class="kelas-badge">${s.kelas_name}</span> ${s.whatsapp || '-'}</div>
         </div>
         <div class="rowitem-acts">
-          <button class="btn-edit" onclick="MasterData.openEditSiswa('${s.id}')">✏️</button>
-          <button class="btn-delete" onclick="MasterData.deleteSiswa('${s.id}', '${s.nama}')">🗑️</button>
+          <button class="btn-edit" onclick="MasterData.openEditSiswa('${s.id}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="MasterData.deleteSiswa('${s.id}', '${s.nama}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </div>
       </div>
     `).join('');
@@ -141,8 +141,8 @@ const MasterData = {
         <td data-label="Nama Kelas"><strong>${k.kelas_name}</strong></td>
         <td data-label="Jumlah Siswa">${countMap[k.kelas_name] || 0} siswa</td>
         <td data-label="Aksi">
-          <button class="btn-edit" onclick="MasterData.openEditKelas('${k.id}')">✏️</button>
-          <button class="btn-delete" onclick="MasterData.deleteKelas('${k.id}', '${k.kelas_name}', ${countMap[k.kelas_name] || 0})">🗑️</button>
+          <button class="btn-edit" onclick="MasterData.openEditKelas('${k.id}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="MasterData.deleteKelas('${k.id}', '${k.kelas_name}', ${countMap[k.kelas_name] || 0})"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </td>
       </tr>
     `).join('');
@@ -155,8 +155,8 @@ const MasterData = {
           <div class="rowitem-sub">${countMap[k.kelas_name] || 0} siswa terdaftar</div>
         </div>
         <div class="rowitem-acts">
-          <button class="btn-edit" onclick="MasterData.openEditKelas('${k.id}')">✏️</button>
-          <button class="btn-delete" onclick="MasterData.deleteKelas('${k.id}', '${k.kelas_name}', ${countMap[k.kelas_name] || 0})">🗑️</button>
+          <button class="btn-edit" onclick="MasterData.openEditKelas('${k.id}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="MasterData.deleteKelas('${k.id}', '${k.kelas_name}', ${countMap[k.kelas_name] || 0})"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </div>
       </div>
     `).join('');
@@ -179,8 +179,8 @@ const MasterData = {
         <td data-label="Nama Guru"><strong>${g.nama}</strong></td>
         <td data-label="Token Fonnte" class="token-cell">${(g.token_fonnte || '').substring(0, 15)}...</td>
         <td data-label="Aksi">
-          <button class="btn-edit" onclick="MasterData.openEditGuru('${g.id}')">✏️</button>
-          <button class="btn-delete" onclick="MasterData.deleteGuru('${g.id}', '${g.nama}')">🗑️</button>
+          <button class="btn-edit" onclick="MasterData.openEditGuru('${g.id}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="MasterData.deleteGuru('${g.id}', '${g.nama}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </td>
       </tr>
     `).join('');
@@ -193,8 +193,8 @@ const MasterData = {
           <div class="rowitem-sub token-cell">Token: ${(g.token_fonnte || '').substring(0, 12)}…</div>
         </div>
         <div class="rowitem-acts">
-          <button class="btn-edit" onclick="MasterData.openEditGuru('${g.id}')">✏️</button>
-          <button class="btn-delete" onclick="MasterData.deleteGuru('${g.id}', '${g.nama}')">🗑️</button>
+          <button class="btn-edit" onclick="MasterData.openEditGuru('${g.id}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="MasterData.deleteGuru('${g.id}', '${g.nama}')"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </div>
       </div>
     `).join('');

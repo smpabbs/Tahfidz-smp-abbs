@@ -9,9 +9,9 @@ const TemplateWaManager = {
 
   // Jenis pesan yang bisa dikustom
   JENIS: [
-    { id: 'setoran', label: 'Setoran Hafalan', ico: '📖', desc: 'hafalan baru masuk' },
-    { id: 'tidak',   label: 'Tidak Menghafal', ico: '🤒', desc: 'izin / alasan' },
-    { id: 'edit',    label: 'Pembaruan Data',   ico: '🔄', desc: 'edit setoran' }
+    { id: 'setoran', label: 'Setoran Hafalan', ico: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>', desc: 'hafalan baru masuk' },
+    { id: 'tidak',   label: 'Tidak Menghafal', ico: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>', desc: 'izin / alasan' },
+    { id: 'edit',    label: 'Pembaruan Data',   ico: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>', desc: 'edit setoran' }
   ],
 
   // Variabel yang tersedia per jenis pesan

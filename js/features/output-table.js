@@ -181,8 +181,8 @@ const OutputTable = {
                 </div>
               </div>
               <div class="oacts">
-                <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit">✏️</button>
-                <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus">🗑️</button>
+                <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+                <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
               </div>
             </div>
           `;
@@ -295,8 +295,8 @@ const OutputTable = {
         <td>${barisDisplay}</td>
         <td rowspan="${siswa.rowspan}" class="total-cell">${siswa.totalBaris}</td>
         <td>
-          <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit">✏️</button>
-          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus">🗑️</button>
+          <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </td>
       `;
     } else {
@@ -307,8 +307,8 @@ const OutputTable = {
         <td class="${cellClass}">${keteranganDisplay}</td>
         <td>${barisDisplay}</td>
         <td>
-          <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit">✏️</button>
-          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus">🗑️</button>
+          <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
         </td>
       `;
     }
@@ -461,8 +461,8 @@ const OutputTable = {
     syncDiv.className = 'sync-container';
     syncDiv.innerHTML = `
       <div class="sync-controls">
-        <button class="btn-sync" onclick="OutputTable.update()">🔄 Refresh Data</button>
-        <div id="syncStatus" class="sync-status">📊 Menunggu sync...</div>
+        <button class="btn-sync" onclick="OutputTable.update()"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>Refresh Data</button>
+        <div id="syncStatus" class="sync-status">Menunggu sync...</div>
       </div>
     `;
     tableInfo.appendChild(syncDiv);

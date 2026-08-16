@@ -19,11 +19,11 @@ const NotificationService = {
    */
   show(type, message, duration = 5000) {
     const icons = {
-      success: '✅',
-      error: '❌',
-      warning: '⚠️',
-      info: 'ℹ️',
-      loading: '🔄'
+      success: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>',
+      error: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>',
+      warning: '<svg viewBox="0 0 24 24"><path d="M12 3l10 18H2Z"/><path d="M12 10v4M12 17h.01"/></svg>',
+      info: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>',
+      loading: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>'
     };
 
     // Cari atau buat container
@@ -40,7 +40,7 @@ const NotificationService = {
     toast.className = `toast toast-${type}`;
 
     toast.innerHTML = `
-      <span class="toast-icon">${icons[type] || '📢'}</span>
+      <span class="toast-icon">${icons[type] || icons.info}</span>
       <span>${message}</span>
     `;
     toast.style.cursor = 'pointer';

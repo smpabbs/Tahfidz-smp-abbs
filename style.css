@@ -179,6 +179,10 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .btn-edit:hover{background:rgba(51,68,125,.22);transform:scale(1.05)}
 .btn-delete{color:var(--danger);background:rgba(177,79,62,.09);border-color:rgba(177,79,62,.25)}
 .btn-delete:hover{background:rgba(177,79,62,.2);transform:scale(1.05)}
+/* shared sizing for the small action-button/sync SVGs used in place
+   of emoji throughout Rekap/Target/Master */
+.ico-sm{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+.btn-sync .ico-sm{margin-right:6px;vertical-align:-2px}
 .btn-save{
   background:var(--accent-dim);border:1px solid rgba(51,68,125,.3);color:var(--accent);cursor:pointer;
   padding:6px 10px;border-radius:8px;font-size:13px;
@@ -361,7 +365,12 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 }
 .tpl-jenis-btn:hover{border-color:var(--accent);transform:translateY(-1px)}
 .tpl-jenis-btn.active{border-color:var(--accent);background:var(--accent-dim);box-shadow:0 0 0 3px var(--accent-dim)}
-.tpl-j-ico{font-size:17px}
+.tpl-j-ico{
+  width:32px;height:32px;border-radius:10px;background:var(--surface-2);
+  display:flex;align-items:center;justify-content:center;color:var(--accent);margin-bottom:2px;
+}
+.tpl-j-ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tpl-jenis-btn.active .tpl-j-ico{background:var(--accent);color:#fff}
 .tpl-j-sub{font-size:11px;font-weight:500;color:var(--muted)}
 .tpl-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
 .tpl-editor-col .form-group,.tpl-preview-col .form-group{display:block;margin-bottom:16px}
@@ -414,7 +423,12 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .toast.toast-error{border-left:4px solid var(--danger)}
 .toast.toast-warning{border-left:4px solid var(--warn)}
 .toast.toast-info{border-left:4px solid var(--accent)}
-.toast-icon{font-size:17px;flex-shrink:0}
+.toast-icon{flex-shrink:0}
+.toast-icon svg{width:19px;height:19px;stroke:currentColor;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.toast-success .toast-icon{color:var(--good)}
+.toast-error .toast-icon{color:var(--danger)}
+.toast-warning .toast-icon{color:var(--warn)}
+.toast-info .toast-icon{color:var(--accent)}
 @keyframes toastIn{from{transform:translateX(100%);opacity:0}to{transform:translateX(0);opacity:1}}
 
 /* ============ BADGES ============ */
