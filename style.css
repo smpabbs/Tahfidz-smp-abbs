@@ -648,6 +648,15 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   .filter select{width:100%}
   .export-buttons{margin-left:0;flex-direction:column}
   .btn-export{width:100%;justify-content:center}
+
+  /* Rekap: mockup keeps Kelas/Bulan/Tahun on one row (labels dropped —
+     each select's own "Semua ..." option already says what it is),
+     export buttons wrap to their own row below. */
+  #output .filter{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px}
+  #output .filter label{display:none}
+  #output .filter select{flex:1;width:auto;min-width:0}
+  #output .filter .export-buttons{flex:1 0 100%;flex-direction:row;margin-left:0}
+  #output .filter .btn-export{width:auto;flex:1}
   .btn-submit{width:calc(100% - 24px);bottom:96px;padding:14px;font-size:14px}
 
   .master-tabs{flex-wrap:wrap}
