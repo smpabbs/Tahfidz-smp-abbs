@@ -744,7 +744,7 @@ const TargetManager = {
   sendAllReports() {
     NotificationService.warning(
       '⚠️ Fitur "Rekap Semua" telah dinonaktifkan.\n\n' +
-      'Gunakan fitur "Rekap Kelas" untuk mengirim rekap per kelas.\n' +
+      'Gunakan fitur "Kirim Target" untuk mengirim rekap per kelas.\n' +
       'Hal ini untuk menghindari spam dan memastikan pengiriman lebih terkelola.',
       8000
     );

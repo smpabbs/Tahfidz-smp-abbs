@@ -394,7 +394,11 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .tpl-hint{display:block;color:var(--muted);font-size:11px;margin-top:6px}
 
 @media (max-width:900px){
-  .tpl-jenis{grid-template-columns:1fr}
+  /* Jenis template WA: grid kartu 2 kolom, bukan daftar 1 kolom panjang */
+  .tpl-jenis{grid-template-columns:repeat(2,1fr)}
+  .tpl-jenis-btn{padding:10px 11px;font-size:12.5px}
+  .tpl-j-ico{width:28px;height:28px}
+  .tpl-j-sub{font-size:10px}
   .tpl-grid{grid-template-columns:1fr}
   .tpl-test-row{flex-direction:column;align-items:stretch}
   .tpl-test-row .btn-export{text-align:center}
@@ -677,9 +681,20 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   #output .filter .btn-export{width:auto;flex:1}
   .btn-submit{width:calc(100% - 24px);bottom:96px;padding:14px;font-size:14px}
 
+  /* Target: filter Kelas + Kirim Target + Export Target semuanya satu baris */
+  #target .filter{flex-direction:row;flex-wrap:nowrap;align-items:center;gap:6px}
+  #target .filter label{display:none}
+  #target .filter select{flex:1;width:auto;min-width:0}
+  #target .filter .export-buttons{flex:0 0 auto;flex-wrap:nowrap;margin-left:0;gap:6px}
+  #target .filter .btn-export{width:auto;padding:9px 10px;font-size:11px;gap:4px}
+
   .master-tabs{flex-wrap:wrap}
   .master-header{flex-direction:column;align-items:stretch;gap:10px}
-  .master-actions{flex-direction:column}
+  .master-actions{flex-direction:row;flex-wrap:nowrap;gap:6px}
+  .master-actions .btn-export{
+    flex:1;justify-content:center;text-align:center;white-space:normal;
+    padding:8px 6px;font-size:11px;line-height:1.25;
+  }
 
   .modal-content{width:95%;margin:10% auto}
   .modal-actions{flex-direction:row;gap:8px}
