@@ -687,11 +687,13 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
      ke luar layar di HP mana pun, selalu rapi satu baris. */
   #target .filter{flex-direction:row;flex-wrap:nowrap;align-items:stretch;gap:6px}
   #target .filter label{display:none}
-  #target .filter select{flex:2 1 0;width:auto;min-width:0}
-  #target .filter .export-buttons{flex:5 1 0;flex-wrap:nowrap;margin-left:0;gap:6px;min-width:0}
+  /* Select native browser tidak selalu mau menyusut lewat flex-grow saja —
+     dikunci pakai max-width fix supaya tidak pernah "makan" ruang tombol. */
+  #target .filter select{flex:0 1 64px;max-width:64px;width:auto;min-width:0;padding:8px 4px;font-size:11.5px}
+  #target .filter .export-buttons{flex:1 1 auto;flex-wrap:nowrap;margin-left:0;gap:6px;min-width:0}
   #target .filter .btn-export{
     flex:1 1 0;width:auto;min-width:0;white-space:normal;text-align:center;
-    justify-content:center;padding:8px 5px;font-size:10.5px;line-height:1.2;gap:0;
+    justify-content:center;padding:8px 4px;font-size:10.5px;line-height:1.15;gap:0;
   }
 
   .master-tabs{flex-wrap:wrap}
