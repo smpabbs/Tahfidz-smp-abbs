@@ -9,6 +9,11 @@ const TargetManager = {
    */
   async init() {
     this.loadFromStorage();
+    // render ulang tabel/kartu kalau breakpoint mobile dilewati
+    const mq = window.matchMedia('(max-width: 640px)');
+    const relist = () => { if (document.getElementById('targetKelas')?.value) this.loadTable(); };
+    if (mq.addEventListener) mq.addEventListener('change', relist);
+    else if (mq.addListener) mq.addListener(relist); // fallback WebView lama
     console.log('✅ TargetManager initialized');
   },
 
@@ -27,30 +32,41 @@ const TargetManager = {
   },
 
   /**
-   * Load tabel target
+   * Load tabel/kartu target.
+   * Mobile dan desktop TIDAK dirender bersamaan di sini (beda dengan
+   * Rekap) — updateSingle()/stepTarget()/saveAll() membaca nilai
+   * langsung dari elemen .target-input/.target-*-input lewat
+   * querySelector, jadi kalau dua salinan elemen yang sama ada
+   * sekaligus di DOM, yang kebaca bisa jadi bukan yang terlihat
+   * pengguna. Solusinya: render salah satu saja sesuai lebar layar
+   * saat ini, dan render ulang kalau breakpoint-nya dilewati.
    */
   loadTable() {
     const kelas = document.getElementById('targetKelas')?.value;
     const tbody = document.getElementById('targetTableBody');
-    if (!tbody) return;
+    const cardsBox = document.getElementById('targetCards');
+    if (!tbody && !cardsBox) return;
 
-    tbody.innerHTML = '';
+    const isMobile = window.matchMedia('(max-width: 640px)').matches;
+    if (tbody) tbody.innerHTML = '';
+    if (cardsBox) cardsBox.innerHTML = '';
 
     if (!kelas) {
-      tbody.innerHTML = '<tr><td colspan="6" class="no-data">Pilih kelas untuk mengelola target</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="6" class="no-data">Pilih kelas untuk mengelola target</td></tr>';
+      if (cardsBox) cardsBox.innerHTML = '<div class="no-data">Pilih kelas untuk mengelola target</div>';
       return;
     }
 
     // Ambil data siswa untuk kelas tersebut
     const siswaList = AppState.dataSiswa[kelas] || [];
-    
-    if (siswaList.length === 0) {
-      // Coba dari masterSiswa
-      const masterSiswa = AppState.masterSiswa.filter(s => s.kelas_name === kelas);
-      masterSiswa.forEach(s => this.addTargetRow(tbody, s.nama, kelas));
-    } else {
-      siswaList.forEach(s => this.addTargetRow(tbody, s.nama, kelas));
-    }
+    const list = siswaList.length === 0
+      ? AppState.masterSiswa.filter(s => s.kelas_name === kelas) // Coba dari masterSiswa
+      : siswaList;
+
+    list.forEach(s => {
+      if (isMobile && cardsBox) this.addTargetCard(cardsBox, s.nama, kelas);
+      else if (tbody) this.addTargetRow(tbody, s.nama, kelas);
+    });
   },
 
   /**
@@ -120,6 +136,80 @@ const TargetManager = {
     `;
 
     tbody.appendChild(row);
+  },
+
+  /**
+   * Kartu target untuk layar sempit — data & elemen fungsionalnya
+   * sama persis dengan baris tabel (target-input, target-surat-input,
+   * target-ayat-input dengan data-nama/data-kelas/data-type yang
+   * sama), cuma disusun ulang jadi kartu. updateSingle()/saveAll()
+   * tidak perlu tahu bedanya.
+   */
+  addTargetCard(container, nama, kelas) {
+    const target = this.getTarget(nama, kelas);
+    const progress = this.calculateProgress(nama, kelas);
+    const progressClass = this.getProgressClass(progress.percentage);
+    const tierKey = progressClass.replace('target-', '');
+    const tierLabel = {
+      achieved: 'Tercapai', good: 'Progres Baik',
+      average: 'Cukup', 'needs-attention': 'Perlu Perhatian'
+    }[tierKey] || '';
+    const tierColor = {
+      achieved: 'var(--good)', good: 'var(--info)',
+      average: 'var(--warn)', 'needs-attention': 'var(--danger)'
+    }[tierKey] || 'var(--accent)';
+    const initials = nama.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+
+    const card = document.createElement('div');
+    card.className = 'tcard';
+    card.innerHTML = `
+      <div class="tcard-h">
+        <div class="tcard-av">${initials}</div>
+        <div class="tcard-who"><div class="tcard-nm">${nama}</div></div>
+        <span class="tier-badge tier-${tierKey}">${tierLabel}</span>
+      </div>
+      <div class="tcard-b">
+        <div class="tcard-statpair">
+          <div class="tcard-stat">
+            <div class="tcard-cap">Progres Minggu Ini</div>
+            <div class="progress-bar"><div class="progress-fill" style="width:${progress.percentage}%;background:${tierColor}"></div></div>
+            <div class="tcard-pbtext">${progress.actual}/${progress.target} (${progress.percentage}%)</div>
+          </div>
+          <div class="tcard-stat">
+            <div class="tcard-cap">Target Mingguan</div>
+            <div class="target-stepper">
+              <button type="button" onclick="TargetManager.stepTarget('${nama}', '${kelas}', -1)">−</button>
+              <input type="number" class="target-input" value="${target.targetMingguan}"
+                     min="5" max="50" data-nama="${nama}" data-kelas="${kelas}">
+              <button type="button" onclick="TargetManager.stepTarget('${nama}', '${kelas}', 1)">+</button>
+            </div>
+          </div>
+        </div>
+        <div class="tcard-range">
+          <div class="tcard-cap">Rentang Hafalan</div>
+          <div class="target-range-row">
+            <span class="range-label">Awal</span>
+            <select class="target-surat-input" data-nama="${nama}" data-kelas="${kelas}" data-type="suratMulai">
+              <option value="">-- Surat --</option>
+              ${DropdownManager.generateSuratOptions(target.suratMulai)}
+            </select>
+            <input type="number" class="target-ayat-input" data-nama="${nama}" data-kelas="${kelas}"
+                   data-type="ayatMulai" value="${target.ayatMulai}" placeholder="Ayat" min="1">
+          </div>
+          <div class="target-range-row">
+            <span class="range-label">Akhir</span>
+            <select class="target-surat-input" data-nama="${nama}" data-kelas="${kelas}" data-type="suratSelesai">
+              <option value="">-- Surat --</option>
+              ${DropdownManager.generateSuratOptions(target.suratSelesai)}
+            </select>
+            <input type="number" class="target-ayat-input" data-nama="${nama}" data-kelas="${kelas}"
+                   data-type="ayatSelesai" value="${target.ayatSelesai}" placeholder="Ayat" min="1">
+          </div>
+        </div>
+        <button class="btn-save tcard-savebtn" onclick="TargetManager.updateSingle('${nama}', '${kelas}')">Simpan Target</button>
+      </div>
+    `;
+    container.appendChild(card);
   },
 
   /**

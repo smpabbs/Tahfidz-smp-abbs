@@ -506,40 +506,64 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .opill.jayid{color:var(--warn);background:rgba(189,126,42,.12)}
 
 /* =============================================
-   RESPONSIVE TABLE→CARD — Target & Master Data.
-   These tables are one row per record (no rowspan),
-   so a pure CSS reflow is safe: every <td> keeps
-   the exact same cell it always was, just laid out
-   vertically with its header label restored via
-   data-label. Update logic still queries the same
-   classes/data-attributes, untouched.
+   TARGET mobile cards — real second render (see
+   TargetManager.addTargetCard()), not a CSS reflow
+   of the table. Table and cards are never both in
+   the DOM at once for Target (unlike Rekap/Master):
+   updateSingle()/stepTarget() query .target-input
+   by data-nama/data-kelas, so two live copies would
+   let the hidden one shadow the one the user can
+   actually see and edit.
    ============================================= */
+.tcard{background:var(--surface-2);border:1px solid var(--line);border-radius:16px;margin-bottom:12px;overflow:hidden;box-shadow:0 1px 2px rgba(37,33,49,.05)}
+.tcard-h{display:flex;align-items:center;gap:10px;padding:11px 13px}
+.tcard-av{width:36px;height:36px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-deep))}
+.tcard-who{flex:1;min-width:0}
+.tcard-nm{font-size:13.5px;font-weight:700;color:var(--ink)}
+.tier-badge{font-size:10px;font-weight:800;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.tier-badge.tier-achieved{color:var(--good);background:rgba(46,143,92,.12)}
+.tier-badge.tier-good{color:var(--info);background:rgba(62,127,138,.12)}
+.tier-badge.tier-average{color:var(--warn);background:rgba(189,126,42,.12)}
+.tier-badge.tier-needs-attention{color:var(--danger);background:rgba(177,79,62,.12)}
+.tcard-b{padding:0 13px 12px}
+.tcard-statpair{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:4px}
+.tcard-cap{display:block;font-size:9px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px;margin-bottom:7px;text-align:center}
+.tcard-stat .progress-bar{height:7px;margin:0}
+.tcard-pbtext{display:block;text-align:center;margin-top:7px;font-size:11px;font-weight:700;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.tcard-range{background:var(--surface-3);border:1px solid var(--line);border-radius:10px;padding:10px;margin-top:10px}
+.tcard-range .tcard-cap{text-align:left;margin-bottom:8px}
+.tcard-savebtn{width:100%;margin-top:10px;padding:9px;border-radius:9px;font-size:12px}
+.target-stepper{display:flex;align-items:center;justify-content:center;border:1px solid var(--line);border-radius:9px;overflow:hidden;height:30px}
+.target-stepper button{width:28px;height:100%;border:0;background:var(--surface-3);color:var(--accent);font-size:15px;font-weight:800;cursor:pointer;font-family:var(--sans);flex-shrink:0}
+.target-stepper button:hover{background:var(--accent-dim)}
+.target-stepper .target-input{flex:1;min-width:0;height:100%;text-align:center;border:0;border-left:1px solid var(--line);border-right:1px solid var(--line);border-radius:0;background:var(--surface-2);font-weight:800;font-size:12px}
+.target-range-row{display:flex;align-items:center;gap:6px;margin-bottom:7px}
+.target-range-row:last-child{margin-bottom:0}
+.target-range-row .range-label{width:34px;flex-shrink:0;font-size:10.5px;font-weight:700;color:var(--ink-soft)}
+.target-range-row select,.target-range-row input{background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:6px 7px;font-size:11px;color:var(--ink)}
+.target-range-row select{flex:1.4;min-width:0}
+.target-range-row input{flex:1;min-width:0;text-align:center}
+
+/* =============================================
+   MASTER DATA mobile cards — real second render
+   alongside the table (safe here: edit/delete read
+   AppState by id, not a live DOM value, so having
+   both in the DOM and CSS-toggling which is visible
+   doesn't risk reading a stale/hidden element).
+   ============================================= */
+.rowitem{display:flex;align-items:center;gap:10px;background:var(--surface-2);border:1px solid var(--line);border-radius:13px;padding:10px 12px;margin-bottom:9px}
+.rowitem-av{width:36px;height:36px;border-radius:11px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-deep))}
+.rowitem-who{flex:1;min-width:0}
+.rowitem-nm{font-size:13px;font-weight:700;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rowitem-sub{font-size:10.5px;color:var(--muted);margin-top:2px;display:flex;align-items:center;gap:6px}
+.rowitem-acts{display:flex;gap:4px;flex-shrink:0}
+
+/* ---- show cards instead of tables on phones ---- */
 @media (max-width:640px){
-  #target .scroll-container table,
-  #master .scroll-container table{
-    border:0;background:transparent;
-  }
-  #target .scroll-container thead,
-  #master .scroll-container thead{
-    position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;
-  }
-  #target .scroll-container tbody tr,
-  #master .scroll-container tbody tr{
-    display:block;background:var(--surface-2);border:1px solid var(--line);border-radius:14px;
-    margin-bottom:12px;overflow:hidden;
-  }
-  #target .scroll-container td,
-  #master .scroll-container td{
-    display:block;border:0;border-bottom:1px solid var(--line-soft);text-align:left;
-    padding:9px 13px;white-space:normal;
-  }
-  #target .scroll-container td:last-child,
-  #master .scroll-container td:last-child{border-bottom:0}
-  #target .scroll-container td[data-label]::before,
-  #master .scroll-container td[data-label]::before{
-    content:attr(data-label);display:block;font-size:9.5px;font-weight:700;color:var(--muted);
-    text-transform:uppercase;letter-spacing:.3px;margin-bottom:5px;
-  }
+  #target .scroll-container,
+  #master .scroll-container{display:none}
+  #target .mobile-cards,
+  #master .mobile-cards{display:block}
 }
 
 /* =============================================

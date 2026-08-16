@@ -81,14 +81,16 @@ const MasterData = {
 
   displaySiswa() {
     const tbody = document.getElementById('masterSiswaTableBody');
-    if (!tbody) return;
+    const cards = document.getElementById('masterSiswaCards');
+    if (!tbody && !cards) return;
 
     if (AppState.masterSiswa.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="5" class="no-data">Belum ada data siswa</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="5" class="no-data">Belum ada data siswa</td></tr>';
+      if (cards) cards.innerHTML = '<div class="no-data">Belum ada data siswa</div>';
       return;
     }
 
-    tbody.innerHTML = AppState.masterSiswa.map((s, i) => `
+    if (tbody) tbody.innerHTML = AppState.masterSiswa.map((s, i) => `
       <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
         <td data-label="No">${i + 1}</td>
         <td data-label="Nama Siswa"><strong>${s.nama}</strong></td>
@@ -100,14 +102,30 @@ const MasterData = {
         </td>
       </tr>
     `).join('');
+
+    if (cards) cards.innerHTML = AppState.masterSiswa.map(s => `
+      <div class="rowitem">
+        <div class="rowitem-av">${s.nama.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}</div>
+        <div class="rowitem-who">
+          <div class="rowitem-nm">${s.nama}</div>
+          <div class="rowitem-sub"><span class="kelas-badge">${s.kelas_name}</span> ${s.whatsapp || '-'}</div>
+        </div>
+        <div class="rowitem-acts">
+          <button class="btn-edit" onclick="MasterData.openEditSiswa('${s.id}')">✏️</button>
+          <button class="btn-delete" onclick="MasterData.deleteSiswa('${s.id}', '${s.nama}')">🗑️</button>
+        </div>
+      </div>
+    `).join('');
   },
 
   displayKelas() {
     const tbody = document.getElementById('masterKelasTableBody');
-    if (!tbody) return;
+    const cards = document.getElementById('masterKelasCards');
+    if (!tbody && !cards) return;
 
     if (AppState.masterKelas.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="no-data">Belum ada data kelas</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="no-data">Belum ada data kelas</td></tr>';
+      if (cards) cards.innerHTML = '<div class="no-data">Belum ada data kelas</div>';
       return;
     }
 
@@ -117,7 +135,7 @@ const MasterData = {
       countMap[s.kelas_name] = (countMap[s.kelas_name] || 0) + 1;
     });
 
-    tbody.innerHTML = AppState.masterKelas.map((k, i) => `
+    if (tbody) tbody.innerHTML = AppState.masterKelas.map((k, i) => `
       <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
         <td data-label="No">${i + 1}</td>
         <td data-label="Nama Kelas"><strong>${k.kelas_name}</strong></td>
@@ -128,18 +146,34 @@ const MasterData = {
         </td>
       </tr>
     `).join('');
+
+    if (cards) cards.innerHTML = AppState.masterKelas.map(k => `
+      <div class="rowitem">
+        <div class="rowitem-av">${k.kelas_name.replace(/[0-9]/g, '')}</div>
+        <div class="rowitem-who">
+          <div class="rowitem-nm">Kelas ${k.kelas_name}</div>
+          <div class="rowitem-sub">${countMap[k.kelas_name] || 0} siswa terdaftar</div>
+        </div>
+        <div class="rowitem-acts">
+          <button class="btn-edit" onclick="MasterData.openEditKelas('${k.id}')">✏️</button>
+          <button class="btn-delete" onclick="MasterData.deleteKelas('${k.id}', '${k.kelas_name}', ${countMap[k.kelas_name] || 0})">🗑️</button>
+        </div>
+      </div>
+    `).join('');
   },
 
   displayGuru() {
     const tbody = document.getElementById('masterGuruTableBody');
-    if (!tbody) return;
+    const cards = document.getElementById('masterGuruCards');
+    if (!tbody && !cards) return;
 
     if (AppState.masterGuru.length === 0) {
-      tbody.innerHTML = '<tr><td colspan="4" class="no-data">Belum ada data guru</td></tr>';
+      if (tbody) tbody.innerHTML = '<tr><td colspan="4" class="no-data">Belum ada data guru</td></tr>';
+      if (cards) cards.innerHTML = '<div class="no-data">Belum ada data guru</div>';
       return;
     }
 
-    tbody.innerHTML = AppState.masterGuru.map((g, i) => `
+    if (tbody) tbody.innerHTML = AppState.masterGuru.map((g, i) => `
       <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
         <td data-label="No">${i + 1}</td>
         <td data-label="Nama Guru"><strong>${g.nama}</strong></td>
@@ -149,6 +183,20 @@ const MasterData = {
           <button class="btn-delete" onclick="MasterData.deleteGuru('${g.id}', '${g.nama}')">🗑️</button>
         </td>
       </tr>
+    `).join('');
+
+    if (cards) cards.innerHTML = AppState.masterGuru.map(g => `
+      <div class="rowitem">
+        <div class="rowitem-av">${g.nama.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()}</div>
+        <div class="rowitem-who">
+          <div class="rowitem-nm">${g.nama}</div>
+          <div class="rowitem-sub token-cell">Token: ${(g.token_fonnte || '').substring(0, 12)}…</div>
+        </div>
+        <div class="rowitem-acts">
+          <button class="btn-edit" onclick="MasterData.openEditGuru('${g.id}')">✏️</button>
+          <button class="btn-delete" onclick="MasterData.deleteGuru('${g.id}', '${g.nama}')">🗑️</button>
+        </div>
+      </div>
     `).join('');
   },
 
