@@ -399,7 +399,7 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
 .form-grid .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:0}
 .form-grid .form-group label{width:auto;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
-.form-grid .form-group.full{grid-column:1/-1}
+.form-grid .form-group.full,.form-grid .full{grid-column:1/-1}
 .form-grid .form-inline{display:flex;align-items:center;gap:8px;margin-bottom:0}
 .form-grid .form-inline span{color:var(--muted);font-weight:600;font-size:13px}
 
