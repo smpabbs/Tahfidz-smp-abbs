@@ -664,8 +664,9 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   .toast-container{width:calc(100% - 32px);right:10px;left:10px}
   .toast{width:100%;max-width:none}
 
-  .stat-grid{grid-template-columns:1fr;gap:10px;margin-bottom:14px}
-  .stat-tile{padding:13px 15px}
+  /* stat tiles were only ever designed for the laptop/tablet mockup —
+     the approved phone mockup goes straight from filters to the list */
+  .stat-grid{display:none}
 
   /* Rekap: table hidden, real grouped cards shown instead */
   #output .scroll-container{display:none}
