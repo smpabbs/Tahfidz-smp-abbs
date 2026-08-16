@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mockup — Laporan Guru</title>
+<link rel="stylesheet" href="style.css">
+<style>
+  /* ====== Tambahan khusus mockup ini — reuse token dari style.css ====== */
+  .mock-banner{
+    max-width:1160px;margin:14px auto 0;padding:10px 16px;border-radius:10px;
+    background:rgba(173,126,55,.12);border:1px dashed var(--gold);color:var(--gold);
+    font-size:12.5px;font-weight:700;text-align:center;
+  }
+
+  .lap-filter{
+    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
+    background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
+    padding:12px 16px;margin-bottom:18px;box-shadow:var(--shadow);
+  }
+  .lap-week-nav{display:flex;align-items:center;gap:10px}
+  .lap-week-btn{
+    width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--surface-3);
+    color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;
+  }
+  .lap-week-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2}
+  .lap-week-label{text-align:center}
+  .lap-week-label .lw-title{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--ink)}
+  .lap-week-label .lw-sub{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
+  .lap-refresh{
+    display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
+    background:var(--surface-3);color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer;
+  }
+  .lap-refresh svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2}
+
+  .lap-legend{
+    display:flex;gap:16px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line);
+    border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--ink-soft);
+  }
+  .lap-legend b{color:var(--ink)}
+  .lap-legend-item{display:flex;align-items:center;gap:6px}
+  .lap-legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+
+  .gcard{
+    background:var(--surface-2);border:1px solid var(--line);border-radius:16px;margin-bottom:14px;
+    overflow:hidden;box-shadow:0 1px 2px rgba(37,33,49,.05);
+  }
+  .gcard-h{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line-soft)}
+  .gcard-av{
+    width:42px;height:42px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    font-size:14px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-deep));
+  }
+  .gcard-who{flex:1;min-width:0}
+  .gcard-nm{font-size:14.5px;font-weight:700;color:var(--ink);font-family:var(--serif)}
+  .gcard-role{font-size:10.5px;color:var(--muted);margin-top:1px}
+  .gcard-pct{text-align:right;flex-shrink:0}
+  .gcard-pct .gp-v{font-family:var(--serif);font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
+  .gcard-pct .gp-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:700}
+  .gcard-bar{padding:0 16px;margin-top:12px}
+  .gcard-sessions{padding:12px 16px 14px}
+  .gcard-baru{padding:16px;color:var(--muted);font-size:12.5px;font-style:italic}
+
+  .lap-session{
+    display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft);
+  }
+  .lap-session:last-child{border-bottom:none}
+  .ls-day{flex-shrink:0;width:54px;text-align:center}
+  .ls-day .lsd-d{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--ink)}
+  .ls-day .lsd-m{font-size:9.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
+  .ls-mid{flex:1;min-width:0}
+  .ls-kelas{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
+  .ls-jam{font-size:11px;color:var(--muted);margin-top:2px}
+  .ls-mate{font-size:10.5px;color:var(--muted-2);margin-top:1px}
+  .ls-status{flex-shrink:0;text-align:right}
+  .ls-pill{
+    display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:4px 10px;
+    border-radius:20px;white-space:nowrap;
+  }
+  .ls-pill svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.6}
+  .ls-count{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700}
+
+  .ls-done .ls-pill{color:var(--good);background:rgba(46,143,92,.12)}
+  .ls-partial .ls-pill{color:var(--warn);background:rgba(189,126,42,.12)}
+  .ls-missing .ls-pill{color:var(--danger);background:rgba(177,79,62,.12)}
+  .ls-future .ls-pill{color:var(--muted);background:var(--surface-3)}
+
+  @media (max-width:640px){
+    .lap-filter{flex-direction:column;align-items:stretch}
+    .lap-week-nav{justify-content:space-between}
+    .lap-refresh{justify-content:center}
+    .lap-legend{gap:10px 16px}
+  }
+</style>
+</head>
+<body>
+
+  <div class="mock-banner">🔧 MOCKUP TAMPILAN — belum terhubung ke data asli, semua angka contoh</div>
+
+  <div class="app-header">
+    <div class="header-left">
+      <div class="header-icon">﷽</div>
+      <div>
+        <div class="header-title">Laporan <span>Guru</span></div>
+        <div class="header-sub">Monitoring Pengisian Setoran Tahfidz — dari Jadwal Mengajar</div>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="status-online"><span class="dot"></span> Terhubung</div>
+      <div class="user-avatar" title="Admin">A</div>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- Filter minggu -->
+    <div class="lap-filter">
+      <div class="lap-week-nav">
+        <button type="button" class="lap-week-btn" title="Minggu sebelumnya">
+          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
+        </button>
+        <div class="lap-week-label">
+          <div class="lw-title">Senin, 10 – Sabtu, 15 Agustus 2026</div>
+          <div class="lw-sub">Minggu Ini</div>
+        </div>
+        <button type="button" class="lap-week-btn" title="Minggu berikutnya">
+          <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
+        </button>
+      </div>
+      <button type="button" class="lap-refresh">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>
+        Refresh Jadwal
+      </button>
+    </div>
+
+    <!-- Legenda -->
+    <div class="lap-legend">
+      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--good)"></span> <b>Selesai</b> — semua siswa di kelas itu sudah tercatat</div>
+      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--warn)"></span> <b>Sebagian</b> — masih ada siswa yang belum tercatat</div>
+      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--danger)"></span> <b>Belum Diisi</b> — belum ada data sama sekali</div>
+      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--muted-2)"></span> <b>Belum Waktunya</b> — jadwalnya belum lewat</div>
+    </div>
+
+    <!-- Ringkasan -->
+    <div class="stat-grid">
+      <div class="stat-tile">
+        <div class="stat-l">Total Sesi Minggu Ini</div>
+        <div class="stat-v">9</div>
+        <div class="stat-d">dari jadwal Quran/Tahfidz</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-l">Sesi Selesai</div>
+        <div class="stat-v" style="color:var(--good)">4</div>
+        <div class="stat-d">semua siswa tercatat</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-l">Perlu Ditindaklanjuti</div>
+        <div class="stat-v" style="color:var(--danger)">5</div>
+        <div class="stat-d">sebagian / belum diisi</div>
+      </div>
+    </div>
+
+    <!-- Kartu per guru, diurutkan dari yang paling perlu perhatian -->
+
+    <!-- Ust Yoki — guru baru ditambahkan -->
+    <div class="gcard">
+      <div class="gcard-h">
+        <div class="gcard-av">UY</div>
+        <div class="gcard-who">
+          <div class="gcard-nm">Ust Yoki</div>
+          <div class="gcard-role">Guru Tahfidz</div>
+        </div>
+        <div class="gcard-pct">
+          <div class="gp-v" style="color:var(--danger)">0%</div>
+          <div class="gp-l">Perlu Perhatian</div>
+        </div>
+      </div>
+      <div class="gcard-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:2%;background:var(--danger)"></div></div>
+      </div>
+      <div class="gcard-sessions">
+        <div class="lap-session ls-missing">
+          <div class="ls-day"><div class="lsd-d">13</div><div class="lsd-m">Kam</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">9F</span></div>
+            <div class="ls-jam">Jam 5–6 · 12.30–13.50</div>
+            <div class="ls-mate">bareng Ust Amiin</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Belum Diisi</span>
+            <div class="ls-count">0/12 siswa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ustadzah Usaidah -->
+    <div class="gcard">
+      <div class="gcard-h">
+        <div class="gcard-av">UU</div>
+        <div class="gcard-who">
+          <div class="gcard-nm">Ustadzah Usaidah</div>
+          <div class="gcard-role">Guru Tahfidz</div>
+        </div>
+        <div class="gcard-pct">
+          <div class="gp-v" style="color:var(--danger)">44%</div>
+          <div class="gp-l">Perlu Perhatian</div>
+        </div>
+      </div>
+      <div class="gcard-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:44%;background:var(--danger)"></div></div>
+      </div>
+      <div class="gcard-sessions">
+        <div class="lap-session ls-partial">
+          <div class="ls-day"><div class="lsd-d">13</div><div class="lsd-m">Kam</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">8D</span></div>
+            <div class="ls-jam">Jam 2–3 · 08.50–10.10</div>
+            <div class="ls-mate">bareng Ustadzah Ida</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Sebagian</span>
+            <div class="ls-count">14/16 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-missing">
+          <div class="ls-day"><div class="lsd-d">11</div><div class="lsd-m">Sel</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">8E</span></div>
+            <div class="ls-jam">Jam 5–6 · 12.30–13.50</div>
+            <div class="ls-mate">bareng Ustadz Andi</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Belum Diisi</span>
+            <div class="ls-count">0/15 siswa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ust Amiin -->
+    <div class="gcard">
+      <div class="gcard-h">
+        <div class="gcard-av">UA</div>
+        <div class="gcard-who">
+          <div class="gcard-nm">Ust Amiin</div>
+          <div class="gcard-role">Guru Tahfidz</div>
+        </div>
+        <div class="gcard-pct">
+          <div class="gp-v" style="color:var(--danger)">44%</div>
+          <div class="gp-l">Perlu Perhatian</div>
+        </div>
+      </div>
+      <div class="gcard-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:44%;background:var(--danger)"></div></div>
+      </div>
+      <div class="gcard-sessions">
+        <div class="lap-session ls-done">
+          <div class="ls-day"><div class="lsd-d">14</div><div class="lsd-m">Jum</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">9A</span></div>
+            <div class="ls-jam">Jam 1–2 · 07.10–08.30</div>
+            <div class="ls-mate">bareng Us Fahmi</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>Selesai</span>
+            <div class="ls-count">14/14 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-partial">
+          <div class="ls-day"><div class="lsd-d">11</div><div class="lsd-m">Sel</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">9C</span></div>
+            <div class="ls-jam">Jam 3–4 · 10.10–11.30</div>
+            <div class="ls-mate">bareng Ustadzah Rizqia</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Sebagian</span>
+            <div class="ls-count">5/15 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-missing">
+          <div class="ls-day"><div class="lsd-d">13</div><div class="lsd-m">Kam</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">9F</span></div>
+            <div class="ls-jam">Jam 5–6 · 12.30–13.50</div>
+            <div class="ls-mate">bareng Ust Yoki</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Belum Diisi</span>
+            <div class="ls-count">0/12 siswa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ustadz Andi -->
+    <div class="gcard">
+      <div class="gcard-h">
+        <div class="gcard-av">UA</div>
+        <div class="gcard-who">
+          <div class="gcard-nm">Ustadz Andi</div>
+          <div class="gcard-role">Guru Tahfidz</div>
+        </div>
+        <div class="gcard-pct">
+          <div class="gp-v" style="color:var(--warn)">59%</div>
+          <div class="gp-l">Cukup</div>
+        </div>
+      </div>
+      <div class="gcard-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:59%;background:var(--warn)"></div></div>
+      </div>
+      <div class="gcard-sessions">
+        <div class="lap-session ls-done">
+          <div class="ls-day"><div class="lsd-d">10</div><div class="lsd-m">Sen</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">7A</span></div>
+            <div class="ls-jam">Jam 2–3 · 07.50–09.10</div>
+            <div class="ls-mate">bareng Us Fahmi</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>Selesai</span>
+            <div class="ls-count">15/15 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-partial">
+          <div class="ls-day"><div class="lsd-d">15</div><div class="lsd-m">Sab</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">7E</span></div>
+            <div class="ls-jam">Jam 1–2 · 07.10–08.30</div>
+            <div class="ls-mate">bareng Ustadzah Naya</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Sebagian</span>
+            <div class="ls-count">10/13 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-missing">
+          <div class="ls-day"><div class="lsd-d">11</div><div class="lsd-m">Sel</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">8E</span></div>
+            <div class="ls-jam">Jam 5–6 · 12.30–13.50</div>
+            <div class="ls-mate">bareng Ustadzah Usaidah</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>Belum Diisi</span>
+            <div class="ls-count">0/15 siswa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ustadzah Rizqia -->
+    <div class="gcard">
+      <div class="gcard-h">
+        <div class="gcard-av">UR</div>
+        <div class="gcard-who">
+          <div class="gcard-nm">Ustadzah Rizqia</div>
+          <div class="gcard-role">Guru Tahfidz</div>
+        </div>
+        <div class="gcard-pct">
+          <div class="gp-v" style="color:var(--warn)">67%</div>
+          <div class="gp-l">Cukup</div>
+        </div>
+      </div>
+      <div class="gcard-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:67%;background:var(--warn)"></div></div>
+      </div>
+      <div class="gcard-sessions">
+        <div class="lap-session ls-done">
+          <div class="ls-day"><div class="lsd-d">10</div><div class="lsd-m">Sen</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">7C</span></div>
+            <div class="ls-jam">Jam 4–5 · 09.10–10.30</div>
+            <div class="ls-mate">bareng Ustadzah Ida</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>Selesai</span>
+            <div class="ls-count">17/17 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-partial">
+          <div class="ls-day"><div class="lsd-d">11</div><div class="lsd-m">Sel</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">9C</span></div>
+            <div class="ls-jam">Jam 3–4 · 10.10–11.30</div>
+            <div class="ls-mate">bareng Ust Amiin</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Sebagian</span>
+            <div class="ls-count">5/15 siswa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ustadzah Naya -->
+    <div class="gcard">
+      <div class="gcard-h">
+        <div class="gcard-av">UN</div>
+        <div class="gcard-who">
+          <div class="gcard-nm">Ustadzah Naya</div>
+          <div class="gcard-role">Guru Tahfidz</div>
+        </div>
+        <div class="gcard-pct">
+          <div class="gp-v" style="color:var(--info)">88%</div>
+          <div class="gp-l">Progres Baik</div>
+        </div>
+      </div>
+      <div class="gcard-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:88%;background:var(--info)"></div></div>
+      </div>
+      <div class="gcard-sessions">
+        <div class="lap-session ls-done">
+          <div class="ls-day"><div class="lsd-d">12</div><div class="lsd-m">Rab</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">8B</span></div>
+            <div class="ls-jam">Jam 4–5 · 09.10–10.30</div>
+            <div class="ls-mate">bareng Us Fahmi</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>Selesai</span>
+            <div class="ls-count">16/16 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-partial">
+          <div class="ls-day"><div class="lsd-d">15</div><div class="lsd-m">Sab</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">7E</span></div>
+            <div class="ls-jam">Jam 1–2 · 07.10–08.30</div>
+            <div class="ls-mate">bareng Ustadz Andi</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Sebagian</span>
+            <div class="ls-count">10/13 siswa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Ustadzah Ida -->
+    <div class="gcard">
+      <div class="gcard-h">
+        <div class="gcard-av">UI</div>
+        <div class="gcard-who">
+          <div class="gcard-nm">Ustadzah Ida</div>
+          <div class="gcard-role">Guru Tahfidz</div>
+        </div>
+        <div class="gcard-pct">
+          <div class="gp-v" style="color:var(--info)">94%</div>
+          <div class="gp-l">Progres Baik</div>
+        </div>
+      </div>
+      <div class="gcard-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:94%;background:var(--info)"></div></div>
+      </div>
+      <div class="gcard-sessions">
+        <div class="lap-session ls-done">
+          <div class="ls-day"><div class="lsd-d">10</div><div class="lsd-m">Sen</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">7C</span></div>
+            <div class="ls-jam">Jam 4–5 · 09.10–10.30</div>
+            <div class="ls-mate">bareng Ustadzah Rizqia</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>Selesai</span>
+            <div class="ls-count">17/17 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-partial">
+          <div class="ls-day"><div class="lsd-d">13</div><div class="lsd-m">Kam</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">8D</span></div>
+            <div class="ls-jam">Jam 2–3 · 08.50–10.10</div>
+            <div class="ls-mate">bareng Ustadzah Usaidah</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>Sebagian</span>
+            <div class="ls-count">14/16 siswa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Us Fahmi -->
+    <div class="gcard">
+      <div class="gcard-h">
+        <div class="gcard-av">UF</div>
+        <div class="gcard-who">
+          <div class="gcard-nm">Us Fahmi</div>
+          <div class="gcard-role">Guru Tahfidz</div>
+        </div>
+        <div class="gcard-pct">
+          <div class="gp-v" style="color:var(--good)">100%</div>
+          <div class="gp-l">Tercapai</div>
+        </div>
+      </div>
+      <div class="gcard-bar">
+        <div class="progress-bar"><div class="progress-fill" style="width:100%;background:var(--good)"></div></div>
+      </div>
+      <div class="gcard-sessions">
+        <div class="lap-session ls-done">
+          <div class="ls-day"><div class="lsd-d">10</div><div class="lsd-m">Sen</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">7A</span></div>
+            <div class="ls-jam">Jam 2–3 · 07.50–09.10</div>
+            <div class="ls-mate">bareng Ustadz Andi</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>Selesai</span>
+            <div class="ls-count">15/15 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-done">
+          <div class="ls-day"><div class="lsd-d">12</div><div class="lsd-m">Rab</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">8B</span></div>
+            <div class="ls-jam">Jam 4–5 · 09.10–10.30</div>
+            <div class="ls-mate">bareng Ustadzah Naya</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>Selesai</span>
+            <div class="ls-count">16/16 siswa</div>
+          </div>
+        </div>
+        <div class="lap-session ls-done">
+          <div class="ls-day"><div class="lsd-d">14</div><div class="lsd-m">Jum</div></div>
+          <div class="ls-mid">
+            <div class="ls-kelas"><span class="kelas-badge">9A</span></div>
+            <div class="ls-jam">Jam 1–2 · 07.10–08.30</div>
+            <div class="ls-mate">bareng Ust Amiin</div>
+          </div>
+          <div class="ls-status">
+            <span class="ls-pill"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>Selesai</span>
+            <div class="ls-count">14/14 siswa</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</body>
+</html>
