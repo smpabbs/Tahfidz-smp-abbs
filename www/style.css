@@ -681,18 +681,24 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   #output .filter .btn-export{width:auto;flex:1}
   .btn-submit{width:calc(100% - 24px);bottom:96px;padding:14px;font-size:14px}
 
-  /* Target: filter Kelas + Kirim Target + Export Target semuanya satu baris */
-  #target .filter{flex-direction:row;flex-wrap:nowrap;align-items:center;gap:6px}
+  /* Target: filter Kelas + Kirim Target + Export Target semuanya satu baris.
+     Lebar dibagi pakai flex-grow (proporsi, bukan px tetap) + min-width:0 +
+     teks boleh wrap 2 baris kalau sempit — supaya tidak pernah overflow
+     ke luar layar di HP mana pun, selalu rapi satu baris. */
+  #target .filter{flex-direction:row;flex-wrap:nowrap;align-items:stretch;gap:6px}
   #target .filter label{display:none}
-  #target .filter select{flex:1;width:auto;min-width:0}
-  #target .filter .export-buttons{flex:0 0 auto;flex-wrap:nowrap;margin-left:0;gap:6px}
-  #target .filter .btn-export{width:auto;padding:9px 10px;font-size:11px;gap:4px}
+  #target .filter select{flex:2 1 0;width:auto;min-width:0}
+  #target .filter .export-buttons{flex:5 1 0;flex-wrap:nowrap;margin-left:0;gap:6px;min-width:0}
+  #target .filter .btn-export{
+    flex:1 1 0;width:auto;min-width:0;white-space:normal;text-align:center;
+    justify-content:center;padding:8px 5px;font-size:10.5px;line-height:1.2;gap:0;
+  }
 
   .master-tabs{flex-wrap:wrap}
   .master-header{flex-direction:column;align-items:stretch;gap:10px}
   .master-actions{flex-direction:row;flex-wrap:nowrap;gap:6px}
   .master-actions .btn-export{
-    flex:1;justify-content:center;text-align:center;white-space:normal;
+    flex:1 1 0;min-width:0;justify-content:center;text-align:center;white-space:normal;
     padding:8px 6px;font-size:11px;line-height:1.25;
   }
 
