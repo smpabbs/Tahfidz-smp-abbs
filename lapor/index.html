@@ -611,8 +611,21 @@
     document.querySelectorAll('#periodTabs .master-tab').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     STATE.period = btn.dataset.period;
+    STATE.refDate = new Date(); // ganti jenis periode -> mulai dari periode aktif berjalan lagi
     renderAll();
   });
+
+  function navigatePeriod(direction){
+    const d = new Date(STATE.refDate);
+    if (STATE.period === 'harian') d.setDate(d.getDate() + direction);
+    else if (STATE.period === 'pekanan') d.setDate(d.getDate() + direction * 7);
+    else if (STATE.period === 'bulanan') d.setMonth(d.getMonth() + direction);
+    else d.setMonth(d.getMonth() + direction * 6); // semester
+    STATE.refDate = d;
+    renderAll();
+  }
+  document.getElementById('btnPrev').addEventListener('click', () => navigatePeriod(-1));
+  document.getElementById('btnNext').addEventListener('click', () => navigatePeriod(1));
   document.getElementById('povTabs').addEventListener('click', e => {
     const btn = e.target.closest('.master-tab');
     if (!btn) return;
