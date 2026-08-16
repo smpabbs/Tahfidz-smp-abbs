@@ -46,6 +46,8 @@ const OutputTable = {
   render(tbody, thead, summary) {
     const filtered = this.getFilteredData();
 
+    this.renderStats();
+
     // Clear
     tbody.innerHTML = '';
     thead.innerHTML = '';
@@ -54,6 +56,8 @@ const OutputTable = {
       thead.innerHTML = '<tr><th colspan="10">Data Capaian Tahfidz</th></tr>';
       tbody.innerHTML = '<tr><td colspan="10" class="no-data">Belum ada data</td></tr>';
       if (summary) summary.textContent = 'Menampilkan 0 data';
+      const cards = document.getElementById('outputCards');
+      if (cards) cards.innerHTML = '<div class="no-data">Belum ada data</div>';
       return;
     }
 
@@ -91,6 +95,114 @@ const OutputTable = {
       const totalSiswa = sorted.length;
       summary.textContent = `Menampilkan ${totalSiswa} siswa (${filtered.length} data)`;
     }
+
+    this.renderMobileCards(sorted);
+  },
+
+  /**
+   * Kartu ringkas di atas tabel — dihitung dari bulan berjalan,
+   * bukan sumber data baru (AppState.tahfidzRecords + baris/keterangan
+   * yang sudah ada).
+   */
+  renderStats() {
+    const box = document.getElementById('outputStats');
+    if (!box) return;
+
+    const now = new Date();
+    const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+    const monthRecords = (AppState.tahfidzRecords || []).filter(d => d && d.tanggal && d.tanggal.startsWith(ym));
+
+    const setoranCount = monthRecords.length;
+    const totalBaris = monthRecords.reduce((sum, d) => sum + (parseFloat(d.baris) || 0), 0);
+    const graded = monthRecords.filter(d => d.menghafal !== 'tidak' && d.keterangan);
+    const mumtazCount = graded.filter(d => d.keterangan === 'Mumtaz').length;
+    const pctMumtaz = graded.length > 0 ? Math.round((mumtazCount / graded.length) * 100) : 0;
+
+    box.innerHTML = `
+      <div class="stat-tile">
+        <div class="stat-l">Setoran Bulan Ini</div>
+        <div class="stat-v">${setoranCount}</div>
+        <div class="stat-d">data tercatat</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-l">Total Baris</div>
+        <div class="stat-v">${totalBaris}</div>
+        <div class="stat-d">≈ ${Math.round(totalBaris / 20)} halaman mushaf</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-l">Nilai Mumtaz</div>
+        <div class="stat-v">${pctMumtaz}%</div>
+        <div class="stat-d">dari setoran bernilai</div>
+      </div>
+    `;
+  },
+
+  /**
+   * Kartu terkelompok per siswa untuk layar sempit — dibangun dari
+   * grouping yang sama (groupBySiswa/sortSiswa) yang dipakai tabel
+   * desktop. Tombol Ubah/Hapus memanggil EditInline.toggle() dan
+   * OutputTable.deleteRecord() yang sama persis dengan tabel, dengan
+   * originalIndex yang sama — tidak ada logika yang digandakan.
+   */
+  renderMobileCards(sorted) {
+    const box = document.getElementById('outputCards');
+    if (!box) return;
+
+    const nilaiClass = { Mumtaz: 'mumtaz', 'Jayid Jiddan': 'jj', Jayid: 'jayid' };
+
+    box.innerHTML = sorted.map(siswa => {
+      const total = siswa.totalBaris;
+      const initials = siswa.nama.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
+      const entries = siswa.entries
+        .slice()
+        .sort((a, b) => a.tanggal.localeCompare(b.tanggal))
+        .map(entry => {
+          const isTidak = entry.menghafal === 'tidak';
+          if (isTidak) {
+            return `
+              <div class="oerow absent">
+                <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
+                <div class="omid"><div class="osurat">Tidak setoran — ${entry.alasan || 'tanpa alasan'}</div></div>
+              </div>
+            `;
+          }
+          const ayat = entry.ayatDari && entry.ayatSampai
+            ? `${parseFloat(entry.ayatDari)} – ${parseFloat(entry.ayatSampai)}`
+            : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—');
+          const cls = nilaiClass[entry.keterangan] || 'jayid';
+          return `
+            <div class="oerow">
+              <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
+              <div class="omid">
+                <div class="osurat">${entry.surat || '—'} <span class="oayat">· ${ayat}</span></div>
+                <div class="ometa">
+                  <span class="opill ${cls}">${entry.keterangan || '—'}</span>
+                  <span class="obaris">${parseFloat(entry.baris) || 0} baris</span>
+                </div>
+              </div>
+              <div class="oacts">
+                <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit">✏️</button>
+                <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus">🗑️</button>
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      return `
+        <div class="ocard">
+          <div class="ocard-h">
+            <div class="oav">${initials}</div>
+            <div class="owho">
+              <div class="onm">${siswa.nama}</div>
+              <div class="okl">Kelas ${siswa.kelas} · ${siswa.entries.length} entri</div>
+            </div>
+            <div class="otot"><div class="ov">${total}</div><div class="ol">baris</div></div>
+          </div>
+          ${entries}
+        </div>
+      `;
+    }).join('');
   },
 
   /**

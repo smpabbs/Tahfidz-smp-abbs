@@ -90,11 +90,11 @@ const MasterData = {
 
     tbody.innerHTML = AppState.masterSiswa.map((s, i) => `
       <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
-        <td>${i + 1}</td>
-        <td><strong>${s.nama}</strong></td>
-        <td><span class="kelas-badge">${s.kelas_name}</span></td>
-        <td>${s.whatsapp || '-'}</td>
-        <td>
+        <td data-label="No">${i + 1}</td>
+        <td data-label="Nama Siswa"><strong>${s.nama}</strong></td>
+        <td data-label="Kelas"><span class="kelas-badge">${s.kelas_name}</span></td>
+        <td data-label="WhatsApp">${s.whatsapp || '-'}</td>
+        <td data-label="Aksi">
           <button class="btn-edit" onclick="MasterData.openEditSiswa('${s.id}')">✏️</button>
           <button class="btn-delete" onclick="MasterData.deleteSiswa('${s.id}', '${s.nama}')">🗑️</button>
         </td>
@@ -119,10 +119,10 @@ const MasterData = {
 
     tbody.innerHTML = AppState.masterKelas.map((k, i) => `
       <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
-        <td>${i + 1}</td>
-        <td><strong>${k.kelas_name}</strong></td>
-        <td>${countMap[k.kelas_name] || 0} siswa</td>
-        <td>
+        <td data-label="No">${i + 1}</td>
+        <td data-label="Nama Kelas"><strong>${k.kelas_name}</strong></td>
+        <td data-label="Jumlah Siswa">${countMap[k.kelas_name] || 0} siswa</td>
+        <td data-label="Aksi">
           <button class="btn-edit" onclick="MasterData.openEditKelas('${k.id}')">✏️</button>
           <button class="btn-delete" onclick="MasterData.deleteKelas('${k.id}', '${k.kelas_name}', ${countMap[k.kelas_name] || 0})">🗑️</button>
         </td>
@@ -141,10 +141,10 @@ const MasterData = {
 
     tbody.innerHTML = AppState.masterGuru.map((g, i) => `
       <tr class="${i % 2 === 0 ? 'even' : 'odd'}">
-        <td>${i + 1}</td>
-        <td><strong>${g.nama}</strong></td>
-        <td class="token-cell">${(g.token_fonnte || '').substring(0, 15)}...</td>
-        <td>
+        <td data-label="No">${i + 1}</td>
+        <td data-label="Nama Guru"><strong>${g.nama}</strong></td>
+        <td data-label="Token Fonnte" class="token-cell">${(g.token_fonnte || '').substring(0, 15)}...</td>
+        <td data-label="Aksi">
           <button class="btn-edit" onclick="MasterData.openEditGuru('${g.id}')">✏️</button>
           <button class="btn-delete" onclick="MasterData.deleteGuru('${g.id}', '${g.nama}')">🗑️</button>
         </td>

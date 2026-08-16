@@ -23,13 +23,17 @@
     </div>
   </div>
     
-    <!-- 🎯 TAB NAVIGATION -->
+    <!-- 🎯 APP SHELL — .tabs becomes a real sidebar at ≥641px (CSS), a
+         fixed bottom bar duplicates the same buttons below for phones. -->
+    <div class="app-shell" id="appShell">
     <div class="tabs">
+      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" type="button"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg><span>Perkecil</span></button>
       <button class="tab active" onclick="TabManager.show('input')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="tab-label">Input Data</span></button>
       <button class="tab" onclick="TabManager.show('output')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="tab-label">Hasil Data</span></button>
       <button class="tab" onclick="TabManager.show('target')"><span class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg></span><span class="tab-label">Kelola Target</span></button>
       <button class="tab" onclick="TabManager.show('master')"><span class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h8"/></svg></span><span class="tab-label">Master Data</span></button>
             <button class="tab" onclick="TabManager.show('template')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5Z"/><path d="M9 9.5h.01M12.5 9.5h.01M16 9.5h.01"/></svg></span><span class="tab-label">Template WA</span> <span class="badge-new">BARU</span></button>
+      <div class="sidebar-date" id="sidebarDate"></div>
           </div>
 
   <div class="container">
@@ -49,6 +53,10 @@
               <select id="guru" required onchange="InputForm.updateToken()">
                 <option value="">-- Pilih Guru --</option>
               </select>
+            </div>
+            <div class="form-group">
+              <label>Tanggal</label>
+              <input type="date" id="tanggal" required />
             </div>
             <div class="form-group field-suppressed">
               <label>Token Fonnte</label>
@@ -109,33 +117,24 @@
             </div>
 
             <div id="hafalanFields" class="full hidden">
-              <div class="form-group" style="margin-bottom:0">
-                <label>Surat</label>
-                <select id="surat">
+              <div class="target-range-row" style="margin-bottom:14px">
+                <span class="range-label">Awal</span>
+                <select id="surat" class="target-surat-input" style="flex:1">
                   <option value="">-- Pilih Surat --</option>
                 </select>
+                <input type="number" id="ayatDari" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" />
               </div>
-              <div class="form-group" style="margin-top:10px">
-                <label>Surat Akhir <small style="color:#9c8f7a;font-weight:400;font-size:11px;">(opsional — jika lanjut ke surat lain)</small></label>
-                <select id="suratAkhir">
+              <div class="target-range-row" style="margin-bottom:14px">
+                <span class="range-label">Akhir</span>
+                <select id="suratAkhir" class="target-surat-input" style="flex:1">
                   <option value="">-- Sama dengan Surat di atas --</option>
                 </select>
-              </div>
-              <div class="form-inline" style="margin-top:10px">
-                <label style="width:auto;text-align:left;font-size:11px;color:#9c8f7a;text-transform:uppercase;letter-spacing:0.3px;font-weight:600;flex-shrink:0;">Ayat</label>
-                <input type="number" id="ayatDari" placeholder="Dari" min="0" step="0.5" style="flex:1" />
-                <span style="color:#9c8f7a;font-weight:500;font-size:13px;">s.d</span>
-                <input type="number" id="ayatSampai" placeholder="Sampai" min="0" step="0.5" style="flex:1" />
+                <input type="number" id="ayatSampai" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" />
               </div>
               <div class="form-inline" style="margin-top:10px">
                 <label style="width:auto;text-align:left;font-size:11px;color:#9c8f7a;text-transform:uppercase;letter-spacing:0.3px;font-weight:600;flex-shrink:0;">Jumlah Baris</label>
                 <input type="number" id="baris" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" />
               </div>
-            </div>
-
-            <div class="form-group">
-              <label>Tanggal</label>
-              <input type="date" id="tanggal" required />
             </div>
           </div>
         </div>
@@ -161,6 +160,7 @@
     <!-- 🔵 TAB OUTPUT -->
     <!-- ============================================ -->
     <div id="output" class="tab-content">
+      <div class="stat-grid" id="outputStats"></div>
       <div class="filter">
         <label>Kelas:</label>
         <select id="filterKelas" onchange="OutputTable.update()">
@@ -214,6 +214,7 @@
           </tbody>
         </table>
       </div>
+      <div class="mobile-cards" id="outputCards"></div>
 
       <div class="table-legend">
         <div class="legend-item">
@@ -396,7 +397,6 @@
         </div>
       </div>
           </div>
-        </div>
 
         <!-- ============================================ -->
         <!-- ✉️ TAB TEMPLATE WA -->
@@ -454,6 +454,17 @@
           </div>
         </div>
         </div>
+    </div>
+    <!-- fixed bottom nav for phones — same .tab buttons/onclick as the
+         sidebar above, so TabManager's active-state matching lights up
+         whichever nav is currently visible -->
+    <div class="tabbar-mobile" id="tabbarMobile">
+      <button class="tab active" onclick="TabManager.show('input')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="tab-label">Input</span></button>
+      <button class="tab" onclick="TabManager.show('output')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="tab-label">Hasil</span></button>
+      <button class="tab" onclick="TabManager.show('target')"><span class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg></span><span class="tab-label">Target</span></button>
+      <button class="tab" onclick="TabManager.show('master')"><span class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h8"/></svg></span><span class="tab-label">Master</span></button>
+      <button class="tab" onclick="TabManager.show('template')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5Z"/><path d="M9 9.5h.01M12.5 9.5h.01M16 9.5h.01"/></svg></span><span class="tab-label">Templat WA</span></button>
+    </div>
 
         <!-- ============================================ -->
         <!-- 📦 MODALS -->
@@ -638,6 +649,7 @@
   <script src="js/ui/tabs.js"></script>
   <script src="js/ui/dropdowns.js"></script>
   <script src="js/ui/edit-inline.js"></script>
+  <script src="js/ui/sidebar.js"></script>
   
   <!-- 5. Features -->
   <script src="js/features/input-form.js"></script>

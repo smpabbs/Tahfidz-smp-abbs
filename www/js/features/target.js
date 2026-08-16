@@ -64,45 +64,76 @@ const TargetManager = {
     const row = document.createElement('tr');
     row.className = progressClass;
 
+    const tierLabel = {
+      'target-achieved': 'Tercapai',
+      'target-good': 'Progres Baik',
+      'target-average': 'Cukup',
+      'target-needs-attention': 'Perlu Perhatian'
+    }[progressClass] || '';
+
     row.innerHTML = `
-      <td><strong>${nama}</strong></td>
-      <td>
-        <input type="number" class="target-input" value="${target.targetMingguan}" 
-               min="5" max="50" data-nama="${nama}" data-kelas="${kelas}">
+      <td data-label="Nama Siswa"><strong>${nama}</strong></td>
+      <td data-label="Target Mingguan">
+        <div class="target-stepper">
+          <button type="button" onclick="TargetManager.stepTarget('${nama}', '${kelas}', -1)">−</button>
+          <input type="number" class="target-input" value="${target.targetMingguan}"
+                 min="5" max="50" data-nama="${nama}" data-kelas="${kelas}">
+          <button type="button" onclick="TargetManager.stepTarget('${nama}', '${kelas}', 1)">+</button>
+        </div>
         <small>baris/minggu</small>
       </td>
-      <td>
+      <td data-label="Rentang Hafalan">
         <div class="target-detail-inputs">
-          <select class="target-surat-input" data-nama="${nama}" data-kelas="${kelas}" data-type="suratMulai">
-            <option value="">-- Surat Mulai --</option>
-            ${DropdownManager.generateSuratOptions(target.suratMulai)}
-          </select>
-          <input type="number" class="target-ayat-input" data-nama="${nama}" data-kelas="${kelas}" 
-                 data-type="ayatMulai" value="${target.ayatMulai}" placeholder="Ayat" min="1">
-          <span>→</span>
-          <select class="target-surat-input" data-nama="${nama}" data-kelas="${kelas}" data-type="suratSelesai">
-            <option value="">-- Surat Selesai --</option>
-            ${DropdownManager.generateSuratOptions(target.suratSelesai)}
-          </select>
-          <input type="number" class="target-ayat-input" data-nama="${nama}" data-kelas="${kelas}" 
-                 data-type="ayatSelesai" value="${target.ayatSelesai}" placeholder="Ayat" min="1">
+          <div class="target-range-row">
+            <span class="range-label">Awal</span>
+            <select class="target-surat-input" data-nama="${nama}" data-kelas="${kelas}" data-type="suratMulai">
+              <option value="">-- Surat --</option>
+              ${DropdownManager.generateSuratOptions(target.suratMulai)}
+            </select>
+            <input type="number" class="target-ayat-input" data-nama="${nama}" data-kelas="${kelas}"
+                   data-type="ayatMulai" value="${target.ayatMulai}" placeholder="Ayat" min="1">
+          </div>
+          <div class="target-range-row">
+            <span class="range-label">Akhir</span>
+            <select class="target-surat-input" data-nama="${nama}" data-kelas="${kelas}" data-type="suratSelesai">
+              <option value="">-- Surat --</option>
+              ${DropdownManager.generateSuratOptions(target.suratSelesai)}
+            </select>
+            <input type="number" class="target-ayat-input" data-nama="${nama}" data-kelas="${kelas}"
+                   data-type="ayatSelesai" value="${target.ayatSelesai}" placeholder="Ayat" min="1">
+          </div>
         </div>
       </td>
-      <td>
+      <td data-label="Progress">
         <div class="progress-info">
           <div class="progress-bar">
             <div class="progress-fill" style="width:${progress.percentage}%"></div>
           </div>
           <div class="progress-text">${progress.actual}/${progress.target} baris (${progress.percentage}%)</div>
+          <span class="target-tier">${tierLabel}</span>
         </div>
       </td>
-      <td><small>-</small></td>
-      <td>
+      <td data-label="Guru Aktif"><small>-</small></td>
+      <td data-label="Aksi">
         <button class="btn-save" onclick="TargetManager.updateSingle('${nama}', '${kelas}')" title="Simpan">💾</button>
       </td>
     `;
 
     tbody.appendChild(row);
+  },
+
+  /**
+   * +/- di stepper visual — hanya mengubah nilai input yang sudah
+   * ada (target-input, dibaca updateSingle()/saveAll() apa adanya),
+   * tidak menyimpan sendiri.
+   */
+  stepTarget(nama, kelas, delta) {
+    const input = document.querySelector(`.target-input[data-nama="${nama}"][data-kelas="${kelas}"]`);
+    if (!input) return;
+    const min = parseInt(input.min) || AppConfig.MIN_TARGET_BARIS;
+    const max = parseInt(input.max) || AppConfig.MAX_TARGET_BARIS;
+    const next = Math.max(min, Math.min(max, (parseInt(input.value) || 0) + delta));
+    input.value = next;
   },
 
   /**

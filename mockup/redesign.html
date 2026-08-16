@@ -502,7 +502,7 @@ td .cl{font-size:10.5px;color:var(--muted)}
           <div class="ah-icon"><div class="ico" style="background:#3A7A5E">C</div><span>Chat</span></div>
           <div class="ah-icon"><div class="ico" style="background:#7A4E93">K</div><span>Kamera</span></div>
           <div class="ah-icon"><div class="ico" style="background:#93703A">F</div><span>Berkas</span></div>
-          <div class="ah-icon hero" id="ahOpenBtn"><div class="ico">ط</div><span>Tahfidz</span></div>
+          <div class="ah-icon hero" id="ahOpenBtn"><div class="ico">﷽</div><span>Tahfidz</span></div>
           <div class="ah-icon"><div class="ico" style="background:#3A8993">W</div><span>Browser</span></div>
           <div class="ah-icon"><div class="ico" style="background:#93513A">S</div><span>Setelan</span></div>
           <div class="ah-icon"><div class="ico" style="background:#565064">T</div><span>Telepon</span></div>
@@ -520,7 +520,7 @@ td .cl{font-size:10.5px;color:var(--muted)}
           <div class="searchbox"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></svg>Cari siswa, kelas…</div>
         </div>
         <div class="hd">
-          <div class="mark">ط</div>
+          <div class="mark">﷽</div>
           <div class="t"><b>Tahfidz <em>ABBS</em></b><small>Setoran Hafalan Qur'an</small></div>
           <div class="r">
             <div class="status-chip"><i></i>Terhubung</div>
@@ -630,7 +630,7 @@ function renderNav(){
 
   if (cat==='laptop'){
     sidebar.classList.remove('hide');
-    sidebar.innerHTML='<div class="sbrand"><div class="mark">ط</div><div><b>Tahfidz ABBS</b><small>Setoran Hafalan</small></div></div>'+
+    sidebar.innerHTML='<div class="sbrand"><div class="mark">﷽</div><div><b>Tahfidz ABBS</b><small>Setoran Hafalan</small></div></div>'+
       NAV.map(function(it){return '<button class="sbtn'+(CUR.tab===it.k?' on':'')+'" data-tab="'+it.k+'">'+ICONS[it.k]+'<span>'+it.label+'</span>'+(it.n?'<span class="pill-new">BARU</span>':'')+'</button>';}).join('')+
       '<div class="sspacer"></div>'+
       '<button class="sbtn" data-logout><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5"/><path d="M21 12H9"/></svg><span>Keluar</span></button>';
