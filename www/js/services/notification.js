@@ -262,7 +262,7 @@ const NotificationService = {
    */
   formatTahfidzMessage(data) {
     if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('setoran', data);
+      return TemplateWaManager.buildMessage('setoran', 'ya', data);
     }
     // Fallback pesan bawaan (kalau manager belum dimuat)
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
@@ -292,7 +292,7 @@ const NotificationService = {
    */
   formatMurojaahMessage(data) {
     if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('murojaah', data);
+      return TemplateWaManager.buildMessage('murojaah', 'ya', data);
     }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
     msg += `Alhamdulillah, hari ini ananda ${data.nama} telah menyelesaikan murajaah hafalan:\n\n`;
@@ -318,7 +318,7 @@ const NotificationService = {
    */
   formatTilawahMessage(data) {
     if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('tilawah', data);
+      return TemplateWaManager.buildMessage('tilawah', 'ya', data);
     }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
     msg += `Alhamdulillah, hari ini ananda ${data.nama} telah melaksanakan tilawah:\n\n`;
@@ -345,7 +345,8 @@ const NotificationService = {
   formatSakitMessage(data) {
     const payload = { ...data, alasan: 'Sakit' };
     if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('tidak', payload);
+      const key = TemplateWaManager.keyFor(data.jenis || 'ziyadah', 'sakit');
+      return TemplateWaManager.buildMessage(key, 'sakit', payload);
     }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
     msg += `Hari ini ananda ${data.nama} tidak dapat mengikuti setoran hafalan karena:\n`;
@@ -364,7 +365,8 @@ const NotificationService = {
    */
   formatSertifikasiMessage(data) {
     if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('sertifikasi', data);
+      const key = TemplateWaManager.keyFor(data.jenis || 'ziyadah', 'sertifikasi');
+      return TemplateWaManager.buildMessage(key, 'sertifikasi', data);
     }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
     msg += `Hari ini ananda ${data.nama} tidak mengikuti setoran hafalan karena sedang mempersiapkan sertifikasi tahfidz.\n\n`;
@@ -382,7 +384,8 @@ const NotificationService = {
    */
   formatLainnyaMessage(data) {
     if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('lainnya', data);
+      const key = TemplateWaManager.keyFor(data.jenis || 'ziyadah', 'lainnya');
+      return TemplateWaManager.buildMessage(key, 'lainnya', data);
     }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
     msg += `Hari ini ananda ${data.nama} tidak mengikuti setoran hafalan dengan keterangan:\n`;
@@ -401,7 +404,7 @@ const NotificationService = {
    */
   formatEditMessage(oldData, newData) {
     if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('edit', newData, oldData);
+      return TemplateWaManager.buildMessage('edit', 'edit', newData, oldData);
     }
     let msg = `Assalamu'alaikum ayah/bunda ananda ${newData.nama},\n\n`;
     msg += `Ada pembaruan data hafalan ananda ${newData.nama}:\n\n`;

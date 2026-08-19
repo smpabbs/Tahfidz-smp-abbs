@@ -387,8 +387,15 @@
               <p>Template ini <strong>GLOBAL</strong> — cukup diatur oleh <strong>1 guru</strong>, dipakai untuk <strong>semua guru</strong> saat mengirim notifikasi ke orang tua siswa.</p>
             </div>
 
-            <!-- Pilih Jenis Pesan -->
+            <!-- LEVEL 1: pilih jenis aktivitas (Ziyadah/Murajaah/Tilawah/Pembaruan Data) -->
             <div id="tplJenis" class="tpl-jenis"></div>
+
+            <!-- LEVEL 2: pilih status (cuma muncul utk Ziyadah/Murajaah/Tilawah) -->
+            <div id="tplLevel2Wrap">
+              <div id="tplLevel2" class="tpl-level2"></div>
+              <span class="tpl-level2-hint">Pilih status di atas untuk mengatur pesan WA-nya masing-masing.</span>
+            </div>
+            <div class="tpl-breadcrumb" id="tplBreadcrumb"></div>
 
             <!-- Editor -->
             <div class="tpl-grid">

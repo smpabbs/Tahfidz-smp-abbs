@@ -3,33 +3,58 @@
 // Pengaturan template pesan WA GLOBAL (dikelola 1 guru,
 // dipakai semua guru). Simpan di Supabase app_settings
 // + fallback localStorage.
+//
+// Navigasi 2 level supaya tidak semua 13 template kelihatan
+// sekaligus: Level 1 = jenis aktivitas (Ziyadah/Murajaah/
+// Tilawah/Pembaruan Data), Level 2 = status (Ya/Sakit/
+// Persiapan Sertifikasi/Lainnya) — cuma muncul utk 3 jenis
+// aktivitas, karena Pembaruan Data cuma 1 template.
 // ====================================================
 
 const TemplateWaManager = {
 
-  // Jenis pesan yang bisa dikustom
+  // LEVEL 1 — jenis aktivitas
   JENIS: [
-    { id: 'setoran',     label: 'Setoran Hafalan',        ico: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>', desc: 'hafalan baru masuk' },
-    { id: 'murojaah',    label: 'Murajaah',               ico: '<svg viewBox="0 0 24 24"><path d="M8 3 2 21h4l2-6h6"/><path d="M13 9h7l-4 8h-7"/></svg>', desc: 'mengulang hafalan' },
-    { id: 'tilawah',     label: 'Tilawah',                ico: '<svg viewBox="0 0 24 24"><path d="M2 6h5l3-2h10v13H10l-3 2H2Z"/></svg>', desc: 'tilawah / membaca' },
-    { id: 'tidak',       label: 'Sakit',                  ico: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>', desc: 'ananda sakit / tidak ziyadah' },
-    { id: 'sertifikasi', label: 'Persiapan Sertifikasi',  ico: '<svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>', desc: 'sedang persiapan sertifikasi' },
-    { id: 'lainnya',     label: 'Lainnya',                ico: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>', desc: 'alasan lain (bebas)' },
-    { id: 'edit',        label: 'Pembaruan Data',         ico: '<svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>', desc: 'edit setoran' }
+    { id: 'ziyadah',  label: 'Ziyadah',        desc: 'setoran hafalan baru', ico: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>' },
+    { id: 'murojaah', label: 'Murajaah',       desc: 'mengulang hafalan',    ico: '<path d="M8 3 2 21h4l2-6h6"/><path d="M13 9h7l-4 8h-7"/>' },
+    { id: 'tilawah',  label: 'Tilawah',        desc: 'tilawah / membaca',    ico: '<path d="M2 6h5l3-2h10v13H10l-3 2H2Z"/>' },
+    { id: 'edit',     label: 'Pembaruan Data', desc: 'edit setoran (semua jenis)', ico: '<path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/>' }
   ],
 
-  // Variabel yang tersedia per jenis pesan
-  VARS: {
-    setoran:     ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
-    murojaah:    ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
-    tilawah:     ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
-    tidak:       ['nama','kelas','alasan','guru','tanggal'],
+  // LEVEL 2 — status (utk jenis ziyadah/murojaah/tilawah saja)
+  STATUS: [
+    { id: 'ya',          label: 'Ya',                    ico: '<path d="M8 12.5l2.5 2.5L16 9.5"/><circle cx="12" cy="12" r="9"/>' },
+    { id: 'sakit',       label: 'Sakit',                 ico: '<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>' },
+    { id: 'sertifikasi', label: 'Persiapan Sertifikasi', ico: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>' },
+    { id: 'lainnya',     label: 'Lainnya',               ico: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' }
+  ],
+
+  // Pemetaan (jenis, status) -> key penyimpanan (app_settings / wa_template_<key>).
+  // Ziyadah dipertahankan pakai key lama (setoran/tidak/sertifikasi/lainnya) supaya
+  // template yang sudah dikustomisasi guru sebelum Murajaah/Tilawah ada tidak hilang.
+  KEY_MAP: {
+    ziyadah:  { ya: 'setoran',  sakit: 'tidak',          sertifikasi: 'sertifikasi',          lainnya: 'lainnya' },
+    murojaah: { ya: 'murojaah', sakit: 'tidak_murojaah', sertifikasi: 'sertifikasi_murojaah', lainnya: 'lainnya_murojaah' },
+    tilawah:  { ya: 'tilawah',  sakit: 'tidak_tilawah',  sertifikasi: 'sertifikasi_tilawah',  lainnya: 'lainnya_tilawah' }
+  },
+
+  /**
+   * Resolve key penyimpanan dari (jenis, status)
+   */
+  keyFor(jenis, status) {
+    return (this.KEY_MAP[jenis] && this.KEY_MAP[jenis][status]) || this.KEY_MAP.ziyadah[status] || 'setoran';
+  },
+
+  // Variabel yang tersedia, dikelompokkan per status (bentuknya sama utk ketiga jenis)
+  VARS_BY_STATUS: {
+    ya:          ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
+    sakit:       ['nama','kelas','alasan','guru','tanggal'],
     sertifikasi: ['nama','kelas','guru','tanggal'],
     lainnya:     ['nama','kelas','alasan','guru','tanggal'],
     edit:        ['nama','kelas','guru','tanggal','surat_lama','surat_baru','nilai_lama','nilai_baru','baris_lama','baris_baru']
   },
 
-  // Template BAWAAN (default) - sama dengan yang dulu hardcoded di notification.js
+  // Template BAWAAN (default) per key penyimpanan — 3 jenis x 4 status + edit = 13
   DEFAULTS: {
     setoran: `Assalamu'alaikum ayah/bunda ananda {nama},
 
@@ -87,6 +112,28 @@ Kami doakan semoga ananda lekas sehat dan bisa kembali menghafal.
 Wassalamu'alaikum,
 {guru}`,
 
+    tidak_murojaah: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak dapat mengikuti murajaah karena:
+
+📝 {alasan}
+
+Kami doakan semoga ananda lekas sehat.
+
+Wassalamu'alaikum,
+{guru}`,
+
+    tidak_tilawah: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak dapat mengikuti tilawah karena:
+
+📝 {alasan}
+
+Kami doakan semoga ananda lekas sehat.
+
+Wassalamu'alaikum,
+{guru}`,
+
     sertifikasi: `Assalamu'alaikum ayah/bunda ananda {nama},
 
 Hari ini ananda {nama} tidak mengikuti setoran hafalan karena sedang mempersiapkan sertifikasi tahfidz.
@@ -96,9 +143,45 @@ Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.
 Wassalamu'alaikum,
 {guru}`,
 
+    sertifikasi_murojaah: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak mengikuti murajaah karena sedang mempersiapkan sertifikasi tahfidz.
+
+Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.
+
+Wassalamu'alaikum,
+{guru}`,
+
+    sertifikasi_tilawah: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak mengikuti tilawah karena sedang mempersiapkan sertifikasi tahfidz.
+
+Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.
+
+Wassalamu'alaikum,
+{guru}`,
+
     lainnya: `Assalamu'alaikum ayah/bunda ananda {nama},
 
 Hari ini ananda {nama} tidak mengikuti setoran hafalan dengan keterangan:
+
+📝 {alasan}
+
+Wassalamu'alaikum,
+{guru}`,
+
+    lainnya_murojaah: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak mengikuti murajaah dengan keterangan:
+
+📝 {alasan}
+
+Wassalamu'alaikum,
+{guru}`,
+
+    lainnya_tilawah: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Hari ini ananda {nama} tidak mengikuti tilawah dengan keterangan:
 
 📝 {alasan}
 
@@ -131,7 +214,8 @@ Wassalamu'alaikum,
     baris_lama:'10', baris_baru:'15'
   },
 
-  jenisAktif: 'setoran',
+  jenisAktif: 'ziyadah',
+  statusAktif: 'ya',
 
   /**
    * Inisialisasi: muat template dari Supabase (fallback localStorage)
@@ -152,13 +236,23 @@ Wassalamu'alaikum,
   },
 
   /**
-   * Ambil template aktif untuk satu jenis (user punya > default)
-   * @param {string} jenis - 'setoran' | 'tidak' | 'edit'
+   * Key penyimpanan & status (bentuk vars) untuk kombinasi jenis+status yang aktif
+   */
+  currentKey() {
+    return this.jenisAktif === 'edit' ? 'edit' : this.keyFor(this.jenisAktif, this.statusAktif);
+  },
+  currentStatus() {
+    return this.jenisAktif === 'edit' ? 'edit' : this.statusAktif;
+  },
+
+  /**
+   * Ambil template aktif untuk satu key (user punya > default)
+   * @param {string} key - key penyimpanan, mis. 'setoran' | 'tidak_murojaah' | 'edit'
    * @returns {string}
    */
-  getTemplate(jenis) {
-    const user = AppState.waTemplates && AppState.waTemplates[jenis];
-    return (user && user.trim()) ? user : (this.DEFAULTS[jenis] || '');
+  getTemplate(key) {
+    const user = AppState.waTemplates && AppState.waTemplates[key];
+    return (user && user.trim()) ? user : (this.DEFAULTS[key] || '');
   },
 
   /**
@@ -176,16 +270,17 @@ Wassalamu'alaikum,
 
   /**
    * Format pesan final dari data setoran (dipakai notification.js)
-   * @param {string} jenis - 'setoran' | 'tidak' | 'edit'
+   * @param {string} key - key penyimpanan, mis. 'setoran' | 'tidak_murojaah' | 'edit'
+   * @param {string} status - 'ya' | 'sakit' | 'sertifikasi' | 'lainnya' | 'edit' (menentukan bentuk variabel)
    * @param {object} data - data form/setoran
-   * @param {object} oldData - data lama (khusus jenis 'edit')
+   * @param {object} oldData - data lama (khusus status 'edit')
    * @returns {string}
    */
-  buildMessage(jenis, data, oldData) {
-    const template = this.getTemplate(jenis);
+  buildMessage(key, status, data, oldData) {
+    const template = this.getTemplate(key);
     let vars;
 
-    if (jenis === 'edit' && oldData && data) {
+    if (status === 'edit' && oldData && data) {
       vars = {
         nama: data.nama, kelas: data.kelas || '', guru: data.guru || '',
         tanggal: data.tanggal || '', tanggal_lama: oldData.tanggal || '-',
@@ -194,17 +289,17 @@ Wassalamu'alaikum,
         nilai_lama: oldData.keterangan || '-', nilai_baru: data.keterangan || '-',
         baris_lama: oldData.baris || 0, baris_baru: data.baris || 0
       };
-    } else if (jenis === 'tidak' || jenis === 'lainnya') {
+    } else if (status === 'sakit' || status === 'lainnya') {
       vars = {
         nama: data.nama || '', kelas: data.kelas || '', guru: data.guru || '',
         tanggal: data.tanggal || '', alasan: data.alasan || 'Tidak disebutkan'
       };
-    } else if (jenis === 'sertifikasi') {
+    } else if (status === 'sertifikasi') {
       vars = {
         nama: data.nama || '', kelas: data.kelas || '', guru: data.guru || '',
         tanggal: data.tanggal || ''
       };
-    } else { // setoran
+    } else { // 'ya'
       vars = {
         nama: data.nama || '', kelas: data.kelas || '', guru: data.guru || '',
         tanggal: data.tanggal || '', surat: data.surat || '-',
@@ -229,15 +324,15 @@ Wassalamu'alaikum,
    * Simpan template (Supabase + localStorage)
    */
   async simpan() {
-    const jenis = this.jenisAktif;
+    const key = this.currentKey();
     const teks = document.getElementById('tplEditor')?.value || '';
     if (!AppState.waTemplates) AppState.waTemplates = {};
-    AppState.waTemplates[jenis] = teks;
+    AppState.waTemplates[key] = teks;
 
     const okLocal = StorageService.saveWATemplates(AppState.waTemplates);
     let okCloud = false;
     try {
-      okCloud = await DatabaseService.saveWASetting(`wa_template_${jenis}`, teks);
+      okCloud = await DatabaseService.saveWASetting(`wa_template_${key}`, teks);
     } catch (e) {
       console.warn('⚠️ Supabase save template failed:', e.message);
     }
@@ -253,23 +348,23 @@ Wassalamu'alaikum,
   },
 
   /**
-   * Kembalikan template jenis aktif ke bawaan
+   * Kembalikan template jenis+status aktif ke bawaan
    */
   async resetDefault() {
-    const jenis = this.jenisAktif;
-    const label = this.JENIS.find(j => j.id === jenis)?.label || jenis;
+    const key = this.currentKey();
+    const label = this.breadcrumbLabel();
     const ok = await ConfirmDialog.show(`Template "${label}" akan dikembalikan ke pesan bawaan.`, { title: 'Kembalikan ke Bawaan?', confirmText: 'Ya, Kembalikan' });
     if (!ok) return;
 
-    if (AppState.waTemplates) AppState.waTemplates[jenis] = '';
+    if (AppState.waTemplates) AppState.waTemplates[key] = '';
     StorageService.saveWATemplates(AppState.waTemplates || {});
     try {
-      await DatabaseService.saveWASetting(`wa_template_${jenis}`, '');
+      await DatabaseService.saveWASetting(`wa_template_${key}`, '');
     } catch (e) {
       console.warn('⚠️ Supabase reset template failed:', e.message);
     }
 
-    document.getElementById('tplEditor').value = this.getTemplate(jenis);
+    document.getElementById('tplEditor').value = this.getTemplate(key);
     this.preview();
     NotificationService.success('↩️ Template dikembalikan ke bawaan');
   },
@@ -283,8 +378,7 @@ Wassalamu'alaikum,
       NotificationService.warning('⚠️ Isi nomor WhatsApp test dulu');
       return;
     }
-    const jenis = this.jenisAktif;
-    const message = this.buildMessage(jenis, { ...this.SAMPLE });
+    const message = this.buildMessage(this.currentKey(), this.currentStatus(), { ...this.SAMPLE });
     const token = AppConfig.FONNTE_DEFAULT_TOKEN;
 
     NotificationService.info('📤 Mengirim test ke ' + no + ' ...', 5000);
@@ -301,17 +395,19 @@ Wassalamu'alaikum,
   // ==========================================
 
   /**
-   * Render semua (jenis buttons, chips, editor, preview)
+   * Render semua (level 1, level 2, breadcrumb, chips, editor, preview)
    */
   renderAll() {
-    this.renderJenisButtons();
+    this.renderLevel1();
+    this.renderLevel2();
+    this.renderBreadcrumb();
     this.renderChips();
     const editor = document.getElementById('tplEditor');
-    if (editor) editor.value = this.getTemplate(this.jenisAktif);
+    if (editor) editor.value = this.getTemplate(this.currentKey());
     this.preview();
   },
 
-  renderJenisButtons() {
+  renderLevel1() {
     const container = document.getElementById('tplJenis');
     if (!container) return;
     container.innerHTML = '';
@@ -319,18 +415,57 @@ Wassalamu'alaikum,
       const btn = document.createElement('button');
       btn.type = 'button';
       btn.className = 'tpl-jenis-btn' + (j.id === this.jenisAktif ? ' active' : '');
-      btn.dataset.jenis = j.id;
-      btn.innerHTML = `<span class="tpl-j-ico">${j.ico}</span>${j.label}<span class="tpl-j-sub">${j.desc}</span>`;
+      btn.innerHTML = `<span class="tpl-j-ico"><svg viewBox="0 0 24 24">${j.ico}</svg></span>${j.label}<span class="tpl-j-sub">${j.desc}</span>`;
       btn.onclick = () => this.pilihJenis(j.id);
       container.appendChild(btn);
     });
+  },
+
+  renderLevel2() {
+    const wrap = document.getElementById('tplLevel2Wrap');
+    const container = document.getElementById('tplLevel2');
+    if (!wrap || !container) return;
+
+    if (this.jenisAktif === 'edit') {
+      wrap.style.display = 'none';
+      return;
+    }
+    wrap.style.display = '';
+    container.innerHTML = '';
+    this.STATUS.forEach(s => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'tpl-level2-btn' + (s.id === this.statusAktif ? ' active' : '');
+      btn.innerHTML = `<svg viewBox="0 0 24 24">${s.ico}</svg>${s.label}`;
+      btn.onclick = () => this.pilihStatus(s.id);
+      container.appendChild(btn);
+    });
+  },
+
+  breadcrumbLabel() {
+    const jLabel = this.JENIS.find(j => j.id === this.jenisAktif)?.label || this.jenisAktif;
+    if (this.jenisAktif === 'edit') return jLabel;
+    const sLabel = this.STATUS.find(s => s.id === this.statusAktif)?.label || this.statusAktif;
+    return `${jLabel} → ${sLabel}`;
+  },
+
+  renderBreadcrumb() {
+    const el = document.getElementById('tplBreadcrumb');
+    if (!el) return;
+    const jLabel = this.JENIS.find(j => j.id === this.jenisAktif)?.label || this.jenisAktif;
+    if (this.jenisAktif === 'edit') {
+      el.innerHTML = `Mengedit template: <b>${jLabel}</b>`;
+      return;
+    }
+    const sLabel = this.STATUS.find(s => s.id === this.statusAktif)?.label || this.statusAktif;
+    el.innerHTML = `Mengedit template: <b>${jLabel}</b> → <b>${sLabel}</b>`;
   },
 
   renderChips() {
     const container = document.getElementById('tplChips');
     if (!container) return;
     container.innerHTML = '';
-    (this.VARS[this.jenisAktif] || []).forEach(v => {
+    (this.VARS_BY_STATUS[this.currentStatus()] || []).forEach(v => {
       const chip = document.createElement('span');
       chip.className = 'tpl-chip';
       chip.textContent = '{' + v + '}';
@@ -341,14 +476,30 @@ Wassalamu'alaikum,
   },
 
   /**
-   * Pindah jenis pesan aktif
+   * Pindah jenis aktivitas aktif (Level 1)
    */
   pilihJenis(jenis) {
     this.jenisAktif = jenis;
-    this.renderJenisButtons();
+    if (jenis !== 'edit') this.statusAktif = 'ya';
+    this.renderLevel1();
+    this.renderLevel2();
+    this.renderBreadcrumb();
     this.renderChips();
     const editor = document.getElementById('tplEditor');
-    if (editor) editor.value = this.getTemplate(jenis);
+    if (editor) editor.value = this.getTemplate(this.currentKey());
+    this.preview();
+  },
+
+  /**
+   * Pindah status aktif (Level 2)
+   */
+  pilihStatus(status) {
+    this.statusAktif = status;
+    this.renderLevel2();
+    this.renderBreadcrumb();
+    this.renderChips();
+    const editor = document.getElementById('tplEditor');
+    if (editor) editor.value = this.getTemplate(this.currentKey());
     this.preview();
   },
 
@@ -376,7 +527,7 @@ Wassalamu'alaikum,
     if (!bubble) return;
     const teks = editor ? editor.value : '';
     bubble.textContent = teks.trim()
-      ? this.buildMessage(this.jenisAktif, { ...this.SAMPLE })
+      ? this.buildMessage(this.currentKey(), this.currentStatus(), { ...this.SAMPLE })
       : '(template kosong — sistem akan memakai pesan bawaan)';
     if (timeEl) {
       const now = new Date();

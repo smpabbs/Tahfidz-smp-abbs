@@ -175,10 +175,12 @@ const OutputTable = {
           const isTidak = entry.menghafal !== 'ya';
           if (isTidak) {
             const label = entry.alasan || AppConfig.MENGHAFAL_LABELS[entry.menghafal] || 'tanpa alasan';
+            const mJenisTidak = this.jenisName(entry)
+              ? `<span class="jenis-tag">${this.jenisName(entry)}</span> ` : '';
             return `
               <div class="oerow absent">
                 <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
-                <div class="omid"><div class="osurat">Tidak setoran — ${label}</div></div>
+                <div class="omid"><div class="osurat">${mJenisTidak}Tidak setoran — ${label}</div></div>
               </div>
             `;
           }
@@ -286,12 +288,14 @@ const OutputTable = {
   },
 
   /**
-   * Nama jenis aktivitas (Ziyadah/Murajaah/Tilawah) utk tampilan & export
+   * Nama jenis aktivitas (Ziyadah/Murajaah/Tilawah) utk tampilan & export.
+   * Berlaku juga untuk baris absen (Sakit/Sertifikasi/Lainnya) — setiap
+   * tab Setoran menandai jenis-nya sendiri di data, bukan cuma yang "Ya".
    * @param {object} e - record
-   * @returns {string|null} label, atau null untuk absence
+   * @returns {string|null}
    */
   jenisName(e) {
-    if (!e || e.menghafal !== 'ya') return null;
+    if (!e) return null;
     return AppConfig.JENIS_LABELS[e.jenis] || AppConfig.JENIS_LABELS.ziyadah;
   },
 
