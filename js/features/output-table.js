@@ -186,7 +186,7 @@ const OutputTable = {
             ? `${parseFloat(entry.ayatDari)} – ${parseFloat(entry.ayatSampai)}`
             : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—');
           const cls = nilaiClass[entry.keterangan] || 'jayid';
-          const mJenis = entry.jenis && entry.jenis !== 'ziyadah'
+          const mJenis = this.jenisName(entry)
             ? `<span class="jenis-tag">${this.jenisName(entry)}</span> ` : '';
           return `
             <div class="oerow">
@@ -230,10 +230,16 @@ const OutputTable = {
     const filterKelas = document.getElementById('filterKelas')?.value || '';
     const filterBulan = document.getElementById('filterBulan')?.value || '';
     const filterTahun = document.getElementById('filterTahun')?.value || '';
+    const filterJenis = document.getElementById('filterJenis')?.value || '';
 
     return AppState.tahfidzRecords.filter(d => {
       if (!d || !d.nama) return false;
       if (filterKelas && d.kelas !== filterKelas) return false;
+
+      if (filterJenis) {
+        const j = d.menghafal === 'ya' ? (d.jenis || 'ziyadah') : d.jenis;
+        if (j !== filterJenis) return false;
+      }
 
       if (filterBulan || filterTahun) {
         if (!d.tanggal) return false;
@@ -311,7 +317,7 @@ const OutputTable = {
     const keteranganDisplay = isTidak ? '—' : (entry.keterangan || '—');
     const barisDisplay = isTidak ? '0' : (parseFloat(entry.baris) || 0).toString();
     const jenisName = this.jenisName(entry);
-    const jenisTag = (jenisName && entry.jenis && entry.jenis !== 'ziyadah')
+    const jenisTag = jenisName
       ? `<span class="jenis-tag">${jenisName}</span> `
       : '';
 

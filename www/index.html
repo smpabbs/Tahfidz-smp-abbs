@@ -129,6 +129,14 @@
           <option value="">Semua</option>
         </select>
 
+        <label>Jenis:</label>
+        <select id="filterJenis" onchange="OutputTable.update()">
+          <option value="">Semua</option>
+          <option value="ziyadah">Ziyadah</option>
+          <option value="murojaah">Murajaah</option>
+          <option value="tilawah">Tilawah</option>
+        </select>
+
         <label>Bulan:</label>
         <select id="filterBulan" onchange="OutputTable.update()">
           <option value="">Semua Bulan</option>
