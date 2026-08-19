@@ -124,31 +124,30 @@ const InputForm = {
   },
 
   /**
-   * Toggle field menghafal (hanya tab Ziyadah)
+   * Toggle field menghafal / alasan / hafalan per tab (prefix '' | M | T)
+   * @param {string} prefix - '' (Ziyadah) | 'M' (Murajaah) | 'T' (Tilawah)
    */
-  toggleMenghafalFields() {
-    const value = document.getElementById('menghafal')?.value;
-    const hafalanFields = document.getElementById('hafalanFields');
-    const alasanField = document.getElementById('alasanField');
-    const alasanInput = document.getElementById('alasan');
+  toggleMenghafalFields(prefix = '') {
+    const value = document.getElementById('menghafal' + prefix)?.value;
+    const hafalanFields = document.getElementById('hafalanFields' + prefix);
+    const alasanField = document.getElementById('alasanField' + prefix);
+    const alasanInput = document.getElementById('alasan' + prefix);
+    const barisInput = document.getElementById('baris' + prefix);
 
     if (value === 'ya') {
       if (hafalanFields) hafalanFields.classList.remove('hidden');
       if (alasanField) alasanField.classList.add('hidden');
       if (alasanInput) alasanInput.required = false;
-      const barisInput = document.getElementById('baris');
       if (barisInput) barisInput.required = true;
     } else if (value === 'lainnya') {
       if (hafalanFields) hafalanFields.classList.add('hidden');
       if (alasanField) alasanField.classList.remove('hidden');
       if (alasanInput) alasanInput.required = true;
-      const barisInput = document.getElementById('baris');
       if (barisInput) barisInput.required = false;
     } else {
       if (hafalanFields) hafalanFields.classList.add('hidden');
       if (alasanField) alasanField.classList.add('hidden');
       if (alasanInput) alasanInput.required = false;
-      const barisInput = document.getElementById('baris');
       if (barisInput) barisInput.required = false;
     }
   },
@@ -172,11 +171,8 @@ const InputForm = {
     const jenis = form?.dataset.jenis || 'ziyadah';
     const p = this.jenisPrefix(jenis);
 
-    // Hanya Ziyadah yang punya pilihan Ya/Sakit/Sertifikasi/Lainnya.
-    // Murajaah & Tilawah selalu aktivitas positif.
-    const menghafal = jenis !== 'ziyadah'
-      ? 'ya'
-      : (this._val('menghafal') || '');
+    // Setiap tab punya dropdown status sendiri (Ya/Sakit/Persiapan Sertifikasi/Lainnya)
+    const menghafal = this._val(p + 'menghafal') || '';
 
     return {
       guru: this._val('guru'),
@@ -188,7 +184,7 @@ const InputForm = {
       jenis: jenis,
       baris: parseFloat(this._val(p + 'baris')) || 0,
       menghafal: menghafal,
-      alasan: this._val('alasan'),
+      alasan: this._val(p + 'alasan'),
       surat: this._val(p + 'surat'),
       ayatDari: parseFloat(this._val(p + 'ayatDari')) || null,
       ayatSampai: parseFloat(this._val(p + 'ayatSampai')) || null,
@@ -225,14 +221,14 @@ const InputForm = {
       return false;
     }
 
-    if (data.jenis === 'ziyadah' && !data.menghafal) {
-      NotificationService.warning('Pilih status Ziyadah!');
-      document.getElementById('menghafal')?.focus();
+    if (!data.menghafal) {
+      NotificationService.warning('Pilih status aktivitas!');
+      document.getElementById(p + 'menghafal')?.focus();
       return false;
     }
 
-    // Aktivitas positif (ziyadah=Ya, atau murajaah/tilawah) wajib surat & baris
-    const isPositif = data.jenis !== 'ziyadah' || data.menghafal === 'ya';
+    // Wajib surat & baris hanya jika aktivitas benar dilakukan (status = ya)
+    const isPositif = data.menghafal === 'ya';
     if (isPositif) {
       if (!data.baris || data.baris <= 0) {
         NotificationService.warning('Jumlah baris harus diisi!');
@@ -246,9 +242,9 @@ const InputForm = {
       }
     }
 
-    if (data.jenis === 'ziyadah' && data.menghafal === 'lainnya' && !data.alasan) {
+    if (data.menghafal === 'lainnya' && !data.alasan) {
       NotificationService.warning('Alasan harus diisi!');
-      document.getElementById('alasan')?.focus();
+      document.getElementById(p + 'alasan')?.focus();
       return false;
     }
 

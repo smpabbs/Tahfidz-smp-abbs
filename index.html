@@ -84,8 +84,10 @@
 
             <!-- Pane Murajaah -->
             <div id="murojaahPane" class="hidden">
+              <div class="form-group"><label>Murajaah? (Aktivitas)</label><select id="menghafalM" required onchange="InputForm.toggleMenghafalFields('M')"><option value="">-- Pilih --</option><option value="ya">Ya</option><option value="sakit">Sakit</option><option value="sertifikasi">Persiapan Sertifikasi</option><option value="lainnya">Lainnya</option></select></div>
               <div class="form-group"><label>Keterangan Nilai</label><select id="keteranganM"><option value="">-- Pilih --</option></select></div>
-              <div class="form-group full">
+              <div id="alasanFieldM" class="form-group full hidden"><label>Alasan</label><input type="text" id="alasanM" placeholder="Jelaskan alasannya" /></div>
+              <div id="hafalanFieldsM" class="full hidden">
                 <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Awal</span><select id="suratM" class="target-surat-input" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDariM" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
                 <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Akhir</span><select id="suratAkhirM" class="target-surat-input" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampaiM" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
                 <div class="target-range-row"><span class="range-label">Baris</span><input type="number" id="barisM" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
@@ -94,8 +96,10 @@
 
             <!-- Pane Tilawah -->
             <div id="tilawahPane" class="hidden">
+              <div class="form-group"><label>Tilawah? (Aktivitas)</label><select id="menghafalT" required onchange="InputForm.toggleMenghafalFields('T')"><option value="">-- Pilih --</option><option value="ya">Ya</option><option value="sakit">Sakit</option><option value="sertifikasi">Persiapan Sertifikasi</option><option value="lainnya">Lainnya</option></select></div>
               <div class="form-group"><label>Keterangan Nilai</label><select id="keteranganT"><option value="">-- Pilih --</option></select></div>
-              <div class="form-group full">
+              <div id="alasanFieldT" class="form-group full hidden"><label>Alasan</label><input type="text" id="alasanT" placeholder="Jelaskan alasannya" /></div>
+              <div id="hafalanFieldsT" class="full hidden">
                 <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Awal</span><select id="suratT" class="target-surat-input" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDariT" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
                 <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Akhir</span><select id="suratAkhirT" class="target-surat-input" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampaiT" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
                 <div class="target-range-row"><span class="range-label">Baris</span><input type="number" id="barisT" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
