@@ -301,6 +301,12 @@ const InputForm = {
         NotificationService.success('✅ Data berhasil disimpan!');
         this.resetForm();
 
+        // Pulihkan tombol submit (sebelumnya hanya di-pulihkan di blok catch)
+        if (submitBtn) {
+          submitBtn.innerHTML = originalText;
+          submitBtn.disabled = false;
+        }
+
         // Pindah ke tab output setelah 1.5 detik
         setTimeout(() => {
           TabManager.show('output');

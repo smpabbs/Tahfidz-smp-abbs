@@ -158,18 +158,19 @@ const NotificationService = {
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), AppConfig.FONNTE_TIMEOUT || 15000);
 
+      // Hitung ketersediaan proxy SEBELUM try, supaya tetap terlihat di catch fallback
+      const isNative = typeof window.Capacitor !== 'undefined' && !!window.Capacitor.isNativePlatform;
+      const localDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol.includes('file');
+
+      let proxyUrl = '/api/fonnte-proxy';
+      // APK (Capacitor) tidak bisa akses path relatif — pakai URL absolut proxy di Vercel
+      if (isNative || window.location.protocol.includes('file')) {
+        proxyUrl = AppConfig.FONNTE_PROXY_URL;
+      }
+      const isProxyAvailable = !localDev || isNative;
+
       try {
         // Coba via proxy dulu (atasi CORS), fallback ke direct
-        const isNative = typeof window.Capacitor !== 'undefined' && !!window.Capacitor.isNativePlatform;
-        const localDev = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1' || window.location.protocol.includes('file');
-
-        let proxyUrl = '/api/fonnte-proxy';
-        // APK (Capacitor) tidak bisa akses path relatif — pakai URL absolut proxy di Vercel
-        if (isNative || window.location.protocol.includes('file')) {
-          proxyUrl = AppConfig.FONNTE_PROXY_URL;
-        }
-        const isProxyAvailable = !localDev || isNative;
-
         let response;
 
         if (isProxyAvailable) {

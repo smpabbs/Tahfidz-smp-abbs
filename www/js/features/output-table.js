@@ -389,7 +389,7 @@ const OutputTable = {
       no++;
     });
 
-    const csv = rows.map(r => r.map(f => `"${f}"`).join(',')).join('\n');
+    const csv = rows.map(r => r.map(f => `"${String(f).replace(/"/g, '""')}"`).join(',')).join('\n');
     this.downloadFile(csv, 'capaian-tahfidz.csv', 'text/csv');
     NotificationService.success('File CSV berhasil diunduh!');
   },
