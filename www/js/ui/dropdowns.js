@@ -199,7 +199,7 @@ const DropdownManager = {
    */
   initSuratDropdown() {
     ['', 'M', 'T'].forEach(prefix => {
-      const select = document.getElementById(prefix + 'surat');
+      const select = document.getElementById('surat' + prefix);
       if (!select) return;
 
       select.innerHTML = '<option value="">-- Pilih Surat --</option>';
@@ -212,7 +212,7 @@ const DropdownManager = {
         });
       }
 
-      const selectAkhir = document.getElementById(prefix + 'suratAkhir');
+      const selectAkhir = document.getElementById('suratAkhir' + prefix);
       if (selectAkhir) {
         selectAkhir.innerHTML = '<option value="">-- Sama dengan Surat di atas --</option>';
         if (AppState.dataSurat.length > 0) {
@@ -251,7 +251,7 @@ const DropdownManager = {
    */
   initKeteranganDropdown() {
     ['', 'M', 'T'].forEach(prefix => {
-      const select = document.getElementById(prefix + 'keterangan');
+      const select = document.getElementById('keterangan' + prefix);
       if (!select) return;
 
       select.innerHTML = '<option value="">-- Pilih Keterangan --</option>';

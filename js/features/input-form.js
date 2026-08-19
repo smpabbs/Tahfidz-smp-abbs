@@ -172,7 +172,7 @@ const InputForm = {
     const p = this.jenisPrefix(jenis);
 
     // Setiap tab punya dropdown status sendiri (Ya/Sakit/Persiapan Sertifikasi/Lainnya)
-    const menghafal = this._val(p + 'menghafal') || '';
+    const menghafal = this._val('menghafal' + p) || '';
 
     return {
       guru: this._val('guru'),
@@ -182,14 +182,14 @@ const InputForm = {
       whatsapp: this._val('whatsapp'),
       tanggal: this._val('tanggal'),
       jenis: jenis,
-      baris: parseFloat(this._val(p + 'baris')) || 0,
+      baris: parseFloat(this._val('baris' + p)) || 0,
       menghafal: menghafal,
-      alasan: this._val(p + 'alasan'),
-      surat: this._val(p + 'surat'),
-      ayatDari: parseFloat(this._val(p + 'ayatDari')) || null,
-      ayatSampai: parseFloat(this._val(p + 'ayatSampai')) || null,
-      keterangan: this._val(p + 'keterangan'),
-      suratAkhir: this._val(p + 'suratAkhir'),
+      alasan: this._val('alasan' + p),
+      surat: this._val('surat' + p),
+      ayatDari: parseFloat(this._val('ayatDari' + p)) || null,
+      ayatSampai: parseFloat(this._val('ayatSampai' + p)) || null,
+      keterangan: this._val('keterangan' + p),
+      suratAkhir: this._val('suratAkhir' + p),
       catatan: this._val('catatan')
     };
   },
@@ -223,7 +223,7 @@ const InputForm = {
 
     if (!data.menghafal) {
       NotificationService.warning('Pilih status aktivitas!');
-      document.getElementById(p + 'menghafal')?.focus();
+      document.getElementById('menghafal' + p)?.focus();
       return false;
     }
 
@@ -232,19 +232,19 @@ const InputForm = {
     if (isPositif) {
       if (!data.baris || data.baris <= 0) {
         NotificationService.warning('Jumlah baris harus diisi!');
-        document.getElementById(p + 'baris')?.focus();
+        document.getElementById('baris' + p)?.focus();
         return false;
       }
       if (!data.surat) {
         NotificationService.warning('Pilih surat!');
-        document.getElementById(p + 'surat')?.focus();
+        document.getElementById('surat' + p)?.focus();
         return false;
       }
     }
 
     if (data.menghafal === 'lainnya' && !data.alasan) {
       NotificationService.warning('Alasan harus diisi!');
-      document.getElementById(p + 'alasan')?.focus();
+      document.getElementById('alasan' + p)?.focus();
       return false;
     }
 
