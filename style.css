@@ -224,8 +224,11 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   background:linear-gradient(155deg,var(--accent),var(--accent-deep));color:#fff;font-weight:700;
   position:sticky;top:0;z-index:10;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
 }
-.student-table tr:nth-child(even) td{background:var(--surface-3)}
-.student-table tr:nth-child(odd) td{background:var(--surface-2)}
+/* Class-based, not nth-child: a student's rowspan-grouped rows must stay
+   one color, and nth-child only sees flat DOM position — it can't tell
+   a 3-row group from 3 different students, so it striped mid-group. */
+.student-table tr.even td{background:var(--surface-3)}
+.student-table tr.odd td{background:var(--surface-2)}
 .student-table tr:hover td{background:var(--accent-dim)}
 .student-table td.total-cell{font-weight:800;color:var(--accent);background:var(--accent-soft) !important;font-size:14.5px}
 .student-table .not-memorizing{color:var(--danger) !important;font-style:italic;background:rgba(177,79,62,.07) !important}

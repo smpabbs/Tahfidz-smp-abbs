@@ -304,7 +304,10 @@ const OutputTable = {
    */
   createRow(entry, siswa, globalNo, isFirst) {
     const row = document.createElement('tr');
-    row.className = (entry.originalIndex % 2 === 0) ? 'even' : 'odd';
+    // Striping keys off the student's sequence number (globalNo), not this
+    // record's raw position — a student's rowspan-grouped rows all share
+    // one color, alternating only between different students.
+    row.className = (globalNo % 2 === 0) ? 'even' : 'odd';
     row.setAttribute('data-original-index', entry.originalIndex);
     row.setAttribute('data-menghafal', entry.menghafal || 'ya');
 
