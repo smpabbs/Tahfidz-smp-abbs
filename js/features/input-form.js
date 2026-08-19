@@ -1,9 +1,12 @@
-﻿// ====================================================
+// ====================================================
 // js/features/input-form.js - FORM INPUT HANDLER
+// Satu form dengan 3 tab pada bagian "Data Setoran":
+//   Ziyadah / Murajaah / Tilawah
+// Guru, Siswa, dan Catatan dipakai bersama.
 // ====================================================
 
 const InputForm = {
-  
+
   /**
    * Inisialisasi form
    */
@@ -16,8 +19,8 @@ const InputForm = {
       console.error('❌ Form #tahfidzForm not found');
     }
 
-    // Set tanggal default
     this.setDefaultTanggal();
+    this.showSetoranTab('ziyadah');
   },
 
   /**
@@ -25,17 +28,66 @@ const InputForm = {
    */
   setDefaultTanggal() {
     const input = document.getElementById('tanggal');
-    if (input) {
-      input.value = new Date().toISOString().split('T')[0];
+    if (input) input.value = new Date().toISOString().split('T')[0];
+  },
+
+  /**
+   * Prefix id field berdasarkan jenis tab.
+   * @param {string} jenis - 'ziyadah' | 'murojaah' | 'tilawah'
+   * @returns {string} '' | 'M' | 'T'
+   */
+  jenisPrefix(jenis) {
+    if (jenis === 'murojaah') return 'M';
+    if (jenis === 'tilawah') return 'T';
+    return '';
+  },
+
+  /**
+   * Ganti tab bagian "Data Setoran" (Ziyadah/Murajaah/Tilawah)
+   * @param {string} jenis
+   */
+  showSetoranTab(jenis) {
+    const valid = ['ziyadah', 'murojaah', 'tilawah'];
+    if (!valid.includes(jenis)) jenis = 'ziyadah';
+
+    const form = document.getElementById('tahfidzForm');
+    if (form) form.setAttribute('data-jenis', jenis);
+
+    // Aktifkan tombol sub-tab
+    document.querySelectorAll('.master-tab[data-setoran]').forEach(btn => {
+      btn.classList.toggle('active', btn.getAttribute('data-setoran') === jenis);
+    });
+
+    // Tampilkan pane yang sesuai
+    const panes = ['ziyadahPane', 'murojaahPane', 'tilawahPane'];
+    panes.forEach(id => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const show = id === (jenis === 'ziyadah' ? 'ziyadahPane' : jenis === 'murojaah' ? 'murojaahPane' : 'tilawahPane');
+      el.classList.toggle('hidden', !show);
+    });
+
+    // Judul kartu
+    const title = document.getElementById('setoranTitle');
+    if (title) {
+      title.textContent = jenis === 'murojaah' ? 'Data Murajaah'
+        : jenis === 'tilawah' ? 'Data Tilawah'
+        : 'Data Setoran';
+    }
+
+    if (jenis === 'ziyadah') {
+      document.getElementById('hafalanFields')?.classList.add('hidden');
+      document.getElementById('alasanField')?.classList.add('hidden');
+      this.toggleMenghafalFields();
     }
   },
 
   // ==========================================
-  // FORM EVENTS (dipanggil dari HTML onclick)
+  // FORM EVENTS (dipanggil dari HTML)
   // ==========================================
 
   /**
-   * Update token guru saat guru dipilih
+   * Update token guru saat guru dipilih (Guru dipakai bersama)
    */
   updateToken() {
     const select = document.getElementById('guru');
@@ -48,20 +100,18 @@ const InputForm = {
   },
 
   /**
-   * Update dropdown siswa saat kelas dipilih
+   * Update dropdown siswa saat kelas dipilih (Kelas dipakai bersama)
    */
   updateNamaSiswa() {
     const kelas = document.getElementById('kelas')?.value;
-    if (kelas) {
-      DropdownManager.updateSiswaDropdown(kelas);
-    }
-    // Reset WhatsApp
+    if (kelas) DropdownManager.updateSiswaDropdown(kelas);
+
     const waInput = document.getElementById('whatsapp');
     if (waInput) waInput.value = '';
   },
 
   /**
-   * Update WhatsApp saat siswa dipilih
+   * Update WhatsApp saat siswa dipilih (Siswa dipakai bersama)
    */
   updateWhatsApp() {
     const select = document.getElementById('siswa');
@@ -74,40 +124,40 @@ const InputForm = {
   },
 
   /**
-   * Toggle field menghafal
+   * Toggle field menghafal (hanya tab Ziyadah)
    */
   toggleMenghafalFields() {
     const value = document.getElementById('menghafal')?.value;
     const hafalanFields = document.getElementById('hafalanFields');
     const alasanField = document.getElementById('alasanField');
-    const jenisField = document.getElementById('jenisField');
-    const barisInput = document.getElementById('baris');
     const alasanInput = document.getElementById('alasan');
 
-    if (!hafalanFields || !alasanField) return;
-
     if (value === 'ya') {
-      hafalanFields.classList.remove('hidden');
-      alasanField.classList.add('hidden');
-      if (jenisField) jenisField.classList.remove('hidden');
+      if (hafalanFields) hafalanFields.classList.remove('hidden');
+      if (alasanField) alasanField.classList.add('hidden');
+      if (alasanInput) alasanInput.required = false;
+      const barisInput = document.getElementById('baris');
       if (barisInput) barisInput.required = true;
-      if (alasanInput) alasanInput.required = false;
     } else if (value === 'lainnya') {
-      // Hanya 'Lainnya' yang perlu alasan bebas — Sakit & Persiapan
-      // Sertifikasi cukup dari pilihan dropdown (pesan WA pakai teks tetap)
-      hafalanFields.classList.add('hidden');
-      alasanField.classList.remove('hidden');
-      if (jenisField) jenisField.classList.add('hidden');
-      if (barisInput) barisInput.required = false;
+      if (hafalanFields) hafalanFields.classList.add('hidden');
+      if (alasanField) alasanField.classList.remove('hidden');
       if (alasanInput) alasanInput.required = true;
-    } else {
-      // 'sakit', 'sertifikasi', atau belum dipilih
-      hafalanFields.classList.add('hidden');
-      alasanField.classList.add('hidden');
-      if (jenisField) jenisField.classList.add('hidden');
+      const barisInput = document.getElementById('baris');
       if (barisInput) barisInput.required = false;
+    } else {
+      if (hafalanFields) hafalanFields.classList.add('hidden');
+      if (alasanField) alasanField.classList.add('hidden');
       if (alasanInput) alasanInput.required = false;
+      const barisInput = document.getElementById('baris');
+      if (barisInput) barisInput.required = false;
     }
+  },
+
+  /**
+   * Set field value dengan mengabaikan missing (rujuk ke value)
+   */
+  _val(id) {
+    return document.getElementById(id)?.value || '';
   },
 
   // ==========================================
@@ -115,82 +165,88 @@ const InputForm = {
   // ==========================================
 
   /**
-   * Kumpulkan data dari form
-   * @returns {object}
+   * Kumpulkan data dari form sesuai tab aktif
    */
   collectData() {
+    const form = document.getElementById('tahfidzForm');
+    const jenis = form?.dataset.jenis || 'ziyadah';
+    const p = this.jenisPrefix(jenis);
+
+    // Hanya Ziyadah yang punya pilihan Ya/Sakit/Sertifikasi/Lainnya.
+    // Murajaah & Tilawah selalu aktivitas positif.
+    const menghafal = jenis !== 'ziyadah'
+      ? 'ya'
+      : (this._val('menghafal') || '');
+
     return {
-      guru: document.getElementById('guru')?.value || '',
-      tokenGuru: document.getElementById('tokenGuru')?.value || '',
-      nama: document.getElementById('siswa')?.value || '',
-      kelas: document.getElementById('kelas')?.value || '',
-      whatsapp: document.getElementById('whatsapp')?.value || '',
-      tanggal: document.getElementById('tanggal')?.value || '',
-      jenis: document.getElementById('jenis')?.value || 'ziyadah',
-      baris: parseFloat(document.getElementById('baris')?.value) || 0,
-      menghafal: document.getElementById('menghafal')?.value || '',
-      alasan: document.getElementById('alasan')?.value || '',
-      surat: document.getElementById('surat')?.value || '',
-      ayatDari: parseFloat(document.getElementById('ayatDari')?.value) || null,
-      ayatSampai: parseFloat(document.getElementById('ayatSampai')?.value) || null,
-      keterangan: document.getElementById('keterangan')?.value || '',
-      suratAkhir: document.getElementById('suratAkhir')?.value || '',
-      catatan: document.getElementById('catatan')?.value || ''
+      guru: this._val('guru'),
+      tokenGuru: this._val('tokenGuru'),
+      nama: this._val('siswa'),
+      kelas: this._val('kelas'),
+      whatsapp: this._val('whatsapp'),
+      tanggal: this._val('tanggal'),
+      jenis: jenis,
+      baris: parseFloat(this._val(p + 'baris')) || 0,
+      menghafal: menghafal,
+      alasan: this._val('alasan'),
+      surat: this._val(p + 'surat'),
+      ayatDari: parseFloat(this._val(p + 'ayatDari')) || null,
+      ayatSampai: parseFloat(this._val(p + 'ayatSampai')) || null,
+      keterangan: this._val(p + 'keterangan'),
+      suratAkhir: this._val(p + 'suratAkhir'),
+      catatan: this._val('catatan')
     };
   },
 
   /**
    * Validasi data form
-   * @param {object} data
-   * @returns {boolean}
    */
   validate(data) {
-    // Wajib diisi
+    const p = this.jenisPrefix(data.jenis);
+
     if (!data.guru) {
       NotificationService.warning('Pilih guru terlebih dahulu!');
       document.getElementById('guru')?.focus();
       return false;
     }
-
     if (!data.kelas) {
       NotificationService.warning('Pilih kelas terlebih dahulu!');
       document.getElementById('kelas')?.focus();
       return false;
     }
-
     if (!data.nama) {
       NotificationService.warning('Pilih siswa terlebih dahulu!');
       document.getElementById('siswa')?.focus();
       return false;
     }
-
     if (!data.tanggal) {
       NotificationService.warning('Tanggal harus diisi!');
       document.getElementById('tanggal')?.focus();
       return false;
     }
 
-    if (!data.menghafal) {
+    if (data.jenis === 'ziyadah' && !data.menghafal) {
       NotificationService.warning('Pilih status Ziyadah!');
       document.getElementById('menghafal')?.focus();
       return false;
     }
 
-    // Validasi spesifik
-    if (data.menghafal === 'ya') {
+    // Aktivitas positif (ziyadah=Ya, atau murajaah/tilawah) wajib surat & baris
+    const isPositif = data.jenis !== 'ziyadah' || data.menghafal === 'ya';
+    if (isPositif) {
       if (!data.baris || data.baris <= 0) {
         NotificationService.warning('Jumlah baris harus diisi!');
-        document.getElementById('baris')?.focus();
+        document.getElementById(p + 'baris')?.focus();
         return false;
       }
       if (!data.surat) {
         NotificationService.warning('Pilih surat!');
-        document.getElementById('surat')?.focus();
+        document.getElementById(p + 'surat')?.focus();
         return false;
       }
     }
 
-    if (data.menghafal === 'lainnya' && !data.alasan) {
+    if (data.jenis === 'ziyadah' && data.menghafal === 'lainnya' && !data.alasan) {
       NotificationService.warning('Alasan harus diisi!');
       document.getElementById('alasan')?.focus();
       return false;
@@ -200,12 +256,10 @@ const InputForm = {
   },
 
   /**
-   * Prepare data untuk disimpan ke database
-   * @param {object} formData
-   * @returns {object}
+   * Siapkan data untuk disimpan ke database
    */
   prepareRecord(formData) {
-    // Gabungkan surat awal & akhir jika lintas surat: "An-Naba' → Abasa"
+    // Gabungkan surat awal & akhir jika lintas surat
     let suratFinal = formData.surat || '';
     if (formData.menghafal === 'ya' && formData.suratAkhir && formData.suratAkhir !== formData.surat) {
       suratFinal = formData.surat + ' → ' + formData.suratAkhir;
@@ -231,22 +285,17 @@ const InputForm = {
 
   /**
    * Handle submit form
-   * @param {Event} e
    */
   async handleSubmit(e) {
     e.preventDefault();
     console.log('📝 Form submitted');
 
-    // Kumpulkan data
+    const form = e.target;
     const formData = this.collectData();
 
-    // Validasi
     if (!this.validate(formData)) return;
-
-    // Prepare record
     const record = this.prepareRecord(formData);
 
-    // Disable button
     const submitBtn = e.target.querySelector('.btn-submit');
     const originalText = submitBtn?.innerHTML || '💾 Simpan Data';
     if (submitBtn) {
@@ -255,14 +304,12 @@ const InputForm = {
     }
 
     try {
-      // Simpan ke Supabase
       const result = await DatabaseService.saveTahfidzRecord(record);
 
       if (result) {
-        // Kirim notifikasi WhatsApp
         if (formData.whatsapp) {
           NotificationService.info('📱 Mengirim notifikasi WA ke orang tua...', 3000);
-          
+
           let message;
           switch (formData.menghafal) {
             case 'sakit':
@@ -284,17 +331,14 @@ const InputForm = {
               }
           }
 
-          // Kirim async — beri feedback hasilnya ke user
           NotificationService.sendWhatsApp(
-            formData.whatsapp, 
-            message, 
+            formData.whatsapp,
+            message,
             formData.tokenGuru
           ).then(sent => {
             if (sent) {
-              console.log('✅ WhatsApp notification sent');
               NotificationService.success('📱 Notifikasi WA berhasil dikirim!', 4000);
             } else {
-              console.warn('⚠️ Gagal kirim WA — token mungkin tidak valid');
               NotificationService.warning(
                 '⚠️ Data tersimpan, tapi notifikasi WA gagal. ' +
                 'Cek token Fonnte guru di Master Data > Guru.',
@@ -303,7 +347,6 @@ const InputForm = {
             }
           });
         } else {
-          // Siswa tidak punya nomor WA
           NotificationService.warning(
             'ℹ️ Data tersimpan. Siswa tidak punya nomor WhatsApp.',
             5000
@@ -313,13 +356,11 @@ const InputForm = {
         NotificationService.success('✅ Data berhasil disimpan!');
         this.resetForm();
 
-        // Pulihkan tombol submit (sebelumnya hanya di-pulihkan di blok catch)
         if (submitBtn) {
           submitBtn.innerHTML = originalText;
           submitBtn.disabled = false;
         }
 
-        // Pindah ke tab output setelah 1.5 detik
         setTimeout(() => {
           TabManager.show('output');
         }, 1500);
@@ -329,7 +370,6 @@ const InputForm = {
       console.error('❌ Submit error:', error);
       NotificationService.error('❌ Gagal menyimpan data: ' + error.message);
 
-      // Kembalikan button
       if (submitBtn) {
         submitBtn.innerHTML = originalText;
         submitBtn.disabled = false;
@@ -349,6 +389,7 @@ const InputForm = {
       document.getElementById('hafalanFields')?.classList.add('hidden');
       document.getElementById('alasanField')?.classList.add('hidden');
       this.setDefaultTanggal();
+      this.showSetoranTab('ziyadah');
     }
   }
 };

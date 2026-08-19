@@ -195,36 +195,36 @@ const DropdownManager = {
   // ==========================================
 
   /**
-   * Inisialisasi dropdown surat
+   * Inisialisasi dropdown surat untuk semua tab Setoran (Ziyadah/Murajaah/Tilawah)
    */
   initSuratDropdown() {
-    const select = document.getElementById('surat');
-    if (!select) return;
+    ['', 'M', 'T'].forEach(prefix => {
+      const select = document.getElementById(prefix + 'surat');
+      if (!select) return;
 
-    select.innerHTML = '<option value="">-- Pilih Surat --</option>';
-
-    if (AppState.dataSurat.length > 0) {
-      AppState.dataSurat.forEach(surat => {
-        const opt = document.createElement('option');
-        opt.value = surat.value;
-        opt.textContent = surat.label;
-        select.appendChild(opt);
-      });
-    }
-
-    // Dropdown Surat Akhir (opsional — lintas surat)
-    const selectAkhir = document.getElementById('suratAkhir');
-    if (selectAkhir) {
-      selectAkhir.innerHTML = '<option value="">-- Sama dengan Surat di atas --</option>';
+      select.innerHTML = '<option value="">-- Pilih Surat --</option>';
       if (AppState.dataSurat.length > 0) {
         AppState.dataSurat.forEach(surat => {
           const opt = document.createElement('option');
           opt.value = surat.value;
           opt.textContent = surat.label;
-          selectAkhir.appendChild(opt);
+          select.appendChild(opt);
         });
       }
-    }
+
+      const selectAkhir = document.getElementById(prefix + 'suratAkhir');
+      if (selectAkhir) {
+        selectAkhir.innerHTML = '<option value="">-- Sama dengan Surat di atas --</option>';
+        if (AppState.dataSurat.length > 0) {
+          AppState.dataSurat.forEach(surat => {
+            const opt = document.createElement('option');
+            opt.value = surat.value;
+            opt.textContent = surat.label;
+            selectAkhir.appendChild(opt);
+          });
+        }
+      }
+    });
   },
 
   /**
@@ -247,19 +247,20 @@ const DropdownManager = {
   // ==========================================
 
   /**
-   * Inisialisasi dropdown keterangan
+   * Inisialisasi dropdown keterangan untuk semua tab Setoran
    */
   initKeteranganDropdown() {
-    const select = document.getElementById('keterangan');
-    if (!select) return;
+    ['', 'M', 'T'].forEach(prefix => {
+      const select = document.getElementById(prefix + 'keterangan');
+      if (!select) return;
 
-    select.innerHTML = '<option value="">-- Pilih Keterangan --</option>';
-
-    AppState.dataKeterangan.forEach(ket => {
-      const opt = document.createElement('option');
-      opt.value = ket.value;
-      opt.textContent = ket.label;
-      select.appendChild(opt);
+      select.innerHTML = '<option value="">-- Pilih Keterangan --</option>';
+      AppState.dataKeterangan.forEach(ket => {
+        const opt = document.createElement('option');
+        opt.value = ket.value;
+        opt.textContent = ket.label;
+        select.appendChild(opt);
+      });
     });
   },
 

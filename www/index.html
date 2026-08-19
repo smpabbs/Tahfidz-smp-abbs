@@ -40,128 +40,74 @@
 
     <!-- 🟢 TAB INPUT -->
     <div id="input" class="tab-content active">
-      <form id="tahfidzForm">
-
-        <!-- Card: Data Guru -->
+      <form id="tahfidzForm" data-jenis="ziyadah">
+        <!-- Card: Data Guru (dipakai bersama) -->
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">Data Guru</div>
-          </div>
+          <div class="card-header"><div class="card-title">Data Guru</div></div>
           <div class="form-grid">
-            <div class="form-group">
-              <label>Nama Guru</label>
-              <select id="guru" required onchange="InputForm.updateToken()">
-                <option value="">-- Pilih Guru --</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Tanggal</label>
-              <input type="date" id="tanggal" required />
-            </div>
-            <div class="form-group field-suppressed">
-              <label>Token Fonnte</label>
-              <input type="text" id="tokenGuru" readonly class="readonly-field" />
-            </div>
+            <div class="form-group"><label>Nama Guru</label><select id="guru" required onchange="InputForm.updateToken()"><option value="">-- Pilih Guru --</option></select></div>
+            <div class="form-group"><label>Tanggal</label><input type="date" id="tanggal" required /></div>
+            <div class="form-group field-suppressed"><label>Token Fonnte</label><input type="text" id="tokenGuru" readonly class="readonly-field" /></div>
           </div>
         </div>
 
-        <!-- Card: Data Siswa -->
+        <!-- Card: Data Siswa (dipakai bersama) -->
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">Data Siswa</div>
-          </div>
+          <div class="card-header"><div class="card-title">Data Siswa</div></div>
           <div class="form-grid">
-            <div class="form-group">
-              <label>Kelas</label>
-              <select id="kelas" required onchange="InputForm.updateNamaSiswa()">
-                <option value="">-- Pilih Kelas --</option>
-              </select>
-            </div>
-            <div class="form-group">
-              <label>Nama Siswa</label>
-              <select id="siswa" required onchange="InputForm.updateWhatsApp()">
-                <option value="">-- Pilih Siswa --</option>
-              </select>
-            </div>
-            <div class="form-group full field-suppressed">
-              <label>WhatsApp Orang Tua</label>
-              <input type="tel" id="whatsapp" readonly class="readonly-field" />
-            </div>
+            <div class="form-group"><label>Kelas</label><select id="kelas" required onchange="InputForm.updateNamaSiswa()"><option value="">-- Pilih Kelas --</option></select></div>
+            <div class="form-group"><label>Nama Siswa</label><select id="siswa" required onchange="InputForm.updateWhatsApp()"><option value="">-- Pilih Siswa --</option></select></div>
+            <div class="form-group full field-suppressed"><label>WhatsApp Orang Tua</label><input type="tel" id="whatsapp" readonly class="readonly-field" /></div>
           </div>
         </div>
 
-        <!-- Card: Data Setoran -->
+        <!-- Card: Data Setoran — 3 tab (Ziyadah/Murajaah/Tilawah) -->
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">Data Setoran</div>
+          <div class="card-header"><div class="card-title" id="setoranTitle">Data Setoran</div></div>
+          <div class="master-tabs" style="margin:0 0 14px">
+            <button class="master-tab active" data-setoran="ziyadah" onclick="InputForm.showSetoranTab('ziyadah')">Ziyadah</button>
+            <button class="master-tab" data-setoran="murojaah" onclick="InputForm.showSetoranTab('murojaah')">Murajaah</button>
+            <button class="master-tab" data-setoran="tilawah" onclick="InputForm.showSetoranTab('tilawah')">Tilawah</button>
           </div>
           <div class="form-grid">
-            <div class="form-group">
-              <label>Ziyadah? (Setoran Baru)</label>
-              <select id="menghafal" required onchange="InputForm.toggleMenghafalFields()">
-                <option value="">-- Pilih --</option>
-                <option value="ya">Ya</option>
-                <option value="sakit">Sakit</option>
-                <option value="sertifikasi">Persiapan Sertifikasi</option>
-                <option value="lainnya">Lainnya</option>
-              </select>
-            </div>
-
-            <div id="jenisField" class="form-group full hidden">
-              <label>Jenis Aktivitas</label>
-              <select id="jenis">
-                <option value="ziyadah">Ziyadah</option>
-                <option value="murojaah">Murojaah</option>
-                <option value="tilawah">Tilawah</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Keterangan Nilai</label>
-              <select id="keterangan">
-                <option value="">-- Pilih --</option>
-              </select>
-            </div>
-
-            <div id="alasanField" class="form-group full hidden">
-              <label>Alasan</label>
-              <input type="text" id="alasan" placeholder="Jelaskan alasannya" />
-            </div>
-
-            <div id="hafalanFields" class="full hidden">
-              <div class="target-range-row" style="margin-bottom:14px">
-                <span class="range-label">Awal</span>
-                <select id="surat" class="target-surat-input" style="flex:1">
-                  <option value="">-- Pilih Surat --</option>
-                </select>
-                <input type="number" id="ayatDari" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" />
+            <!-- Pane Ziyadah -->
+            <div id="ziyadahPane">
+              <div class="form-group"><label>Ziyadah? (Setoran Baru)</label><select id="menghafal" required onchange="InputForm.toggleMenghafalFields()"><option value="">-- Pilih --</option><option value="ya">Ya</option><option value="sakit">Sakit</option><option value="sertifikasi">Persiapan Sertifikasi</option><option value="lainnya">Lainnya</option></select></div>
+              <div class="form-group"><label>Keterangan Nilai</label><select id="keterangan"><option value="">-- Pilih --</option></select></div>
+              <div id="alasanField" class="form-group full hidden"><label>Alasan</label><input type="text" id="alasan" placeholder="Jelaskan alasannya" /></div>
+              <div id="hafalanFields" class="full hidden">
+                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Awal</span><select id="surat" class="target-surat-input" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDari" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Akhir</span><select id="suratAkhir" class="target-surat-input" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampai" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                <div class="target-range-row"><span class="range-label">Baris</span><input type="number" id="baris" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
               </div>
-              <div class="target-range-row" style="margin-bottom:14px">
-                <span class="range-label">Akhir</span>
-                <select id="suratAkhir" class="target-surat-input" style="flex:1">
-                  <option value="">-- Sama dengan Surat di atas --</option>
-                </select>
-                <input type="number" id="ayatSampai" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" />
+            </div>
+
+            <!-- Pane Murajaah -->
+            <div id="murojaahPane" class="hidden">
+              <div class="form-group"><label>Keterangan Nilai</label><select id="keteranganM"><option value="">-- Pilih --</option></select></div>
+              <div class="form-group full">
+                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Awal</span><select id="suratM" class="target-surat-input" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDariM" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Akhir</span><select id="suratAkhirM" class="target-surat-input" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampaiM" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                <div class="target-range-row"><span class="range-label">Baris</span><input type="number" id="barisM" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
               </div>
-              <div class="target-range-row">
-                <span class="range-label">Baris</span>
-                <input type="number" id="baris" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" />
+            </div>
+
+            <!-- Pane Tilawah -->
+            <div id="tilawahPane" class="hidden">
+              <div class="form-group"><label>Keterangan Nilai</label><select id="keteranganT"><option value="">-- Pilih --</option></select></div>
+              <div class="form-group full">
+                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Awal</span><select id="suratT" class="target-surat-input" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDariT" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Akhir</span><select id="suratAkhirT" class="target-surat-input" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampaiT" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                <div class="target-range-row"><span class="range-label">Baris</span><input type="number" id="barisT" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Optional notes outside card -->
+        <!-- Card: Catatan (dipakai bersama) -->
         <div class="card">
-          <div class="card-header">
-            <div class="card-title">Catatan</div>
-          </div>
-          <div class="form-grid">
-            <div class="form-group full">
-              <label>Catatan Tambahan</label>
-              <textarea id="catatan" placeholder="Tambahkan catatan jika perlu..." rows="2"></textarea>
-            </div>
-          </div>
+          <div class="card-header"><div class="card-title">Catatan</div></div>
+          <div class="form-grid"><div class="form-group full"><label>Catatan Tambahan</label><textarea id="catatan" placeholder="Tambahkan catatan jika perlu..." rows="2"></textarea></div></div>
         </div>
 
         <button type="submit" class="btn-submit">Simpan Data Setoran</button>
