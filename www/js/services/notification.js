@@ -285,6 +285,58 @@ const NotificationService = {
   },
 
   /**
+   * Format pesan untuk data murajaah baru
+   * Memakai template GLOBAL jenis 'murojaah' — fallback ke bawaan
+   * @param {object} data - Data tahfidz
+   * @returns {string} - Pesan terformat
+   */
+  formatMurojaahMessage(data) {
+    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
+      return TemplateWaManager.buildMessage('murojaah', data);
+    }
+    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
+    msg += `Alhamdulillah, hari ini ananda ${data.nama} telah menyelesaikan murajaah hafalan:\n\n`;
+    msg += `📖 Surat    : ${data.surat || '-'}\n`;
+    if (data.ayatDari && data.ayatSampai) {
+      msg += `📍 Ayat     : ${data.ayatDari} - ${data.ayatSampai}\n`;
+    } else if (data.ayatDari) {
+      msg += `📍 Ayat     : ${data.ayatDari}\n`;
+    }
+    msg += `📊 Jumlah   : ${data.baris} baris\n`;
+    msg += `⭐ Nilai    : ${data.keterangan || '-'}\n`;
+    msg += `👨‍🏫 Guru     : ${data.guru}\n\n`;
+    msg += `Terus istiqamah murajaah ananda ${data.nama} di rumah ya.\n\n`;
+    msg += `Wassalamu'alaikum,\n${data.guru}`;
+    return msg;
+  },
+
+  /**
+   * Format pesan untuk data tilawah baru
+   * Memakai template GLOBAL jenis 'tilawah' — fallback ke bawaan
+   * @param {object} data - Data tahfidz
+   * @returns {string} - Pesan terformat
+   */
+  formatTilawahMessage(data) {
+    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
+      return TemplateWaManager.buildMessage('tilawah', data);
+    }
+    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
+    msg += `Alhamdulillah, hari ini ananda ${data.nama} telah melaksanakan tilawah:\n\n`;
+    msg += `📖 Surat    : ${data.surat || '-'}\n`;
+    if (data.ayatDari && data.ayatSampai) {
+      msg += `📍 Ayat     : ${data.ayatDari} - ${data.ayatSampai}\n`;
+    } else if (data.ayatDari) {
+      msg += `📍 Ayat     : ${data.ayatDari}\n`;
+    }
+    msg += `📊 Jumlah   : ${data.baris} baris\n`;
+    msg += `⭐ Nilai    : ${data.keterangan || '-'}\n`;
+    msg += `👨‍🏫 Guru     : ${data.guru}\n\n`;
+    msg += `Terus istiqamah tilawah ananda ${data.nama} di rumah ya.\n\n`;
+    msg += `Wassalamu'alaikum,\n${data.guru}`;
+    return msg;
+  },
+
+  /**
    * Format pesan untuk ananda yang sakit (tidak ziyadah)
    * Memakai template GLOBAL jenis 'tidak' (dipakai ulang dari template lama) — fallback ke bawaan
    * @param {object} data - Data tahfidz

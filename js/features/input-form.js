@@ -80,6 +80,7 @@ const InputForm = {
     const value = document.getElementById('menghafal')?.value;
     const hafalanFields = document.getElementById('hafalanFields');
     const alasanField = document.getElementById('alasanField');
+    const jenisField = document.getElementById('jenisField');
     const barisInput = document.getElementById('baris');
     const alasanInput = document.getElementById('alasan');
 
@@ -88,6 +89,7 @@ const InputForm = {
     if (value === 'ya') {
       hafalanFields.classList.remove('hidden');
       alasanField.classList.add('hidden');
+      if (jenisField) jenisField.classList.remove('hidden');
       if (barisInput) barisInput.required = true;
       if (alasanInput) alasanInput.required = false;
     } else if (value === 'lainnya') {
@@ -95,12 +97,14 @@ const InputForm = {
       // Sertifikasi cukup dari pilihan dropdown (pesan WA pakai teks tetap)
       hafalanFields.classList.add('hidden');
       alasanField.classList.remove('hidden');
+      if (jenisField) jenisField.classList.add('hidden');
       if (barisInput) barisInput.required = false;
       if (alasanInput) alasanInput.required = true;
     } else {
       // 'sakit', 'sertifikasi', atau belum dipilih
       hafalanFields.classList.add('hidden');
       alasanField.classList.add('hidden');
+      if (jenisField) jenisField.classList.add('hidden');
       if (barisInput) barisInput.required = false;
       if (alasanInput) alasanInput.required = false;
     }
@@ -122,6 +126,7 @@ const InputForm = {
       kelas: document.getElementById('kelas')?.value || '',
       whatsapp: document.getElementById('whatsapp')?.value || '',
       tanggal: document.getElementById('tanggal')?.value || '',
+      jenis: document.getElementById('jenis')?.value || 'ziyadah',
       baris: parseFloat(document.getElementById('baris')?.value) || 0,
       menghafal: document.getElementById('menghafal')?.value || '',
       alasan: document.getElementById('alasan')?.value || '',
@@ -212,6 +217,7 @@ const InputForm = {
       kelas: formData.kelas,
       whatsapp: formData.whatsapp,
       tanggal: formData.tanggal,
+      jenis: formData.menghafal === 'ya' ? (formData.jenis || 'ziyadah') : null,
       baris: formData.menghafal === 'ya' ? formData.baris : 0,
       menghafal: formData.menghafal,
       alasan: formData.menghafal === 'lainnya' ? formData.alasan : '',
@@ -269,7 +275,13 @@ const InputForm = {
               message = NotificationService.formatLainnyaMessage(formData);
               break;
             default:
-              message = NotificationService.formatTahfidzMessage(formData);
+              if (formData.jenis === 'murojaah') {
+                message = NotificationService.formatMurojaahMessage(formData);
+              } else if (formData.jenis === 'tilawah') {
+                message = NotificationService.formatTilawahMessage(formData);
+              } else {
+                message = NotificationService.formatTahfidzMessage(formData);
+              }
           }
 
           // Kirim async — beri feedback hasilnya ke user

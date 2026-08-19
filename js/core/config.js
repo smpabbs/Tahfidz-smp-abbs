@@ -33,6 +33,23 @@ const AppConfig = {
     lainnya: 'Lainnya'
   },
 
+  // Label tampilan untuk tiap jenis aktivitas positif
+  JENIS_LABELS: {
+    ziyadah: 'Ziyadah',
+    murojaah: 'Murojaah',
+    tilawah: 'Tilawah'
+  },
+
+  // Jenis aktivitas positif yang valid (yang mengisi surat/ayat/baris)
+  POSITIVE_JENIS: ['ziyadah', 'murojaah', 'tilawah'],
+
+  // Kata kerja per jenis untuk pesan WA harian ke ortu
+  JENIS_ACTION: {
+    ziyadah: 'menyelesaikan setoran hafalan',
+    murojaah: 'menyelesaikan murajaah hafalan',
+    tilawah: 'melaksanakan tilawah'
+  },
+
   // Default Values
   DEFAULT_TARGET_BARIS: 15,
   MIN_TARGET_BARIS: 5,
@@ -46,5 +63,7 @@ const AppConfig = {
 Object.freeze(AppConfig);
 Object.freeze(AppConfig.STORAGE_KEYS);
 Object.freeze(AppConfig.MENGHAFAL_LABELS);
+Object.freeze(AppConfig.JENIS_LABELS);
+Object.freeze(AppConfig.JENIS_ACTION);
 
 console.log('✅ AppConfig loaded');

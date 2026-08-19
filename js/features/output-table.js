@@ -112,17 +112,32 @@ const OutputTable = {
     const ym = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
     const monthRecords = (AppState.tahfidzRecords || []).filter(d => d && d.tanggal && d.tanggal.startsWith(ym));
 
-    const setoranCount = monthRecords.length;
+    const byJenis = (d, j) => d.menghafal === 'ya' && (d.jenis || 'ziyadah') === j;
+
+    const ziyadahRecords = monthRecords.filter(d => byJenis(d, 'ziyadah'));
+    const murojaahRecords = monthRecords.filter(d => byJenis(d, 'murojaah'));
+    const tilawahRecords = monthRecords.filter(d => byJenis(d, 'tilawah'));
+
     const totalBaris = monthRecords.reduce((sum, d) => sum + (parseFloat(d.baris) || 0), 0);
-    const graded = monthRecords.filter(d => d.menghafal === 'ya' && d.keterangan);
+    const graded = ziyadahRecords.filter(d => d.keterangan);
     const mumtazCount = graded.filter(d => d.keterangan === 'Mumtaz').length;
     const pctMumtaz = graded.length > 0 ? Math.round((mumtazCount / graded.length) * 100) : 0;
 
     box.innerHTML = `
       <div class="stat-tile">
-        <div class="stat-l">Setoran Bulan Ini</div>
-        <div class="stat-v">${setoranCount}</div>
-        <div class="stat-d">data tercatat</div>
+        <div class="stat-l">Ziyadah</div>
+        <div class="stat-v">${ziyadahRecords.length}</div>
+        <div class="stat-d">setoran baru tercatat</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-l">Murajaah</div>
+        <div class="stat-v">${murojaahRecords.length}</div>
+        <div class="stat-d">murajaah tercatat</div>
+      </div>
+      <div class="stat-tile">
+        <div class="stat-l">Tilawah</div>
+        <div class="stat-v">${tilawahRecords.length}</div>
+        <div class="stat-d">tilawah tercatat</div>
       </div>
       <div class="stat-tile">
         <div class="stat-l">Total Baris</div>
@@ -132,7 +147,7 @@ const OutputTable = {
       <div class="stat-tile">
         <div class="stat-l">Nilai Mumtaz</div>
         <div class="stat-v">${pctMumtaz}%</div>
-        <div class="stat-d">dari setoran bernilai</div>
+        <div class="stat-d">dari ziyadah bernilai</div>
       </div>
     `;
   },
@@ -171,11 +186,13 @@ const OutputTable = {
             ? `${parseFloat(entry.ayatDari)} – ${parseFloat(entry.ayatSampai)}`
             : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—');
           const cls = nilaiClass[entry.keterangan] || 'jayid';
+          const mJenis = entry.jenis && entry.jenis !== 'ziyadah'
+            ? `<span class="jenis-tag">${this.jenisName(entry)}</span> ` : '';
           return `
             <div class="oerow">
               <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
               <div class="omid">
-                <div class="osurat">${entry.surat || '—'} <span class="oayat">· ${ayat}</span></div>
+                <div class="osurat">${mJenis}${entry.surat || '—'} <span class="oayat">· ${ayat}</span></div>
                 <div class="ometa">
                   <span class="opill ${cls}">${entry.keterangan || '—'}</span>
                   <span class="obaris">${parseFloat(entry.baris) || 0} baris</span>
@@ -263,6 +280,16 @@ const OutputTable = {
   },
 
   /**
+   * Nama jenis aktivitas (Ziyadah/Murajaah/Tilawah) utk tampilan & export
+   * @param {object} e - record
+   * @returns {string|null} label, atau null untuk absence
+   */
+  jenisName(e) {
+    if (!e || e.menghafal !== 'ya') return null;
+    return AppConfig.JENIS_LABELS[e.jenis] || AppConfig.JENIS_LABELS.ziyadah;
+  },
+
+  /**
    * Buat row tabel
    */
   createRow(entry, siswa, globalNo, isFirst) {
@@ -283,6 +310,10 @@ const OutputTable = {
           : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—'));
     const keteranganDisplay = isTidak ? '—' : (entry.keterangan || '—');
     const barisDisplay = isTidak ? '0' : (parseFloat(entry.baris) || 0).toString();
+    const jenisName = this.jenisName(entry);
+    const jenisTag = (jenisName && entry.jenis && entry.jenis !== 'ziyadah')
+      ? `<span class="jenis-tag">${jenisName}</span> `
+      : '';
 
     if (isFirst) {
       row.innerHTML = `
@@ -290,7 +321,7 @@ const OutputTable = {
         <td rowspan="${siswa.rowspan}"><strong>${siswa.nama}</strong></td>
         <td rowspan="${siswa.rowspan}"><span class="kelas-badge">${siswa.kelas}</span></td>
         <td>${this.formatTanggal(entry.tanggal)}</td>
-        <td class="${cellClass}">${suratDisplay}</td>
+        <td class="${cellClass}">${jenisTag}${suratDisplay}</td>
         <td class="${cellClass}">${ayatDisplay}</td>
         <td class="${cellClass}">${keteranganDisplay}</td>
         <td>${barisDisplay}</td>
@@ -369,7 +400,7 @@ const OutputTable = {
 
     const grouped = this.groupBySiswa(data);
     const sorted = this.sortSiswa(Object.values(grouped));
-    const rows = [['No', 'Nama', 'Kelas', 'Tanggal', 'Surat', 'Ayat', 'Keterangan', 'Baris', 'Total']];
+    const rows = [['No', 'Nama', 'Kelas', 'Tanggal', 'Jenis', 'Surat', 'Ayat', 'Keterangan', 'Baris', 'Total']];
 
     let no = 1;
     sorted.forEach(siswa => {
@@ -379,6 +410,7 @@ const OutputTable = {
           i === 0 ? siswa.nama : '',
           i === 0 ? siswa.kelas : '',
           this.formatTanggal(e.tanggal),
+          this.jenisName(e) || '—',
           e.menghafal !== 'ya' ? '—' : (e.surat || '—'),
           e.menghafal !== 'ya' ? (e.alasan || AppConfig.MENGHAFAL_LABELS[e.menghafal] || '—') : `${e.ayatDari || ''}${e.ayatSampai ? ' – ' + e.ayatSampai : ''}`,
           e.menghafal !== 'ya' ? '—' : (e.keterangan || '—'),
@@ -411,7 +443,7 @@ const OutputTable = {
     html += `<h2>Laporan Capaian Tahfidz</h2>`;
     html += `<p>Tanggal: ${new Date().toLocaleDateString('id-ID')}</p>`;
     html += `<table border="1" cellpadding="5" cellspacing="0">`;
-    html += `<tr><th>No</th><th>Nama</th><th>Kelas</th><th>Tanggal</th><th>Surat</th><th>Ayat</th><th>Ket</th><th>Baris</th><th>Total</th></tr>`;
+    html += `<tr><th>No</th><th>Nama</th><th>Kelas</th><th>Tanggal</th><th>Jenis</th><th>Surat</th><th>Ayat</th><th>Ket</th><th>Baris</th><th>Total</th></tr>`;
 
     let no = 1;
     sorted.forEach(siswa => {
@@ -421,6 +453,7 @@ const OutputTable = {
         html += `<td>${i === 0 ? siswa.nama : ''}</td>`;
         html += `<td>${i === 0 ? siswa.kelas : ''}</td>`;
         html += `<td>${this.formatTanggal(e.tanggal)}</td>`;
+        html += `<td>${this.jenisName(e) || '—'}</td>`;
         html += `<td>${e.menghafal !== 'ya' ? '—' : e.surat || '—'}</td>`;
         html += `<td>${e.menghafal !== 'ya' ? (e.alasan || AppConfig.MENGHAFAL_LABELS[e.menghafal] || '—') : `${e.ayatDari || ''}${e.ayatSampai ? ' – ' + e.ayatSampai : ''}`}</td>`;
         html += `<td>${e.menghafal !== 'ya' ? '—' : e.keterangan || '—'}</td>`;

@@ -117,6 +117,7 @@ const EditInline = {
         kelas: updatedData.kelas,
         whatsapp: updatedData.whatsapp,
         tanggal: updatedData.tanggal,
+        jenis: updatedData.jenis,
         baris: updatedData.baris,
         menghafal: updatedData.menghafal,
         alasan: updatedData.alasan,

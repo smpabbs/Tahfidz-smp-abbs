@@ -34,6 +34,7 @@ const DatabaseService = {
         kelas: item.kelas || '',
         whatsapp: item.whatsapp || '',
         tanggal: item.tanggal || '',
+        jenis: item.jenis || (item.menghafal === 'ya' ? 'ziyadah' : null),
         baris: parseFloat(item.baris) || 0,
         menghafal: item.menghafal || 'ya',
         alasan: item.alasan || '',

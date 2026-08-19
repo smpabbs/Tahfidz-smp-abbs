@@ -10,6 +10,8 @@ const TemplateWaManager = {
   // Jenis pesan yang bisa dikustom
   JENIS: [
     { id: 'setoran',     label: 'Setoran Hafalan',        ico: '<svg viewBox="0 0 24 24"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/></svg>', desc: 'hafalan baru masuk' },
+    { id: 'murojaah',    label: 'Murajaah',               ico: '<svg viewBox="0 0 24 24"><path d="M8 3 2 21h4l2-6h6"/><path d="M13 9h7l-4 8h-7"/></svg>', desc: 'mengulang hafalan' },
+    { id: 'tilawah',     label: 'Tilawah',                ico: '<svg viewBox="0 0 24 24"><path d="M2 6h5l3-2h10v13H10l-3 2H2Z"/></svg>', desc: 'tilawah / membaca' },
     { id: 'tidak',       label: 'Sakit',                  ico: '<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg>', desc: 'ananda sakit / tidak ziyadah' },
     { id: 'sertifikasi', label: 'Persiapan Sertifikasi',  ico: '<svg viewBox="0 0 24 24"><path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/></svg>', desc: 'sedang persiapan sertifikasi' },
     { id: 'lainnya',     label: 'Lainnya',                ico: '<svg viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/></svg>', desc: 'alasan lain (bebas)' },
@@ -19,6 +21,8 @@ const TemplateWaManager = {
   // Variabel yang tersedia per jenis pesan
   VARS: {
     setoran:     ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
+    murojaah:    ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
+    tilawah:     ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
     tidak:       ['nama','kelas','alasan','guru','tanggal'],
     sertifikasi: ['nama','kelas','guru','tanggal'],
     lainnya:     ['nama','kelas','alasan','guru','tanggal'],
@@ -38,6 +42,36 @@ Alhamdulillah, hari ini ananda {nama} telah menyelesaikan setoran hafalan:
 👨‍🏫 Guru     : {guru}
 
 Terus dukung semangat menghafal ananda {nama} di rumah ya.
+
+Wassalamu'alaikum,
+{guru}`,
+
+    murojaah: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Alhamdulillah, hari ini ananda {nama} telah menyelesaikan murajaah hafalan:
+
+📖 Surat    : {surat}
+📍 Ayat     : {ayat}
+📊 Jumlah   : {baris} baris
+⭐ Nilai    : {nilai}
+👨‍🏫 Guru     : {guru}
+
+Terus istiqamah murajaah ananda {nama} di rumah ya.
+
+Wassalamu'alaikum,
+{guru}`,
+
+    tilawah: `Assalamu'alaikum ayah/bunda ananda {nama},
+
+Alhamdulillah, hari ini ananda {nama} telah melaksanakan tilawah:
+
+📖 Surat    : {surat}
+📍 Ayat     : {ayat}
+📊 Jumlah   : {baris} baris
+⭐ Nilai    : {nilai}
+👨‍🏫 Guru     : {guru}
+
+Terus istiqamah tilawah ananda {nama} di rumah ya.
 
 Wassalamu'alaikum,
 {guru}`,

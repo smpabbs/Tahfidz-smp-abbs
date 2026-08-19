@@ -257,7 +257,8 @@ const TargetManager = {
       d.kelas === kelas &&
       d.tanggal >= monday.toISOString().split('T')[0] &&
       d.tanggal <= saturday.toISOString().split('T')[0] &&
-      d.menghafal === 'ya'
+      d.menghafal === 'ya' &&
+      (d.jenis || 'ziyadah') === 'ziyadah'
     );
 
     const actual = weekData.reduce((sum, d) => sum + (parseFloat(d.baris) || 0), 0);
@@ -497,7 +498,8 @@ const TargetManager = {
         d.kelas === kelas &&
         d.tanggal >= startDate &&
         d.tanggal <= endDate &&
-        d.menghafal === 'ya'
+        d.menghafal === 'ya' &&
+        (d.jenis || 'ziyadah') === 'ziyadah'
       );
 
       if (dataMingguIni.length === 0) {
