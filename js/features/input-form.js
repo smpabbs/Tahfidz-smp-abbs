@@ -58,13 +58,30 @@ const InputForm = {
       btn.classList.toggle('active', btn.getAttribute('data-setoran') === jenis);
     });
 
-    // Tampilkan pane yang sesuai
-    const panes = ['ziyadahPane', 'murojaahPane', 'tilawahPane'];
-    panes.forEach(id => {
-      const el = document.getElementById(id);
-      if (!el) return;
-      const show = id === (jenis === 'ziyadah' ? 'ziyadahPane' : jenis === 'murojaah' ? 'murojaahPane' : 'tilawahPane');
-      el.classList.toggle('hidden', !show);
+    // Tampilkan pane yang sesuai + kelola required per pane.
+    // Pane yang disembunyikan (display:none) tidak boleh menyisakan field
+    // required, karena browser diam-diam menolak submit form kalau ada
+    // required field yang hidden — dulu ini cuma diurus untuk pane Ziyadah,
+    // jadi submit dari tab manapun selalu diblokir oleh 2 pane lain.
+    const panePrefix = { ziyadah: '', murojaah: 'M', tilawah: 'T' };
+    const paneId = { ziyadah: 'ziyadahPane', murojaah: 'murojaahPane', tilawah: 'tilawahPane' };
+    Object.keys(panePrefix).forEach(j => {
+      const el = document.getElementById(paneId[j]);
+      const isActive = j === jenis;
+      if (el) el.classList.toggle('hidden', !isActive);
+
+      const prefix = panePrefix[j];
+      const menghafalSelect = document.getElementById('menghafal' + prefix);
+      if (menghafalSelect) menghafalSelect.required = isActive;
+
+      if (isActive) {
+        this.toggleMenghafalFields(prefix);
+      } else {
+        const barisInput = document.getElementById('baris' + prefix);
+        const alasanInput = document.getElementById('alasan' + prefix);
+        if (barisInput) barisInput.required = false;
+        if (alasanInput) alasanInput.required = false;
+      }
     });
 
     // Judul kartu
@@ -73,12 +90,6 @@ const InputForm = {
       title.textContent = jenis === 'murojaah' ? 'Data Murajaah'
         : jenis === 'tilawah' ? 'Data Tilawah'
         : 'Data Setoran';
-    }
-
-    if (jenis === 'ziyadah') {
-      document.getElementById('hafalanFields')?.classList.add('hidden');
-      document.getElementById('alasanField')?.classList.add('hidden');
-      this.toggleMenghafalFields();
     }
   },
 
