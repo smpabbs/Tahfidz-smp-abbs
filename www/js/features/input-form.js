@@ -278,7 +278,7 @@ const InputForm = {
       kelas: formData.kelas,
       whatsapp: formData.whatsapp,
       tanggal: formData.tanggal,
-      jenis: formData.menghafal === 'ya' ? (formData.jenis || 'ziyadah') : null,
+      jenis: formData.jenis || 'ziyadah',
       baris: formData.menghafal === 'ya' ? formData.baris : 0,
       menghafal: formData.menghafal,
       alasan: formData.menghafal === 'lainnya' ? formData.alasan : '',
