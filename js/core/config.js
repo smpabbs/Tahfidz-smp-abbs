@@ -53,10 +53,7 @@ const AppConfig = {
   // Default Values
   DEFAULT_TARGET_BARIS: 15,
   MIN_TARGET_BARIS: 5,
-  MAX_TARGET_BARIS: 50,
-
-  // Auto Sync Interval (ms)
-  AUTO_SYNC_INTERVAL: 30000
+  MAX_TARGET_BARIS: 50
 };
 
 // Freeze config agar tidak bisa diubah

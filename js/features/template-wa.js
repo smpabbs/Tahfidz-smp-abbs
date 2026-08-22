@@ -4,157 +4,81 @@
 // dipakai semua guru). Simpan di Supabase app_settings
 // + fallback localStorage.
 //
-// Navigasi 2 level supaya tidak semua 13 template kelihatan
-// sekaligus: Level 1 = jenis aktivitas (Ziyadah/Murajaah/
-// Tilawah/Pembaruan Data), Level 2 = status (Ya/Sakit/
-// Persiapan Sertifikasi/Lainnya) — cuma muncul utk 3 jenis
-// aktivitas, karena Pembaruan Data cuma 1 template.
+// 5 template datar (bukan lagi navigasi 2 level jenis×status) —
+// notifikasi submit selalu 1 pesan per input, isinya menyesuaikan
+// aktivitas yang dicentang guru:
+//   - 'setoran' (label "Ya — Aktivitas Tercatat"): dipakai kapan pun
+//     minimal 1 aktivitas (Ziyadah/Murajaah/Tilawah) dicentang & berhasil
+//     disimpan dengan status "ya". Variabel {aktivitas} adalah blok
+//     OTOMATIS (bukan diketik admin) — cuma memuat aktivitas yang benar2
+//     dicentang, lihat TemplateWaManager.buildAktivitasBlock().
+//   - 'tidak'/'sertifikasi'/'lainnya': dipakai saat Ziyadah (satu2nya
+//     jenis yang punya Status) diisi bukan "ya" — menurut alur form,
+//     ini cuma terjadi saat siswa tidak masuk sama sekali, jadi Murajaah/
+//     Tilawah tidak mungkin ikut tercentang bersamaan (dikonfirmasi user).
+//   - 'edit': pesan pembaruan data. DISIAPKAN tapi belum dihubungkan ke
+//     tombol Ubah manapun — EditInline.save() saat ini tidak mengirim WA
+//     sama sekali (dead sebelum ini juga, cuma sekarang templatenya rapi).
+//
+// Key penyimpanan (storage key di app_settings.key = `wa_template_<key>`)
+// SENGAJA dipertahankan sama dengan sebelum penyederhanaan ini
+// (setoran/tidak/sertifikasi/lainnya/edit) supaya template yang sudah
+// dikustomisasi guru lewat UI lama tidak hilang. Key lama khusus
+// Murajaah/Tilawah (murojaah/tilawah/tidak_murojaah/dst — 8 key) sudah
+// mati sejak Murajaah/Tilawah tidak lagi punya Status sendiri; baris
+// datanya mungkin masih ada di app_settings tapi tidak lagi dibaca UI ini.
 // ====================================================
 
 const TemplateWaManager = {
 
-  // LEVEL 1 — jenis aktivitas
-  JENIS: [
-    { id: 'ziyadah',  label: 'Ziyadah',        desc: 'setoran hafalan baru', ico: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2Z"/>' },
-    { id: 'murojaah', label: 'Murajaah',       desc: 'mengulang hafalan',    ico: '<path d="M8 3 2 21h4l2-6h6"/><path d="M13 9h7l-4 8h-7"/>' },
-    { id: 'tilawah',  label: 'Tilawah',        desc: 'tilawah / membaca',    ico: '<path d="M2 6h5l3-2h10v13H10l-3 2H2Z"/>' },
-    { id: 'edit',     label: 'Pembaruan Data', desc: 'edit setoran (semua jenis)', ico: '<path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/>' }
+  // Daftar template — flat, id = key penyimpanan sekaligus.
+  TEMPLATES: [
+    { id: 'setoran',     label: 'Ya — Aktivitas Tercatat', desc: 'gabungan Ziyadah/Murajaah/Tilawah yang dicentang', ico: '<path d="M8 12.5l2.5 2.5L16 9.5"/><circle cx="12" cy="12" r="9"/>' },
+    { id: 'tidak',       label: 'Sakit',                   desc: 'Ziyadah diisi Sakit (siswa tidak masuk)',          ico: '<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>' },
+    { id: 'sertifikasi', label: 'Persiapan Sertifikasi',   desc: 'Ziyadah diisi Persiapan Sertifikasi',              ico: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>' },
+    { id: 'lainnya',     label: 'Lainnya',                 desc: 'Ziyadah diisi Lainnya (alasan bebas)',             ico: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' },
+    { id: 'edit',        label: 'Pembaruan Data',          desc: 'saat data diedit (belum dikirim otomatis)',        ico: '<path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/>' }
   ],
 
-  // LEVEL 2 — status (utk jenis ziyadah/murojaah/tilawah saja)
-  STATUS: [
-    { id: 'ya',          label: 'Ya',                    ico: '<path d="M8 12.5l2.5 2.5L16 9.5"/><circle cx="12" cy="12" r="9"/>' },
-    { id: 'sakit',       label: 'Sakit',                 ico: '<circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/>' },
-    { id: 'sertifikasi', label: 'Persiapan Sertifikasi', ico: '<path d="M12 2 2 7l10 5 10-5-10-5Z"/><path d="M2 17l10 5 10-5M2 12l10 5 10-5"/>' },
-    { id: 'lainnya',     label: 'Lainnya',               ico: '<circle cx="5" cy="12" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="19" cy="12" r="1.5"/>' }
-  ],
-
-  // Pemetaan (jenis, status) -> key penyimpanan (app_settings / wa_template_<key>).
-  // Ziyadah dipertahankan pakai key lama (setoran/tidak/sertifikasi/lainnya) supaya
-  // template yang sudah dikustomisasi guru sebelum Murajaah/Tilawah ada tidak hilang.
-  KEY_MAP: {
-    ziyadah:  { ya: 'setoran',  sakit: 'tidak',          sertifikasi: 'sertifikasi',          lainnya: 'lainnya' },
-    murojaah: { ya: 'murojaah', sakit: 'tidak_murojaah', sertifikasi: 'sertifikasi_murojaah', lainnya: 'lainnya_murojaah' },
-    tilawah:  { ya: 'tilawah',  sakit: 'tidak_tilawah',  sertifikasi: 'sertifikasi_tilawah',  lainnya: 'lainnya_tilawah' }
+  // Variabel yang tersedia per template (dipakai utk chip "sisipkan variabel").
+  // {alasan} tetap disediakan (nilai tetap) utk 'tidak'/'sertifikasi' walau
+  // default barunya tidak memakainya lagi — supaya template versi LAMA yang
+  // mungkin sudah dikustomisasi guru (masih pakai {alasan}) tetap tampil
+  // benar, bukan {alasan} mentah tak terganti.
+  VARS: {
+    setoran:     ['nama', 'kelas', 'guru', 'tanggal', 'aktivitas'],
+    tidak:       ['nama', 'kelas', 'guru', 'tanggal', 'alasan'],
+    sertifikasi: ['nama', 'kelas', 'guru', 'tanggal', 'alasan', 'juz', 'capaian'],
+    lainnya:     ['nama', 'kelas', 'guru', 'tanggal', 'alasan'],
+    edit:        ['nama', 'kelas', 'guru', 'jenis', 'perubahan']
   },
 
-  /**
-   * Resolve key penyimpanan dari (jenis, status)
-   */
-  keyFor(jenis, status) {
-    return (this.KEY_MAP[jenis] && this.KEY_MAP[jenis][status]) || this.KEY_MAP.ziyadah[status] || 'setoran';
-  },
-
-  // Variabel yang tersedia, dikelompokkan per status (bentuknya sama utk ketiga jenis)
-  VARS_BY_STATUS: {
-    ya:          ['nama','kelas','surat','ayat','baris','nilai','guru','tanggal'],
-    sakit:       ['nama','kelas','alasan','guru','tanggal'],
-    sertifikasi: ['nama','kelas','guru','tanggal'],
-    lainnya:     ['nama','kelas','alasan','guru','tanggal'],
-    edit:        ['nama','kelas','guru','tanggal','surat_lama','surat_baru','nilai_lama','nilai_baru','baris_lama','baris_baru']
-  },
-
-  // Template BAWAAN (default) per key penyimpanan — 3 jenis x 4 status + edit = 13
+  // Template BAWAAN (default) per key penyimpanan
   DEFAULTS: {
     setoran: `Assalamu'alaikum ayah/bunda ananda {nama},
 
-Alhamdulillah, hari ini ananda {nama} telah menyelesaikan setoran hafalan:
+Alhamdulillah, hari ini ananda {nama} (kelas {kelas}) telah menyelesaikan aktivitas KBM berikut:
 
-📖 Surat    : {surat}
-📍 Ayat     : {ayat}
-📊 Jumlah   : {baris} baris
-⭐ Nilai    : {nilai}
-👨‍🏫 Guru     : {guru}
-
-Terus dukung semangat menghafal ananda {nama} di rumah ya.
-
-Wassalamu'alaikum,
-{guru}`,
-
-    murojaah: `Assalamu'alaikum ayah/bunda ananda {nama},
-
-Alhamdulillah, hari ini ananda {nama} telah menyelesaikan murajaah hafalan:
-
-📖 Surat    : {surat}
-📍 Ayat     : {ayat}
-📊 Jumlah   : {baris} baris
-⭐ Nilai    : {nilai}
-👨‍🏫 Guru     : {guru}
-
-Terus istiqamah murajaah ananda {nama} di rumah ya.
-
-Wassalamu'alaikum,
-{guru}`,
-
-    tilawah: `Assalamu'alaikum ayah/bunda ananda {nama},
-
-Alhamdulillah, hari ini ananda {nama} telah melaksanakan tilawah:
-
-📖 Surat    : {surat}
-📍 Ayat     : {ayat}
-📊 Jumlah   : {baris} baris
-⭐ Nilai    : {nilai}
-👨‍🏫 Guru     : {guru}
-
-Terus istiqamah tilawah ananda {nama} di rumah ya.
+{aktivitas}
+Terus dukung semangat ananda {nama} untuk istiqamah ya.
 
 Wassalamu'alaikum,
 {guru}`,
 
     tidak: `Assalamu'alaikum ayah/bunda ananda {nama},
 
-Hari ini ananda {nama} tidak dapat mengikuti setoran hafalan karena:
+Hari ini ananda {nama} (kelas {kelas}) tidak dapat mengikuti setoran karena:
 
-📝 {alasan}
+📝 Sakit
 
 Kami doakan semoga ananda lekas sehat dan bisa kembali menghafal.
 
 Wassalamu'alaikum,
 {guru}`,
 
-    tidak_murojaah: `Assalamu'alaikum ayah/bunda ananda {nama},
-
-Hari ini ananda {nama} tidak dapat mengikuti murajaah karena:
-
-📝 {alasan}
-
-Kami doakan semoga ananda lekas sehat.
-
-Wassalamu'alaikum,
-{guru}`,
-
-    tidak_tilawah: `Assalamu'alaikum ayah/bunda ananda {nama},
-
-Hari ini ananda {nama} tidak dapat mengikuti tilawah karena:
-
-📝 {alasan}
-
-Kami doakan semoga ananda lekas sehat.
-
-Wassalamu'alaikum,
-{guru}`,
-
     sertifikasi: `Assalamu'alaikum ayah/bunda ananda {nama},
 
-Hari ini ananda {nama} tidak mengikuti setoran hafalan karena sedang mempersiapkan sertifikasi tahfidz.
-
-Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.
-
-Wassalamu'alaikum,
-{guru}`,
-
-    sertifikasi_murojaah: `Assalamu'alaikum ayah/bunda ananda {nama},
-
-Hari ini ananda {nama} tidak mengikuti murajaah karena sedang mempersiapkan sertifikasi tahfidz.
-
-Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.
-
-Wassalamu'alaikum,
-{guru}`,
-
-    sertifikasi_tilawah: `Assalamu'alaikum ayah/bunda ananda {nama},
-
-Hari ini ananda {nama} tidak mengikuti tilawah karena sedang mempersiapkan sertifikasi tahfidz.
+Hari ini ananda {nama} kelas {kelas} sedang mempersiapkan sertifikasi juz {juz} dengan capaian {capaian}.
 
 Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.
 
@@ -163,25 +87,7 @@ Wassalamu'alaikum,
 
     lainnya: `Assalamu'alaikum ayah/bunda ananda {nama},
 
-Hari ini ananda {nama} tidak mengikuti setoran hafalan dengan keterangan:
-
-📝 {alasan}
-
-Wassalamu'alaikum,
-{guru}`,
-
-    lainnya_murojaah: `Assalamu'alaikum ayah/bunda ananda {nama},
-
-Hari ini ananda {nama} tidak mengikuti murajaah dengan keterangan:
-
-📝 {alasan}
-
-Wassalamu'alaikum,
-{guru}`,
-
-    lainnya_tilawah: `Assalamu'alaikum ayah/bunda ananda {nama},
-
-Hari ini ananda {nama} tidak mengikuti tilawah dengan keterangan:
+Hari ini ananda {nama} (kelas {kelas}) tidak mengikuti setoran dengan keterangan:
 
 📝 {alasan}
 
@@ -190,32 +96,31 @@ Wassalamu'alaikum,
 
     edit: `Assalamu'alaikum ayah/bunda ananda {nama},
 
-Ada pembaruan data hafalan ananda {nama}:
+Ada pembaruan data *{jenis}* ananda {nama} (kelas {kelas}):
 
-• Tanggal : {tanggal_lama} → {tanggal_baru}
-• Surat   : {surat_lama} → {surat_baru}
-• Nilai   : {nilai_lama} → {nilai_baru}
-• Jumlah  : {baris_lama} → {baris_baru} baris
-
+{perubahan}
 Terima kasih atas perhatiannya.
 
 Wassalamu'alaikum,
 {guru}`
   },
 
-  // Data contoh untuk preview & test kirim
+  // Data contoh untuk preview & test kirim — bentuknya SAMA dengan data
+  // asli (ayatDari/ayatSampai/keterangan/jenis/menghafal), bukan bentuk
+  // pre-format terpisah, supaya buildMessage() tidak butuh cabang khusus
+  // preview vs data sungguhan.
+  SAMPLE_AKTIVITAS: [
+    { jenis: 'ziyadah', nama: 'Ahmad Ramadhan', kelas: '7A', guru: 'Ust. Abdurrahman', tanggal: '10/08/2026', menghafal: 'ya', surat: '67. Al-Mulk', ayatDari: 1, ayatSampai: 10, keterangan: 'Mumtaz', baris: 15 },
+    { jenis: 'murojaah', nama: 'Ahmad Ramadhan', kelas: '7A', guru: 'Ust. Abdurrahman', tanggal: '10/08/2026', menghafal: 'ya', surat: '78. An-Naba', ayatDari: 1, ayatSampai: 20, keterangan: 'Jayid Jiddan', baris: 20 }
+  ],
   SAMPLE: {
-    nama:'Ahmad Ramadhan', kelas:'7A', surat:'Al-Mulk', ayat:'1 - 10', baris:'15',
-    nilai:'Mumtaz', guru:'Ust. Abdurrahman', tanggal:'10/08/2026',
-    alasan:'Sakit (demam)',
-    tanggal_lama:'08/08/2026', tanggal_baru:'10/08/2026',
-    surat_lama:"An-Naba'", surat_baru:'Al-Mulk',
-    nilai_lama:'Jayyid', nilai_baru:'Mumtaz',
-    baris_lama:'10', baris_baru:'15'
+    nama: 'Ahmad Ramadhan', kelas: '7A', guru: 'Ust. Abdurrahman', tanggal: '10/08/2026',
+    alasan: 'Sakit (demam)', jenis: 'Ziyadah', juz: '5', capaian: '1/2 B'
   },
+  SAMPLE_EDIT_OLD: { tanggal: '08/08/2026', surat: "An-Naba'", ayatDari: 1, ayatSampai: 8, keterangan: 'Jayid', baris: 10, jenis: 'ziyadah' },
+  SAMPLE_EDIT_NEW: { nama: 'Ahmad Ramadhan', kelas: '7A', guru: 'Ust. Abdurrahman', tanggal: '10/08/2026', surat: 'Al-Mulk', ayatDari: 1, ayatSampai: 10, keterangan: 'Mumtaz', baris: 15, jenis: 'ziyadah' },
 
-  jenisAktif: 'ziyadah',
-  statusAktif: 'ya',
+  templateAktif: 'setoran',
 
   /**
    * Inisialisasi: muat template dari Supabase (fallback localStorage)
@@ -236,18 +141,8 @@ Wassalamu'alaikum,
   },
 
   /**
-   * Key penyimpanan & status (bentuk vars) untuk kombinasi jenis+status yang aktif
-   */
-  currentKey() {
-    return this.jenisAktif === 'edit' ? 'edit' : this.keyFor(this.jenisAktif, this.statusAktif);
-  },
-  currentStatus() {
-    return this.jenisAktif === 'edit' ? 'edit' : this.statusAktif;
-  },
-
-  /**
    * Ambil template aktif untuk satu key (user punya > default)
-   * @param {string} key - key penyimpanan, mis. 'setoran' | 'tidak_murojaah' | 'edit'
+   * @param {string} key - key penyimpanan, mis. 'setoran' | 'edit'
    * @returns {string}
    */
   getTemplate(key) {
@@ -269,42 +164,154 @@ Wassalamu'alaikum,
   },
 
   /**
-   * Format pesan final dari data setoran (dipakai notification.js)
-   * @param {string} key - key penyimpanan, mis. 'setoran' | 'tidak_murojaah' | 'edit'
-   * @param {string} status - 'ya' | 'sakit' | 'sertifikasi' | 'lainnya' | 'edit' (menentukan bentuk variabel)
-   * @param {object} data - data form/setoran
-   * @param {object} oldData - data lama (khusus status 'edit')
+   * Format rentang ayat ("1 - 10" atau "1")
+   */
+  formatAyat(data) {
+    if (data.ayatDari !== null && data.ayatDari !== undefined && data.ayatDari !== '' &&
+        data.ayatSampai !== null && data.ayatSampai !== undefined && data.ayatSampai !== '') {
+      return `${data.ayatDari} - ${data.ayatSampai}`;
+    }
+    if (data.ayatDari !== null && data.ayatDari !== undefined && data.ayatDari !== '') return String(data.ayatDari);
+    return '-';
+  },
+
+  /**
+   * Satuan tampilan per jenis — Ziyadah "baris", Murajaah/Tilawah "halaman".
+   * @param {string} jenis
    * @returns {string}
    */
-  buildMessage(key, status, data, oldData) {
+  unitFor(jenis) {
+    return (jenis === 'murojaah' || jenis === 'tilawah') ? 'halaman' : 'baris';
+  },
+
+  /**
+   * Buang nomor urut surat ("72. Al-Jinn" → "Al-Jinn") — cuma untuk
+   * ditampilkan di pesan WA (mengganggu dibaca orang tua), penyimpanan
+   * di database & tabel Hasil Data tetap apa adanya (dengan nomor).
+   * @param {string} nama
+   * @returns {string}
+   */
+  stripSuratNumber(nama) {
+    return String(nama || '').replace(/^\d+\.\s*/, '');
+  },
+
+  /**
+   * Baris "Surat"+"Ayat" satu aktivitas. `d.surat` tersimpan sebagai
+   * "Awal → Akhir" saat lintas surat (sama persis konvensi tabel desktop
+   * — lihat createRow di output-table.js). Kalau lintas surat, tampilkan
+   * "Dari X ayat Y sampai Z ayat W" dalam satu baris; kalau surat sama,
+   * pakai format Surat/Ayat terpisah seperti biasa. Nomor urut surat
+   * dibuang di sini (stripSuratNumber) supaya tidak mengganggu di WA.
+   * @param {object} d - data aktivitas (surat/ayatDari/ayatSampai)
+   * @returns {string}
+   */
+  formatSuratLines(d) {
+    const parts = (d.surat || '').split('→').map(s => this.stripSuratNumber(s.trim())).filter(Boolean);
+    const suratAwal = parts[0] || '-';
+    const suratAkhir = parts.length > 1 ? parts[1] : null;
+
+    if (suratAkhir) {
+      const ayatAwal = (d.ayatDari !== null && d.ayatDari !== undefined && d.ayatDari !== '') ? d.ayatDari : '-';
+      const ayatAkhir = (d.ayatSampai !== null && d.ayatSampai !== undefined && d.ayatSampai !== '') ? d.ayatSampai : '-';
+      return `📖 Surat  : Dari ${suratAwal} ayat ${ayatAwal} sampai ${suratAkhir} ayat ${ayatAkhir}\n`;
+    }
+    return `📖 Surat  : ${suratAwal}\n📍 Ayat   : ${this.formatAyat(d)}\n`;
+  },
+
+  /**
+   * Bangun blok {aktivitas} — satu bagian per aktivitas yang dicentang &
+   * berstatus "ya", urut Ziyadah→Murajaah→Tilawah, dipisah baris kosong.
+   * Aktivitas yang tidak dicentang (tidak ada di dataList) otomatis tidak
+   * muncul sama sekali.
+   * @param {object[]} dataList - array data aktivitas (bentuk formData)
+   * @returns {string}
+   */
+  buildAktivitasBlock(dataList) {
+    const list = Array.isArray(dataList) ? dataList : [dataList];
+    return AppConfig.POSITIVE_JENIS
+      .map(jenis => list.find(d => (d.jenis || 'ziyadah') === jenis && d.menghafal === 'ya'))
+      .filter(Boolean)
+      .map(d => {
+        const label = (AppConfig.JENIS_LABELS[d.jenis] || d.jenis).toUpperCase();
+        return `*${label}*\n${this.formatSuratLines(d)}⭐ Nilai   : ${d.keterangan || '-'}\n📊 Jumlah : ${d.baris || 0} ${this.unitFor(d.jenis)}\n`;
+      })
+      .join('\n');
+  },
+
+  /**
+   * Bangun blok {perubahan} untuk template edit — cuma baris field yang
+   * benar-benar berubah yang muncul.
+   * @param {object} oldData
+   * @param {object} newData
+   * @returns {string}
+   */
+  buildPerubahanBlock(oldData, newData) {
+    const lines = [];
+    if ((oldData.tanggal || '') !== (newData.tanggal || '')) {
+      lines.push(`• Tanggal : ${oldData.tanggal || '-'} → ${newData.tanggal || '-'}`);
+    }
+    if ((oldData.surat || '') !== (newData.surat || '')) {
+      lines.push(`• Surat   : ${oldData.surat || '-'} → ${newData.surat || '-'}`);
+    }
+    const ayatLama = this.formatAyat(oldData);
+    const ayatBaru = this.formatAyat(newData);
+    if (ayatLama !== ayatBaru) {
+      lines.push(`• Ayat    : ${ayatLama} → ${ayatBaru}`);
+    }
+    if ((oldData.keterangan || '') !== (newData.keterangan || '')) {
+      lines.push(`• Nilai   : ${oldData.keterangan || '-'} → ${newData.keterangan || '-'}`);
+    }
+    if ((oldData.baris || 0) !== (newData.baris || 0)) {
+      lines.push(`• Jumlah  : ${oldData.baris || 0} → ${newData.baris || 0} ${this.unitFor(newData.jenis)}`);
+    }
+    return lines.length ? lines.join('\n') + '\n' : '(tidak ada perubahan)\n';
+  },
+
+  /**
+   * Format pesan final dari data setoran (dipakai notification.js)
+   * @param {string} key - key penyimpanan: 'setoran'|'tidak'|'sertifikasi'|'lainnya'|'edit'
+   * @param {object|object[]} data - data aktivitas (array utk 'setoran'), atau data baru (utk 'edit')
+   * @param {object} [oldData] - data lama, khusus key 'edit'
+   * @returns {string}
+   */
+  buildMessage(key, data, oldData) {
     const template = this.getTemplate(key);
     let vars;
 
-    if (status === 'edit' && oldData && data) {
-      vars = {
-        nama: data.nama, kelas: data.kelas || '', guru: data.guru || '',
-        tanggal: data.tanggal || '', tanggal_lama: oldData.tanggal || '-',
-        tanggal_baru: data.tanggal || '-',
-        surat_lama: oldData.surat || '-', surat_baru: data.surat || '-',
-        nilai_lama: oldData.keterangan || '-', nilai_baru: data.keterangan || '-',
-        baris_lama: oldData.baris || 0, baris_baru: data.baris || 0
-      };
-    } else if (status === 'sakit' || status === 'lainnya') {
+    if (key === 'edit') {
+      const jenisLabel = AppConfig.JENIS_LABELS[data.jenis] || data.jenis || AppConfig.JENIS_LABELS.ziyadah;
       vars = {
         nama: data.nama || '', kelas: data.kelas || '', guru: data.guru || '',
-        tanggal: data.tanggal || '', alasan: data.alasan || 'Tidak disebutkan'
+        jenis: jenisLabel,
+        perubahan: this.buildPerubahanBlock(oldData || {}, data)
       };
-    } else if (status === 'sertifikasi') {
+    } else if (key === 'lainnya') {
+      const first = Array.isArray(data) ? data[0] : data;
       vars = {
-        nama: data.nama || '', kelas: data.kelas || '', guru: data.guru || '',
-        tanggal: data.tanggal || ''
+        nama: first.nama || '', kelas: first.kelas || '', guru: first.guru || '',
+        tanggal: first.tanggal || '', alasan: first.alasan || 'Tidak disebutkan'
       };
-    } else { // 'ya'
+    } else if (key === 'tidak') {
+      const first = Array.isArray(data) ? data[0] : data;
+      // alasan bernilai tetap (bukan diketik guru) — cuma disediakan supaya
+      // template versi lama yang masih pakai {alasan} tetap tampil benar.
       vars = {
-        nama: data.nama || '', kelas: data.kelas || '', guru: data.guru || '',
-        tanggal: data.tanggal || '', surat: data.surat || '-',
-        ayat: this.formatAyat(data), baris: data.baris || 0,
-        nilai: data.keterangan || '-'
+        nama: first.nama || '', kelas: first.kelas || '', guru: first.guru || '', tanggal: first.tanggal || '',
+        alasan: 'Sakit'
+      };
+    } else if (key === 'sertifikasi') {
+      const first = Array.isArray(data) ? data[0] : data;
+      vars = {
+        nama: first.nama || '', kelas: first.kelas || '', guru: first.guru || '', tanggal: first.tanggal || '',
+        alasan: 'Persiapan sertifikasi tahfidz',
+        juz: first.juz || '-', capaian: first.capaian || '-'
+      };
+    } else { // 'setoran'
+      const list = Array.isArray(data) ? data : [data];
+      const first = list[0] || {};
+      vars = {
+        nama: first.nama || '', kelas: first.kelas || '', guru: first.guru || '', tanggal: first.tanggal || '',
+        aktivitas: this.buildAktivitasBlock(list)
       };
     }
 
@@ -312,19 +319,10 @@ Wassalamu'alaikum,
   },
 
   /**
-   * Format rentang ayat ("1 - 10" atau "1")
-   */
-  formatAyat(data) {
-    if (data.ayatDari && data.ayatSampai) return `${data.ayatDari} - ${data.ayatSampai}`;
-    if (data.ayatDari) return String(data.ayatDari);
-    return '-';
-  },
-
-  /**
    * Simpan template (Supabase + localStorage)
    */
   async simpan() {
-    const key = this.currentKey();
+    const key = this.templateAktif;
     const teks = document.getElementById('tplEditor')?.value || '';
     if (!AppState.waTemplates) AppState.waTemplates = {};
     AppState.waTemplates[key] = teks;
@@ -348,11 +346,11 @@ Wassalamu'alaikum,
   },
 
   /**
-   * Kembalikan template jenis+status aktif ke bawaan
+   * Kembalikan template aktif ke bawaan
    */
   async resetDefault() {
-    const key = this.currentKey();
-    const label = this.breadcrumbLabel();
+    const key = this.templateAktif;
+    const label = this.currentLabel();
     const ok = await ConfirmDialog.show(`Template "${label}" akan dikembalikan ke pesan bawaan.`, { title: 'Kembalikan ke Bawaan?', confirmText: 'Ya, Kembalikan' });
     if (!ok) return;
 
@@ -378,7 +376,7 @@ Wassalamu'alaikum,
       NotificationService.warning('⚠️ Isi nomor WhatsApp test dulu');
       return;
     }
-    const message = this.buildMessage(this.currentKey(), this.currentStatus(), { ...this.SAMPLE });
+    const message = this.buildSampleMessage(this.templateAktif);
     const token = AppConfig.FONNTE_DEFAULT_TOKEN;
 
     NotificationService.info('📤 Mengirim test ke ' + no + ' ...', 5000);
@@ -390,82 +388,67 @@ Wassalamu'alaikum,
     }
   },
 
+  /**
+   * Bangun pesan pakai data contoh (SAMPLE) untuk key yang diberikan —
+   * dipakai bareng oleh preview() & kirimTest().
+   * @param {string} key
+   * @returns {string}
+   */
+  buildSampleMessage(key) {
+    if (key === 'edit') {
+      return this.buildMessage('edit', { ...this.SAMPLE_EDIT_NEW }, { ...this.SAMPLE_EDIT_OLD });
+    }
+    if (key === 'setoran') {
+      return this.buildMessage('setoran', this.SAMPLE_AKTIVITAS.map(d => ({ ...d })));
+    }
+    return this.buildMessage(key, { ...this.SAMPLE });
+  },
+
   // ==========================================
   // RENDER UI
   // ==========================================
 
   /**
-   * Render semua (level 1, level 2, breadcrumb, chips, editor, preview)
+   * Render semua (daftar template, breadcrumb, chips, editor, preview)
    */
   renderAll() {
-    this.renderLevel1();
-    this.renderLevel2();
+    this.renderTemplates();
     this.renderBreadcrumb();
     this.renderChips();
     const editor = document.getElementById('tplEditor');
-    if (editor) editor.value = this.getTemplate(this.currentKey());
+    if (editor) editor.value = this.getTemplate(this.templateAktif);
     this.preview();
   },
 
-  renderLevel1() {
+  renderTemplates() {
     const container = document.getElementById('tplJenis');
     if (!container) return;
     container.innerHTML = '';
-    this.JENIS.forEach(j => {
+    this.TEMPLATES.forEach(t => {
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'tpl-jenis-btn' + (j.id === this.jenisAktif ? ' active' : '');
-      btn.innerHTML = `<span class="tpl-j-ico"><svg viewBox="0 0 24 24">${j.ico}</svg></span>${j.label}<span class="tpl-j-sub">${j.desc}</span>`;
-      btn.onclick = () => this.pilihJenis(j.id);
+      btn.className = 'tpl-jenis-btn' + (t.id === this.templateAktif ? ' active' : '');
+      btn.innerHTML = `<span class="tpl-j-ico"><svg viewBox="0 0 24 24">${t.ico}</svg></span>${t.label}<span class="tpl-j-sub">${t.desc}</span>`;
+      btn.onclick = () => this.pilihTemplate(t.id);
       container.appendChild(btn);
     });
   },
 
-  renderLevel2() {
-    const wrap = document.getElementById('tplLevel2Wrap');
-    const container = document.getElementById('tplLevel2');
-    if (!wrap || !container) return;
-
-    if (this.jenisAktif === 'edit') {
-      wrap.style.display = 'none';
-      return;
-    }
-    wrap.style.display = '';
-    container.innerHTML = '';
-    this.STATUS.forEach(s => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'tpl-level2-btn' + (s.id === this.statusAktif ? ' active' : '');
-      btn.innerHTML = `<svg viewBox="0 0 24 24">${s.ico}</svg>${s.label}`;
-      btn.onclick = () => this.pilihStatus(s.id);
-      container.appendChild(btn);
-    });
-  },
-
-  breadcrumbLabel() {
-    const jLabel = this.JENIS.find(j => j.id === this.jenisAktif)?.label || this.jenisAktif;
-    if (this.jenisAktif === 'edit') return jLabel;
-    const sLabel = this.STATUS.find(s => s.id === this.statusAktif)?.label || this.statusAktif;
-    return `${jLabel} → ${sLabel}`;
+  currentLabel() {
+    return this.TEMPLATES.find(t => t.id === this.templateAktif)?.label || this.templateAktif;
   },
 
   renderBreadcrumb() {
     const el = document.getElementById('tplBreadcrumb');
     if (!el) return;
-    const jLabel = this.JENIS.find(j => j.id === this.jenisAktif)?.label || this.jenisAktif;
-    if (this.jenisAktif === 'edit') {
-      el.innerHTML = `Mengedit template: <b>${jLabel}</b>`;
-      return;
-    }
-    const sLabel = this.STATUS.find(s => s.id === this.statusAktif)?.label || this.statusAktif;
-    el.innerHTML = `Mengedit template: <b>${jLabel}</b> → <b>${sLabel}</b>`;
+    el.innerHTML = `Mengedit template: <b>${this.currentLabel()}</b>`;
   },
 
   renderChips() {
     const container = document.getElementById('tplChips');
     if (!container) return;
     container.innerHTML = '';
-    (this.VARS_BY_STATUS[this.currentStatus()] || []).forEach(v => {
+    (this.VARS[this.templateAktif] || []).forEach(v => {
       const chip = document.createElement('span');
       chip.className = 'tpl-chip';
       chip.textContent = '{' + v + '}';
@@ -476,30 +459,15 @@ Wassalamu'alaikum,
   },
 
   /**
-   * Pindah jenis aktivitas aktif (Level 1)
+   * Pindah template aktif
    */
-  pilihJenis(jenis) {
-    this.jenisAktif = jenis;
-    if (jenis !== 'edit') this.statusAktif = 'ya';
-    this.renderLevel1();
-    this.renderLevel2();
+  pilihTemplate(id) {
+    this.templateAktif = id;
+    this.renderTemplates();
     this.renderBreadcrumb();
     this.renderChips();
     const editor = document.getElementById('tplEditor');
-    if (editor) editor.value = this.getTemplate(this.currentKey());
-    this.preview();
-  },
-
-  /**
-   * Pindah status aktif (Level 2)
-   */
-  pilihStatus(status) {
-    this.statusAktif = status;
-    this.renderLevel2();
-    this.renderBreadcrumb();
-    this.renderChips();
-    const editor = document.getElementById('tplEditor');
-    if (editor) editor.value = this.getTemplate(this.currentKey());
+    if (editor) editor.value = this.getTemplate(this.templateAktif);
     this.preview();
   },
 
@@ -527,7 +495,7 @@ Wassalamu'alaikum,
     if (!bubble) return;
     const teks = editor ? editor.value : '';
     bubble.textContent = teks.trim()
-      ? this.buildMessage(this.currentKey(), this.currentStatus(), { ...this.SAMPLE })
+      ? this.buildSampleMessage(this.templateAktif)
       : '(template kosong — sistem akan memakai pesan bawaan)';
     if (timeEl) {
       const now = new Date();

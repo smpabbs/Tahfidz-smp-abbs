@@ -9,7 +9,6 @@ const OutputTable = {
    */
   init() {
     this.addSyncUI();
-    this.startAutoSync();
     console.log('✅ OutputTable initialized');
   },
 
@@ -24,7 +23,7 @@ const OutputTable = {
     if (!tbody || !thead) return;
 
     // Tampilkan loading
-    tbody.innerHTML = '<tr><td colspan="10" class="no-data">⏳ Memuat data...</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="13" class="no-data">⏳ Memuat data...</td></tr>';
 
     try {
       // Load data dari Supabase
@@ -35,7 +34,7 @@ const OutputTable = {
       this.render(tbody, thead, summary);
     } catch (error) {
       console.error('❌ Failed to load data:', error);
-      tbody.innerHTML = '<tr><td colspan="10" class="no-data">❌ Gagal memuat data</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="13" class="no-data">❌ Gagal memuat data</td></tr>';
       AppState.setSyncStatus('error', 'Gagal memuat data');
     }
   },
@@ -53,37 +52,42 @@ const OutputTable = {
     thead.innerHTML = '';
 
     if (filtered.length === 0) {
-      thead.innerHTML = '<tr><th colspan="10">Data Capaian Tahfidz</th></tr>';
-      tbody.innerHTML = '<tr><td colspan="10" class="no-data">Belum ada data</td></tr>';
+      thead.innerHTML = '<tr><th colspan="13">Data Capaian Tahfidz</th></tr>';
+      tbody.innerHTML = '<tr><td colspan="13" class="no-data">Belum ada data</td></tr>';
       if (summary) summary.textContent = 'Menampilkan 0 data';
       const cards = document.getElementById('outputCards');
       if (cards) cards.innerHTML = '<div class="no-data">Belum ada data</div>';
       return;
     }
 
-    // Header
+    // Header 2-baris — mengikuti struktur format-tabel-dekstop.xlsx:
+    // Awal/Akhir masing2 dipecah jadi Surat+Ayat, Jenis & Total jadi
+    // kolom sendiri (rowspan per kelompok jenis, lihat buildStudentRows).
     thead.innerHTML = `
       <tr>
-        <th>No</th><th>Nama Siswa</th><th>Kelas</th><th>Tanggal</th>
-        <th>Surat</th><th>Ayat</th><th>Keterangan</th><th>Baris</th>
-        <th>Total</th><th>Aksi</th>
+        <th rowspan="2">No</th><th rowspan="2">Nama Siswa</th><th rowspan="2">Kelas</th>
+        <th rowspan="2">Jenis</th><th rowspan="2">Tanggal</th>
+        <th colspan="2">Awal</th><th colspan="2">Akhir</th>
+        <th rowspan="2">Nilai</th><th rowspan="2">Baris/Halaman</th>
+        <th rowspan="2">Total</th><th rowspan="2">Aksi</th>
       </tr>
+      <tr><th>Surat</th><th>Ayat</th><th>Surat</th><th>Ayat</th></tr>
     `;
 
     // Group by siswa
     const grouped = this.groupBySiswa(filtered);
     const sorted = this.sortSiswa(Object.values(grouped));
 
-    // Build rows
+    // Build rows — tiap siswa dipecah per kelompok jenis (Ziyadah lalu
+    // Murajaah lalu Tilawah, urutan tetap AppConfig.POSITIVE_JENIS),
+    // supaya kolom Jenis & Total bisa di-rowspan per kelompok itu.
     let globalNo = 1;
-    sorted.forEach(siswa => {
-      const sortedEntries = siswa.entries.sort((a, b) => 
-        a.tanggal.localeCompare(b.tanggal)
-      );
-
-      sortedEntries.forEach((entry, i) => {
-        const isFirst = i === 0;
-        const row = this.createRow(entry, siswa, globalNo, isFirst);
+    sorted.forEach((siswa, studentIdx) => {
+      const rows = this.buildStudentRows(siswa);
+      rows.forEach((rowInfo, i) => {
+        const isFirstOfStudent = i === 0;
+        const isNewStudent = studentIdx > 0 && isFirstOfStudent;
+        const row = this.createRow(rowInfo, siswa, globalNo, isFirstOfStudent, isNewStudent);
         tbody.appendChild(row);
       });
 
@@ -155,59 +159,50 @@ const OutputTable = {
   /**
    * Kartu terkelompok per siswa untuk layar sempit — dibangun dari
    * grouping yang sama (groupBySiswa/sortSiswa) yang dipakai tabel
-   * desktop. Tombol Ubah/Hapus memanggil EditInline.toggle() dan
-   * OutputTable.deleteRecord() yang sama persis dengan tabel, dengan
-   * originalIndex yang sama — tidak ada logika yang digandakan.
+   * desktop, lalu dipecah lagi per jenis aktivitas (Ziyadah/Murajaah/
+   * Tilawah) supaya subtotal per jenis kebaca tanpa harus scroll jauh.
+   * Tiap kelompok jenis cuma menampilkan 3 entri terakhir (terbaru) —
+   * selebihnya disembunyikan di balik tombol "Lihat Detail" yang
+   * membuka modal berisi riwayat lengkap kelompok itu. Tombol
+   * Ubah/Hapus (di kartu maupun di modal) memanggil EditInline.toggle()
+   * dan OutputTable.deleteRecord() yang sama persis dengan tabel,
+   * dengan originalIndex yang sama — tidak ada logika yang digandakan.
    */
   renderMobileCards(sorted) {
     const box = document.getElementById('outputCards');
     if (!box) return;
 
-    const nilaiClass = { Mumtaz: 'mumtaz', 'Jayid Jiddan': 'jj', Jayid: 'jayid' };
+    const VISIBLE_LIMIT = 3;
 
     box.innerHTML = sorted.map(siswa => {
       const total = siswa.totalBaris;
       const initials = siswa.nama.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
-      const entries = siswa.entries
-        .slice()
-        .sort((a, b) => a.tanggal.localeCompare(b.tanggal))
-        .map(entry => {
-          const isTidak = entry.menghafal !== 'ya';
-          if (isTidak) {
-            const label = entry.alasan || AppConfig.MENGHAFAL_LABELS[entry.menghafal] || 'tanpa alasan';
-            const mJenisTidak = this.jenisName(entry)
-              ? `<span class="jenis-tag">${this.jenisName(entry)}</span> ` : '';
-            return `
-              <div class="oerow absent">
-                <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
-                <div class="omid"><div class="osurat">${mJenisTidak}Tidak setoran — ${label}</div></div>
-              </div>
-            `;
-          }
-          const ayat = entry.ayatDari && entry.ayatSampai
-            ? `${parseFloat(entry.ayatDari)} – ${parseFloat(entry.ayatSampai)}`
-            : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—');
-          const cls = nilaiClass[entry.keterangan] || 'jayid';
-          const mJenis = this.jenisName(entry)
-            ? `<span class="jenis-tag">${this.jenisName(entry)}</span> ` : '';
-          return `
-            <div class="oerow">
-              <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
-              <div class="omid">
-                <div class="osurat">${mJenis}${entry.surat || '—'} <span class="oayat">· ${ayat}</span></div>
-                <div class="ometa">
-                  <span class="opill ${cls}">${entry.keterangan || '—'}</span>
-                  <span class="obaris">${parseFloat(entry.baris) || 0} baris</span>
-                </div>
-              </div>
-              <div class="oacts">
-                <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-                <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
-              </div>
+
+      const groupsHtml = AppConfig.POSITIVE_JENIS.map(jenis => {
+        const all = siswa.entries
+          .filter(e => (e.jenis || 'ziyadah') === jenis)
+          .sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+        if (all.length === 0) return '';
+
+        const subtotal = all.reduce((sum, e) => sum + (e.menghafal === 'ya' ? (parseFloat(e.baris) || 0) : 0), 0);
+        const visible = all.slice(-VISIBLE_LIMIT);
+        const hiddenCount = all.length - visible.length;
+        const rowsHtml = visible.map(entry => this.renderEntryRow(entry)).join('');
+        const moreHtml = hiddenCount > 0
+          ? `<button type="button" class="jmore" onclick="OutputTable.showDetail('${this._jsAttr(siswa.nama)}','${this._jsAttr(siswa.kelas)}','${jenis}')">Lihat Detail — ${all.length} entri semua →</button>`
+          : '';
+
+        return `
+          <div class="jgroup ${jenis}">
+            <div class="jgroup-h">
+              <span class="jgroup-name">${AppConfig.JENIS_LABELS[jenis]}</span>
+              <span class="jgroup-total">${subtotal} ${this.unitFor(jenis)}</span>
             </div>
-          `;
-        })
-        .join('');
+            ${rowsHtml}
+            ${moreHtml}
+          </div>
+        `;
+      }).join('');
 
       return `
         <div class="ocard">
@@ -219,10 +214,121 @@ const OutputTable = {
             </div>
             <div class="otot"><div class="ov">${total}</div><div class="ol">baris</div></div>
           </div>
-          ${entries}
+          ${groupsHtml}
         </div>
       `;
     }).join('');
+  },
+
+  /**
+   * Satuan tampilan per jenis — Ziyadah pakai "baris", Murajaah &
+   * Tilawah pakai "halaman" (dipakai bareng oleh subtotal kelompok
+   * dan baris entri supaya konsisten).
+   * @param {string} jenis
+   * @returns {string}
+   */
+  unitFor(jenis) {
+    return (jenis === 'murojaah' || jenis === 'tilawah') ? 'halaman' : 'baris';
+  },
+
+  /**
+   * Render satu baris entri (dipakai bareng oleh kartu mobile —
+   * kelompok 3-terakhir — dan modal Lihat Detail, supaya markup tidak
+   * digandakan/bisa beda antara keduanya).
+   * @param {object} entry - record dengan originalIndex
+   * @returns {string}
+   */
+  renderEntryRow(entry) {
+    const isTidak = entry.menghafal !== 'ya';
+    if (isTidak) {
+      const label = entry.alasan || AppConfig.MENGHAFAL_LABELS[entry.menghafal] || 'tanpa alasan';
+      return `
+        <div class="oerow absent">
+          <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
+          <div class="omid"><div class="osurat">Tidak setoran — ${label}</div></div>
+          <div class="oacts">
+            <button class="btn-edit" onclick="OutputTable.editFromDetail(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+            <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+          </div>
+        </div>
+      `;
+    }
+    const ayat = entry.ayatDari && entry.ayatSampai
+      ? `${parseFloat(entry.ayatDari)} – ${parseFloat(entry.ayatSampai)}`
+      : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—');
+    const cls = this.nilaiClass(entry.keterangan);
+    return `
+      <div class="oerow">
+        <div class="odt">${this.formatTanggal(entry.tanggal)}</div>
+        <div class="omid">
+          <div class="osurat">${entry.surat || '—'} <span class="oayat">· ${ayat}</span></div>
+          <div class="ometa">
+            <span class="opill ${cls}">${entry.keterangan || '—'}</span>
+            <span class="obaris">${parseFloat(entry.baris) || 0} ${this.unitFor(entry.jenis)}</span>
+          </div>
+        </div>
+        <div class="oacts">
+          <button class="btn-edit" onclick="OutputTable.editFromDetail(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+        </div>
+      </div>
+    `;
+  },
+
+  /**
+   * Buka modal "Lihat Detail" — riwayat lengkap satu siswa untuk satu
+   * jenis aktivitas (dipanggil dari tombol jmore di kartu mobile).
+   * Mengambil ulang data dari getFilteredData() (sumber originalIndex
+   * yang sama dengan groupBySiswa) supaya index tetap valid untuk
+   * Ubah/Hapus dari dalam modal.
+   * @param {string} nama
+   * @param {string} kelas
+   * @param {string} jenis
+   */
+  showDetail(nama, kelas, jenis) {
+    const entries = this.getFilteredData()
+      .map((d, index) => ({ ...d, originalIndex: index }))
+      .filter(d => d.nama === nama && d.kelas === kelas && (d.jenis || 'ziyadah') === jenis)
+      .sort((a, b) => a.tanggal.localeCompare(b.tanggal));
+
+    const subtotal = entries.reduce((sum, e) => sum + (e.menghafal === 'ya' ? (parseFloat(e.baris) || 0) : 0), 0);
+
+    const title = document.getElementById('detailModalTitle');
+    if (title) title.textContent = `${AppConfig.JENIS_LABELS[jenis] || jenis} — ${nama}`;
+
+    const sub = document.getElementById('detailModalSub');
+    if (sub) sub.textContent = `Kelas ${kelas} · ${entries.length} entri · Total ${subtotal} ${this.unitFor(jenis)}`;
+
+    const body = document.getElementById('detailModalBody');
+    if (body) {
+      body.innerHTML = entries.map(entry => this.renderEntryRow(entry)).join('') || '<div class="no-data">Belum ada data</div>';
+    }
+
+    Modal.open('detailModal');
+  },
+
+  /**
+   * Ubah entri dari dalam modal Lihat Detail — tutup modal dulu baru
+   * panggil EditInline.toggle() yang sama dengan tabel/kartu (field
+   * edit ditulis ke <tr> tabel desktop yang tetap ada di DOM; CSS
+   * :has(.edit-input) yang menampilkannya di layar sempit).
+   * @param {number} index
+   */
+  editFromDetail(index) {
+    Modal.close('detailModal');
+    EditInline.toggle(index);
+  },
+
+  /**
+   * Escape nilai untuk disisipkan sebagai argumen string JS di dalam
+   * atribut onclick="..." (HTML pakai kutip dua, literal JS pakai
+   * kutip satu) — supaya nama/kelas yang mengandung tanda kutip tidak
+   * merusak markup.
+   * @param {string} str
+   * @returns {string}
+   */
+  _jsAttr(str) {
+    return String(str).replace(/\\/g, '\\\\').replace(/'/g, "\\'").replace(/"/g, '&quot;');
   },
 
   /**
@@ -300,64 +406,109 @@ const OutputTable = {
   },
 
   /**
-   * Buat row tabel
+   * Class warna pil nilai (Mumtaz/Jayid Jiddan/Jayid) — dipakai bareng oleh
+   * tabel desktop (createRow) dan kartu mobile (renderMobileCards) supaya
+   * pewarnaan konsisten di kedua tampilan.
+   * @param {string} keterangan
+   * @returns {string}
    */
-  createRow(entry, siswa, globalNo, isFirst) {
+  nilaiClass(keterangan) {
+    const map = { Mumtaz: 'mumtaz', 'Jayid Jiddan': 'jj', Jayid: 'jayid' };
+    return map[keterangan] || 'jayid';
+  },
+
+  /**
+   * Pecah entri satu siswa jadi baris tabel per kelompok jenis (Ziyadah
+   * lalu Murajaah lalu Tilawah), tiap entri diberi tahu apakah dia baris
+   * pertama kelompok jenisnya (untuk rowspan kolom Jenis & Total) beserta
+   * rowspan dan subtotal kelompok itu. Dipakai bareng oleh createRow
+   * (tabel desktop).
+   * @param {object} siswa - dari groupBySiswa (punya .entries + .rowspan)
+   * @returns {Array<object>}
+   */
+  buildStudentRows(siswa) {
+    const groups = AppConfig.POSITIVE_JENIS
+      .map(jenis => ({
+        jenis,
+        entries: siswa.entries
+          .filter(e => (e.jenis || 'ziyadah') === jenis)
+          .sort((a, b) => a.tanggal.localeCompare(b.tanggal))
+      }))
+      .filter(g => g.entries.length > 0);
+
+    const rows = [];
+    groups.forEach(g => {
+      const subtotal = g.entries.reduce((sum, e) => sum + (e.menghafal === 'ya' ? (parseFloat(e.baris) || 0) : 0), 0);
+      g.entries.forEach((entry, i) => {
+        rows.push({
+          entry,
+          jenis: g.jenis,
+          isFirstOfJenisGroup: i === 0,
+          jenisGroupRowspan: g.entries.length,
+          jenisSubtotal: subtotal
+        });
+      });
+    });
+    return rows;
+  },
+
+  /**
+   * Buat row tabel — struktur mengikuti format-tabel-dekstop.xlsx: kolom
+   * Jenis & Total di-rowspan per kelompok jenis (buildStudentRows), Awal/
+   * Akhir masing2 dipecah Surat+Ayat (satu field `surat` disimpan sebagai
+   * "Awal → Akhir" saat lintas surat — lihat input-form.js). Sel yang bisa
+   * diedit dapat class semantik (.cell-tanggal, .cell-awal-surat, dst)
+   * supaya EditInline tidak perlu menghitung posisi kolom.
+   */
+  createRow(rowInfo, siswa, globalNo, isFirstOfStudent, isNewStudent) {
+    const { entry, jenis, isFirstOfJenisGroup, jenisGroupRowspan, jenisSubtotal } = rowInfo;
     const row = document.createElement('tr');
-    // Striping keys off the student's sequence number (globalNo), not this
-    // record's raw position — a student's rowspan-grouped rows all share
-    // one color, alternating only between different students.
-    row.className = (globalNo % 2 === 0) ? 'even' : 'odd';
+    row.className = `jenis-${jenis}` + (isNewStudent ? ' new-student' : '');
     row.setAttribute('data-original-index', entry.originalIndex);
     row.setAttribute('data-menghafal', entry.menghafal || 'ya');
 
     const isTidak = entry.menghafal !== 'ya';
-    const cellClass = isTidak ? 'not-memorizing' : '';
+    const unit = this.unitFor(jenis);
 
-    // Format data
-    const suratDisplay = isTidak ? '—' : (entry.surat || '—');
-    const ayatDisplay = isTidak
-      ? (entry.alasan || AppConfig.MENGHAFAL_LABELS[entry.menghafal] || 'Tidak menghafal')
-      : (entry.ayatDari && entry.ayatSampai
-          ? `${parseFloat(entry.ayatDari)} – ${parseFloat(entry.ayatSampai)}`
-          : (entry.ayatDari ? parseFloat(entry.ayatDari).toString() : '—'));
-    const keteranganDisplay = isTidak ? '—' : (entry.keterangan || '—');
-    const barisDisplay = isTidak ? '0' : (parseFloat(entry.baris) || 0).toString();
-    const jenisName = this.jenisName(entry);
-    const jenisTag = jenisName
-      ? `<span class="jenis-tag">${jenisName}</span> `
-      : '';
+    const suratParts = (entry.surat || '').split('→').map(s => s.trim()).filter(Boolean);
+    const suratAwal = suratParts[0] || '—';
+    const suratAkhir = suratParts.length > 1 ? suratParts[1] : suratAwal;
+    const ayatAwal = (entry.ayatDari !== null && entry.ayatDari !== undefined && entry.ayatDari !== '') ? parseFloat(entry.ayatDari) : '—';
+    const ayatAkhir = (entry.ayatSampai !== null && entry.ayatSampai !== undefined && entry.ayatSampai !== '') ? parseFloat(entry.ayatSampai) : '—';
 
-    if (isFirst) {
-      row.innerHTML = `
-        <td rowspan="${siswa.rowspan}">${globalNo}</td>
-        <td rowspan="${siswa.rowspan}"><strong>${siswa.nama}</strong></td>
-        <td rowspan="${siswa.rowspan}"><span class="kelas-badge">${siswa.kelas}</span></td>
-        <td>${this.formatTanggal(entry.tanggal)}</td>
-        <td class="${cellClass}">${jenisTag}${suratDisplay}</td>
-        <td class="${cellClass}">${ayatDisplay}</td>
-        <td class="${cellClass}">${keteranganDisplay}</td>
-        <td>${barisDisplay}</td>
-        <td rowspan="${siswa.rowspan}" class="total-cell">${siswa.totalBaris}</td>
-        <td>
-          <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
-        </td>
-      `;
-    } else {
-      row.innerHTML = `
-        <td>${this.formatTanggal(entry.tanggal)}</td>
-        <td class="${cellClass}">${suratDisplay}</td>
-        <td class="${cellClass}">${ayatDisplay}</td>
-        <td class="${cellClass}">${keteranganDisplay}</td>
-        <td>${barisDisplay}</td>
-        <td>
-          <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
-          <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
-        </td>
-      `;
+    const keteranganDisplay = (isTidak || !entry.keterangan)
+      ? '—'
+      : `<span class="opill ${this.nilaiClass(entry.keterangan)}">${entry.keterangan}</span>`;
+    const barisDisplay = isTidak ? '0' : `${(parseFloat(entry.baris) || 0)} ${unit}`;
+
+    const awalAkhirCells = isTidak
+      ? `<td colspan="4" class="not-memorizing cell-absent">Tidak setoran — ${entry.alasan || AppConfig.MENGHAFAL_LABELS[entry.menghafal] || 'tanpa alasan'}</td>`
+      : `<td class="cell-awal-surat">${suratAwal}</td><td class="cell-awal-ayat">${ayatAwal}</td><td class="cell-akhir-surat">${suratAkhir}</td><td class="cell-akhir-ayat">${ayatAkhir}</td>`;
+
+    const actionBtns = `
+      <button class="btn-edit" onclick="EditInline.toggle(${entry.originalIndex})" title="Edit"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></button>
+      <button class="btn-delete" onclick="OutputTable.deleteRecord(${entry.originalIndex})" title="Hapus"><svg class="ico-sm" viewBox="0 0 24 24"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"/></svg></button>
+    `;
+
+    let html = '';
+    if (isFirstOfStudent) {
+      html += `<td rowspan="${siswa.rowspan}">${globalNo}</td>`;
+      html += `<td rowspan="${siswa.rowspan}"><strong>${siswa.nama}</strong></td>`;
+      html += `<td rowspan="${siswa.rowspan}"><span class="kelas-badge">${siswa.kelas}</span></td>`;
     }
+    if (isFirstOfJenisGroup) {
+      html += `<td rowspan="${jenisGroupRowspan}"><span class="jenis-tag ${jenis}">${AppConfig.JENIS_LABELS[jenis]}</span></td>`;
+    }
+    html += `<td class="cell-tanggal">${this.formatTanggal(entry.tanggal)}</td>`;
+    html += awalAkhirCells;
+    html += `<td class="cell-nilai">${keteranganDisplay}</td>`;
+    html += `<td class="cell-baris">${barisDisplay}</td>`;
+    if (isFirstOfJenisGroup) {
+      html += `<td rowspan="${jenisGroupRowspan}" class="total-cell">${jenisSubtotal} ${unit}</td>`;
+    }
+    html += `<td>${actionBtns}</td>`;
 
+    row.innerHTML = html;
     return row;
   },
 
@@ -515,18 +666,6 @@ const OutputTable = {
       </div>
     `;
     tableInfo.appendChild(syncDiv);
-  },
-
-  /**
-   * Auto sync setiap 30 detik
-   */
-  startAutoSync() {
-    setInterval(() => {
-      if (AppState.currentTab === 'output') {
-        console.log('🔄 Auto-syncing...');
-        this.update();
-      }
-    }, AppConfig.AUTO_SYNC_INTERVAL);
   }
 };
 

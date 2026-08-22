@@ -255,177 +255,39 @@ const NotificationService = {
   },
 
   /**
-   * Format pesan untuk data menghafal baru
-   * Memakai template GLOBAL (TemplateWaManager) — fallback ke bawaan
-   * @param {object} data - Data tahfidz
+   * Format SATU pesan WA per submit form — dipakai untuk 1 aktivitas
+   * maupun 2-3 aktivitas sekaligus (Ziyadah/Murajaah/Tilawah), selalu
+   * lewat TemplateWaManager (bisa diedit admin di tab Template WA).
+   * Ziyadah satu-satunya jenis berstatus non-"ya" (Sakit/Sertifikasi/
+   * Lainnya) — kalau itu terjadi, dianggap siswa tidak masuk sama sekali
+   * (dikonfirmasi: Murajaah/Tilawah tidak mungkin ikut tercentang saat
+   * itu), jadi template "tidak"/"sertifikasi"/"lainnya" dipakai sendirian
+   * tanpa perlu menggabung aktivitas lain.
+   * @param {object[]} dataList - array formData aktivitas yang berhasil disimpan
    * @returns {string} - Pesan terformat
    */
-  formatTahfidzMessage(data) {
-    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('setoran', 'ya', data);
-    }
-    // Fallback pesan bawaan (kalau manager belum dimuat)
-    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
-    msg += `Alhamdulillah, hari ini ananda ${data.nama} telah menyelesaikan setoran hafalan:\n\n`;
-    msg += `📖 Surat    : ${data.surat || '-'}\n`;
-    
-    if (data.ayatDari && data.ayatSampai) {
-      msg += `📍 Ayat     : ${data.ayatDari} - ${data.ayatSampai}\n`;
-    } else if (data.ayatDari) {
-      msg += `📍 Ayat     : ${data.ayatDari}\n`;
-    }
-    
-    msg += `📊 Jumlah   : ${data.baris} baris\n`;
-    msg += `⭐ Nilai    : ${data.keterangan || '-'}\n`;
-    msg += `👨‍🏫 Guru     : ${data.guru}\n\n`;
-    msg += `Terus dukung semangat menghafal ananda ${data.nama} di rumah ya.\n\n`;
-    msg += `Wassalamu'alaikum,\n${data.guru}`;
+  formatAktivitasMessage(dataList) {
+    const ziyadah = dataList.find(d => (d.jenis || 'ziyadah') === 'ziyadah');
 
-    return msg;
+    if (ziyadah && ziyadah.menghafal !== 'ya') {
+      const key = ziyadah.menghafal === 'sakit' ? 'tidak'
+        : ziyadah.menghafal === 'sertifikasi' ? 'sertifikasi'
+        : 'lainnya';
+      return TemplateWaManager.buildMessage(key, ziyadah);
+    }
+
+    return TemplateWaManager.buildMessage('setoran', dataList);
   },
 
   /**
-   * Format pesan untuk data murajaah baru
-   * Memakai template GLOBAL jenis 'murojaah' — fallback ke bawaan
-   * @param {object} data - Data tahfidz
-   * @returns {string} - Pesan terformat
-   */
-  formatMurojaahMessage(data) {
-    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('murojaah', 'ya', data);
-    }
-    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
-    msg += `Alhamdulillah, hari ini ananda ${data.nama} telah menyelesaikan murajaah hafalan:\n\n`;
-    msg += `📖 Surat    : ${data.surat || '-'}\n`;
-    if (data.ayatDari && data.ayatSampai) {
-      msg += `📍 Ayat     : ${data.ayatDari} - ${data.ayatSampai}\n`;
-    } else if (data.ayatDari) {
-      msg += `📍 Ayat     : ${data.ayatDari}\n`;
-    }
-    msg += `📊 Jumlah   : ${data.baris} baris\n`;
-    msg += `⭐ Nilai    : ${data.keterangan || '-'}\n`;
-    msg += `👨‍🏫 Guru     : ${data.guru}\n\n`;
-    msg += `Terus istiqamah murajaah ananda ${data.nama} di rumah ya.\n\n`;
-    msg += `Wassalamu'alaikum,\n${data.guru}`;
-    return msg;
-  },
-
-  /**
-   * Format pesan untuk data tilawah baru
-   * Memakai template GLOBAL jenis 'tilawah' — fallback ke bawaan
-   * @param {object} data - Data tahfidz
-   * @returns {string} - Pesan terformat
-   */
-  formatTilawahMessage(data) {
-    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('tilawah', 'ya', data);
-    }
-    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
-    msg += `Alhamdulillah, hari ini ananda ${data.nama} telah melaksanakan tilawah:\n\n`;
-    msg += `📖 Surat    : ${data.surat || '-'}\n`;
-    if (data.ayatDari && data.ayatSampai) {
-      msg += `📍 Ayat     : ${data.ayatDari} - ${data.ayatSampai}\n`;
-    } else if (data.ayatDari) {
-      msg += `📍 Ayat     : ${data.ayatDari}\n`;
-    }
-    msg += `📊 Jumlah   : ${data.baris} baris\n`;
-    msg += `⭐ Nilai    : ${data.keterangan || '-'}\n`;
-    msg += `👨‍🏫 Guru     : ${data.guru}\n\n`;
-    msg += `Terus istiqamah tilawah ananda ${data.nama} di rumah ya.\n\n`;
-    msg += `Wassalamu'alaikum,\n${data.guru}`;
-    return msg;
-  },
-
-  /**
-   * Format pesan untuk ananda yang sakit (tidak ziyadah)
-   * Memakai template GLOBAL jenis 'tidak' (dipakai ulang dari template lama) — fallback ke bawaan
-   * @param {object} data - Data tahfidz
-   * @returns {string} - Pesan terformat
-   */
-  formatSakitMessage(data) {
-    const payload = { ...data, alasan: 'Sakit' };
-    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      const key = TemplateWaManager.keyFor(data.jenis || 'ziyadah', 'sakit');
-      return TemplateWaManager.buildMessage(key, 'sakit', payload);
-    }
-    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
-    msg += `Hari ini ananda ${data.nama} tidak dapat mengikuti setoran hafalan karena:\n`;
-    msg += `📝 Sakit\n\n`;
-    msg += `Kami doakan semoga ananda lekas sehat dan bisa kembali menghafal.\n\n`;
-    msg += `Wassalamu'alaikum,\n${data.guru}`;
-
-    return msg;
-  },
-
-  /**
-   * Format pesan untuk ananda yang sedang persiapan sertifikasi tahfidz
-   * Memakai template GLOBAL jenis 'sertifikasi' — fallback ke bawaan
-   * @param {object} data - Data tahfidz
-   * @returns {string} - Pesan terformat
-   */
-  formatSertifikasiMessage(data) {
-    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      const key = TemplateWaManager.keyFor(data.jenis || 'ziyadah', 'sertifikasi');
-      return TemplateWaManager.buildMessage(key, 'sertifikasi', data);
-    }
-    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
-    msg += `Hari ini ananda ${data.nama} tidak mengikuti setoran hafalan karena sedang mempersiapkan sertifikasi tahfidz.\n\n`;
-    msg += `Semoga ananda dimudahkan dan lancar dalam proses sertifikasinya.\n\n`;
-    msg += `Wassalamu'alaikum,\n${data.guru}`;
-
-    return msg;
-  },
-
-  /**
-   * Format pesan untuk alasan tidak ziyadah lainnya (bebas)
-   * Memakai template GLOBAL jenis 'lainnya' — fallback ke bawaan
-   * @param {object} data - Data tahfidz
-   * @returns {string} - Pesan terformat
-   */
-  formatLainnyaMessage(data) {
-    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      const key = TemplateWaManager.keyFor(data.jenis || 'ziyadah', 'lainnya');
-      return TemplateWaManager.buildMessage(key, 'lainnya', data);
-    }
-    let msg = `Assalamu'alaikum ayah/bunda ananda ${data.nama},\n\n`;
-    msg += `Hari ini ananda ${data.nama} tidak mengikuti setoran hafalan dengan keterangan:\n`;
-    msg += `📝 ${data.alasan || 'Tidak disebutkan'}\n\n`;
-    msg += `Wassalamu'alaikum,\n${data.guru}`;
-
-    return msg;
-  },
-
-  /**
-   * Format pesan untuk edit data
-   * Memakai template GLOBAL (TemplateWaManager) — fallback ke bawaan
+   * Format pesan untuk edit data. DISIAPKAN tapi belum dipanggil dari
+   * alur Ubah manapun — EditInline.save() saat ini tidak mengirim WA.
    * @param {object} oldData - Data lama
    * @param {object} newData - Data baru
    * @returns {string} - Pesan terformat
    */
   formatEditMessage(oldData, newData) {
-    if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.buildMessage) {
-      return TemplateWaManager.buildMessage('edit', 'edit', newData, oldData);
-    }
-    let msg = `Assalamu'alaikum ayah/bunda ananda ${newData.nama},\n\n`;
-    msg += `Ada pembaruan data hafalan ananda ${newData.nama}:\n\n`;
-    
-    if (oldData.tanggal !== newData.tanggal) {
-      msg += `• Tanggal : ${oldData.tanggal} → ${newData.tanggal}\n`;
-    }
-    if (oldData.surat !== newData.surat) {
-      msg += `• Surat   : ${oldData.surat || '-'} → ${newData.surat || '-'}\n`;
-    }
-    if (oldData.keterangan !== newData.keterangan) {
-      msg += `• Nilai   : ${oldData.keterangan || '-'} → ${newData.keterangan || '-'}\n`;
-    }
-    if (oldData.baris !== newData.baris) {
-      msg += `• Jumlah  : ${oldData.baris || 0} → ${newData.baris || 0} baris\n`;
-    }
-    
-    msg += `\nTerima kasih atas perhatiannya.\n\n`;
-    msg += `Wassalamu'alaikum,\n${newData.guru}`;
-
-    return msg;
+    return TemplateWaManager.buildMessage('edit', newData, oldData);
   }
 };
 

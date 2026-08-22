@@ -9,7 +9,7 @@
 <body>
   <div class="app-header">
     <div class="header-left">
-      <div class="header-icon">﷽</div>
+      <div class="header-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
       <div>
         <div class="header-title">Tahfidz <span>SMP ABBS</span></div>
         <div class="header-sub">Monitoring Setoran Hafalan Qur'an</div>
@@ -23,24 +23,25 @@
     </div>
   </div>
     
-    <!-- 🎯 APP SHELL — .tabs becomes a real sidebar at ≥641px (CSS), a
-         fixed bottom bar duplicates the same buttons below for phones. -->
-    <div class="app-shell" id="appShell">
-    <div class="tabs">
-      <button class="sidebar-collapse-btn" id="sidebarCollapseBtn" type="button"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg><span>Perkecil</span></button>
-      <button class="tab active" onclick="TabManager.show('input')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="tab-label">Input Data</span></button>
-      <button class="tab" onclick="TabManager.show('output')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="tab-label">Hasil Data</span></button>
-      <button class="tab" onclick="TabManager.show('target')"><span class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg></span><span class="tab-label">Kelola Target</span></button>
-      <button class="tab" onclick="TabManager.show('master')"><span class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h8"/></svg></span><span class="tab-label">Master Data</span></button>
-            <button class="tab" onclick="TabManager.show('template')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5Z"/><path d="M9 9.5h.01M12.5 9.5h.01M16 9.5h.01"/></svg></span><span class="tab-label">Template WA</span> <span class="badge-new">BARU</span></button>
-      <div class="sidebar-date" id="sidebarDate"></div>
-          </div>
+    <!-- 🎯 RAIL NAVIGASI MENGAMBANG — ikon saja, di kiri-tengah (bukan
+         sidebar penuh) supaya lebar konten/tabel bisa maksimal. Sembunyi
+         di layar HP (CSS), digantikan .tabbar-mobile di bawah. Sama
+         persis class="tab" + onclick="TabManager.show(...)" dengan
+         tabbar mobile, jadi TabManager tetap menyalakan active state
+         di semuanya tanpa perlu diubah. -->
+    <div class="float-nav">
+      <button class="tab active float-nav-item" onclick="TabManager.show('input')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="tip">Input Data</span></button>
+      <button class="tab float-nav-item" onclick="TabManager.show('output')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="tip">Hasil Data</span></button>
+      <button class="tab float-nav-item" onclick="TabManager.show('target')"><span class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg></span><span class="tip">Kelola Target</span></button>
+      <button class="tab float-nav-item" onclick="TabManager.show('master')"><span class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h8"/></svg></span><span class="tip">Master Data</span></button>
+      <button class="tab float-nav-item" onclick="TabManager.show('template')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.4 7.5L3 21l2-5.6A8.5 8.5 0 1 1 21 11.5Z"/><path d="M9 9.5h.01M12.5 9.5h.01M16 9.5h.01"/></svg></span><span class="dot-new" title="Fitur baru"></span><span class="tip">Template WA</span></button>
+    </div>
 
   <div class="container">
 
     <!-- 🟢 TAB INPUT -->
     <div id="input" class="tab-content active">
-      <form id="tahfidzForm" data-jenis="ziyadah">
+      <form id="tahfidzForm">
         <!-- Card: Data Guru (dipakai bersama) -->
         <div class="card">
           <div class="card-header"><div class="card-title">Data Guru</div></div>
@@ -61,50 +62,86 @@
           </div>
         </div>
 
-        <!-- Card: Data Setoran — 3 tab (Ziyadah/Murajaah/Tilawah) -->
+        <!-- Card: Data Setoran — daftar menyatu Aktivitas KBM di mobile, 3 kolom berdampingan di desktop -->
         <div class="card">
-          <div class="card-header"><div class="card-title" id="setoranTitle">Data Setoran</div></div>
-          <div class="master-tabs" style="margin:0 0 14px">
-            <button class="master-tab active" data-setoran="ziyadah" onclick="InputForm.showSetoranTab('ziyadah')">Ziyadah</button>
-            <button class="master-tab" data-setoran="murojaah" onclick="InputForm.showSetoranTab('murojaah')">Murajaah</button>
-            <button class="master-tab" data-setoran="tilawah" onclick="InputForm.showSetoranTab('tilawah')">Tilawah</button>
+          <div class="card-header"><div class="card-title">Data Setoran</div></div>
+
+          <div class="activity-list">
+            <!-- Ziyadah -->
+            <div id="ziyadahPane" class="activity-row on">
+              <label class="activity-head">
+                <input type="checkbox" id="aktifZiyadah" class="chk-native" checked onchange="InputForm.toggleAktivitas('ziyadah')" />
+                <span class="act-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span>
+                <span class="act-text">
+                  <span class="act-label">Ziyadah</span>
+                  <span class="act-hint">Setoran hafalan baru</span>
+                </span>
+                <span class="act-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+              </label>
+              <div id="ziyadahBody" class="activity-body-inner">
+                <div class="row2">
+                  <div class="field"><label>Status</label><select id="menghafal" required onchange="InputForm.toggleMenghafalFields()"><option value="">-- Pilih --</option><option value="ya" selected>Ya</option><option value="sakit">Sakit</option><option value="sertifikasi">Persiapan Sertifikasi</option><option value="lainnya">Lainnya</option></select></div>
+                  <div class="field"><label>Keterangan Nilai</label><select id="keterangan"><option value="">-- Pilih --</option></select></div>
+                </div>
+                <div id="alasanField" class="field hidden"><label>Alasan</label><input type="text" id="alasan" placeholder="Jelaskan alasannya" /></div>
+                <div id="sertifikasiFields" class="row2 hidden">
+                  <div class="field"><label>Juz</label><input type="number" id="juzSertifikasi" placeholder="1-30" min="1" max="30" step="1" /></div>
+                  <div class="field"><label>Capaian</label><select id="capaianSertifikasi"><option value="">-- Pilih --</option><option value="1/4 A">1/4 A</option><option value="1/4 B">1/4 B</option><option value="1/4 C">1/4 C</option><option value="1/4 D">1/4 D</option><option value="1/2 A">1/2 A</option><option value="1/2 B">1/2 B</option></select></div>
+                </div>
+                <div id="hafalanFields" class="hidden">
+                  <div class="range" style="margin-bottom:14px"><span class="range-tag">Awal</span><select id="surat" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDari" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                  <div class="range" style="margin-bottom:14px"><span class="range-tag">Akhir</span><select id="suratAkhir" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampai" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                  <div class="range"><span class="range-tag">Baris</span><input type="number" id="baris" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Murajaah — tanpa Status: dicentang = otomatis dilakukan -->
+            <div id="murojaahPane" class="activity-row">
+              <label class="activity-head">
+                <input type="checkbox" id="aktifMurojaah" class="chk-native" onchange="InputForm.toggleAktivitas('murojaah')" />
+                <span class="act-icon"><svg viewBox="0 0 24 24"><path d="M17 1l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 23l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>
+                <span class="act-text">
+                  <span class="act-label">Murajaah</span>
+                  <span class="act-hint">Mengulang hafalan lama</span>
+                </span>
+                <span class="act-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+              </label>
+              <div id="murojaahBody" class="activity-body-inner hidden">
+                <div class="field"><label>Keterangan Nilai</label><select id="keteranganM"><option value="">-- Pilih --</option></select></div>
+                <div id="hafalanFieldsM">
+                  <div class="range" style="margin-bottom:14px"><span class="range-tag">Awal</span><select id="suratM" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDariM" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                  <div class="range" style="margin-bottom:14px"><span class="range-tag">Akhir</span><select id="suratAkhirM" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampaiM" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                  <div class="range"><span class="range-tag">Halaman</span><input type="number" id="barisM" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Tilawah — tanpa Status: dicentang = otomatis dilakukan -->
+            <div id="tilawahPane" class="activity-row">
+              <label class="activity-head">
+                <input type="checkbox" id="aktifTilawah" class="chk-native" onchange="InputForm.toggleAktivitas('tilawah')" />
+                <span class="act-icon"><svg viewBox="0 0 24 24"><path d="M4 6h16M4 12h11M4 18h16"/></svg></span>
+                <span class="act-text">
+                  <span class="act-label">Tilawah</span>
+                  <span class="act-hint">Membaca Al-Qur'an</span>
+                </span>
+                <span class="act-chev"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg></span>
+              </label>
+              <div id="tilawahBody" class="activity-body-inner hidden">
+                <div class="field"><label>Keterangan Nilai</label><select id="keteranganT"><option value="">-- Pilih --</option></select></div>
+                <div id="hafalanFieldsT">
+                  <div class="range" style="margin-bottom:14px"><span class="range-tag">Awal</span><select id="suratT" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDariT" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                  <div class="range" style="margin-bottom:14px"><span class="range-tag">Akhir</span><select id="suratAkhirT" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampaiT" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
+                  <div class="range"><span class="range-tag">Halaman</span><input type="number" id="barisT" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div class="form-grid">
-            <!-- Pane Ziyadah -->
-            <div id="ziyadahPane">
-              <div class="form-group"><label>Ziyadah? (Setoran Baru)</label><select id="menghafal" required onchange="InputForm.toggleMenghafalFields()"><option value="">-- Pilih --</option><option value="ya">Ya</option><option value="sakit">Sakit</option><option value="sertifikasi">Persiapan Sertifikasi</option><option value="lainnya">Lainnya</option></select></div>
-              <div class="form-group"><label>Keterangan Nilai</label><select id="keterangan"><option value="">-- Pilih --</option></select></div>
-              <div id="alasanField" class="form-group full hidden"><label>Alasan</label><input type="text" id="alasan" placeholder="Jelaskan alasannya" /></div>
-              <div id="hafalanFields" class="full hidden">
-                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Awal</span><select id="surat" class="target-surat-input" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDari" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
-                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Akhir</span><select id="suratAkhir" class="target-surat-input" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampai" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
-                <div class="target-range-row"><span class="range-label">Baris</span><input type="number" id="baris" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
-              </div>
-            </div>
 
-            <!-- Pane Murajaah -->
-            <div id="murojaahPane" class="hidden">
-              <div class="form-group"><label>Murajaah? (Aktivitas)</label><select id="menghafalM" required onchange="InputForm.toggleMenghafalFields('M')"><option value="">-- Pilih --</option><option value="ya">Ya</option><option value="sakit">Sakit</option><option value="sertifikasi">Persiapan Sertifikasi</option><option value="lainnya">Lainnya</option></select></div>
-              <div class="form-group"><label>Keterangan Nilai</label><select id="keteranganM"><option value="">-- Pilih --</option></select></div>
-              <div id="alasanFieldM" class="form-group full hidden"><label>Alasan</label><input type="text" id="alasanM" placeholder="Jelaskan alasannya" /></div>
-              <div id="hafalanFieldsM" class="full hidden">
-                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Awal</span><select id="suratM" class="target-surat-input" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDariM" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
-                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Akhir</span><select id="suratAkhirM" class="target-surat-input" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampaiM" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
-                <div class="target-range-row"><span class="range-label">Baris</span><input type="number" id="barisM" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
-              </div>
-            </div>
-
-            <!-- Pane Tilawah -->
-            <div id="tilawahPane" class="hidden">
-              <div class="form-group"><label>Tilawah? (Aktivitas)</label><select id="menghafalT" required onchange="InputForm.toggleMenghafalFields('T')"><option value="">-- Pilih --</option><option value="ya">Ya</option><option value="sakit">Sakit</option><option value="sertifikasi">Persiapan Sertifikasi</option><option value="lainnya">Lainnya</option></select></div>
-              <div class="form-group"><label>Keterangan Nilai</label><select id="keteranganT"><option value="">-- Pilih --</option></select></div>
-              <div id="alasanFieldT" class="form-group full hidden"><label>Alasan</label><input type="text" id="alasanT" placeholder="Jelaskan alasannya" /></div>
-              <div id="hafalanFieldsT" class="full hidden">
-                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Awal</span><select id="suratT" class="target-surat-input" style="flex:1"><option value="">-- Pilih Surat --</option></select><input type="number" id="ayatDariT" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
-                <div class="target-range-row" style="margin-bottom:14px"><span class="range-label">Akhir</span><select id="suratAkhirT" class="target-surat-input" style="flex:1"><option value="">-- Sama dengan Surat di atas --</option></select><input type="number" id="ayatSampaiT" class="target-ayat-input" placeholder="Ayat" min="0" step="0.5" style="width:80px" /></div>
-                <div class="target-range-row"><span class="range-label">Baris</span><input type="number" id="barisT" placeholder="Misal: 5.5" min="0" step="0.5" required style="flex:1" /></div>
-              </div>
-            </div>
+          <div class="activity-note">
+            <svg viewBox="0 0 24 24"><path d="M12 2 L2 7 L12 12 L22 7 Z"/><path d="M2 17 L12 22 L22 17"/><path d="M2 12 L12 17 L22 12"/></svg>
+            <span>Bisa dicentang lebih dari satu — satu kali simpan mencatat semua aktivitas yang dicentang.</span>
           </div>
         </div>
 
@@ -124,28 +161,35 @@
     <div id="output" class="tab-content">
       <div class="stat-grid" id="outputStats"></div>
       <div class="filter">
-        <label>Kelas:</label>
-        <select id="filterKelas" onchange="OutputTable.update()">
-          <option value="">Semua</option>
-        </select>
-
-        <label>Jenis:</label>
-        <select id="filterJenis" onchange="OutputTable.update()">
-          <option value="">Semua</option>
-          <option value="ziyadah">Ziyadah</option>
-          <option value="murojaah">Murajaah</option>
-          <option value="tilawah">Tilawah</option>
-        </select>
-
-        <label>Bulan:</label>
-        <select id="filterBulan" onchange="OutputTable.update()">
-          <option value="">Semua Bulan</option>
-        </select>
-
-        <label>Tahun:</label>
-        <select id="filterTahun" onchange="OutputTable.update()">
-          <option value="">Semua Tahun</option>
-        </select>
+        <div class="filter-grid">
+          <div class="field">
+            <label>Kelas</label>
+            <select id="filterKelas" onchange="OutputTable.update()">
+              <option value="">Semua Kelas</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Jenis</label>
+            <select id="filterJenis" onchange="OutputTable.update()">
+              <option value="">Semua Jenis</option>
+              <option value="ziyadah">Ziyadah</option>
+              <option value="murojaah">Murajaah</option>
+              <option value="tilawah">Tilawah</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Bulan</label>
+            <select id="filterBulan" onchange="OutputTable.update()">
+              <option value="">Semua Bulan</option>
+            </select>
+          </div>
+          <div class="field">
+            <label>Tahun</label>
+            <select id="filterTahun" onchange="OutputTable.update()">
+              <option value="">Semua Tahun</option>
+            </select>
+          </div>
+        </div>
 
         <div class="export-buttons">
           <button type="button" class="btn-export csv" onclick="OutputTable.exportCSV()">
@@ -165,21 +209,25 @@
         <table id="outputTable" class="student-table">
           <thead>
             <tr>
-              <th>No</th>
-              <th>Nama Siswa</th>
-              <th>Kelas</th>
-              <th>Tanggal</th>
-              <th>Surat</th>
-              <th>Ayat</th>
-              <th>Keterangan</th>
-              <th>Baris</th>
-              <th>Total</th>
-              <th>Aksi</th>
+              <th rowspan="2">No</th>
+              <th rowspan="2">Nama Siswa</th>
+              <th rowspan="2">Kelas</th>
+              <th rowspan="2">Jenis</th>
+              <th rowspan="2">Tanggal</th>
+              <th colspan="2">Awal</th>
+              <th colspan="2">Akhir</th>
+              <th rowspan="2">Nilai</th>
+              <th rowspan="2">Baris/Halaman</th>
+              <th rowspan="2">Total</th>
+              <th rowspan="2">Aksi</th>
+            </tr>
+            <tr>
+              <th>Surat</th><th>Ayat</th><th>Surat</th><th>Ayat</th>
             </tr>
           </thead>
           <tbody>
             <tr>
-              <td colspan="10" class="no-data">Memuat data dari Supabase...</td>
+              <td colspan="13" class="no-data">Memuat data dari Supabase...</td>
             </tr>
           </tbody>
         </table>
@@ -387,14 +435,8 @@
               <p>Template ini <strong>GLOBAL</strong> — cukup diatur oleh <strong>1 guru</strong>, dipakai untuk <strong>semua guru</strong> saat mengirim notifikasi ke orang tua siswa.</p>
             </div>
 
-            <!-- LEVEL 1: pilih jenis aktivitas (Ziyadah/Murajaah/Tilawah/Pembaruan Data) -->
+            <!-- Daftar 5 template datar: Ya / Sakit / Persiapan Sertifikasi / Lainnya / Pembaruan Data -->
             <div id="tplJenis" class="tpl-jenis"></div>
-
-            <!-- LEVEL 2: pilih status (cuma muncul utk Ziyadah/Murajaah/Tilawah) -->
-            <div id="tplLevel2Wrap">
-              <div id="tplLevel2" class="tpl-level2"></div>
-              <span class="tpl-level2-hint">Pilih status di atas untuk mengatur pesan WA-nya masing-masing.</span>
-            </div>
             <div class="tpl-breadcrumb" id="tplBreadcrumb"></div>
 
             <!-- Editor -->
@@ -438,7 +480,6 @@
           </div>
         </div>
         </div>
-    </div>
     <!-- fixed bottom nav for phones — same .tab buttons/onclick as the
          sidebar above, so TabManager's active-state matching lights up
          whichever nav is currently visible -->
@@ -623,6 +664,36 @@
     </div>
   </div>
 
+  <div id="detailModal" class="modal">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="detailModalTitle">Detail</h3>
+          <div id="detailModalSub" class="detail-modal-sub"></div>
+        </div>
+        <span class="close" onclick="Modal.close('detailModal')">&times;</span>
+      </div>
+      <div id="detailModalBody" class="detail-modal-body"></div>
+    </div>
+  </div>
+
+  <div id="editModal" class="modal">
+    <div class="modal-content" style="max-width: 460px;">
+      <div class="modal-header">
+        <div>
+          <h3 id="editModalTitle">Ubah Data</h3>
+          <div id="editModalSub" class="detail-modal-sub"></div>
+        </div>
+        <span class="close" onclick="EditInline.cancelMobileEdit()">&times;</span>
+      </div>
+      <div id="editModalBody" class="edit-modal-body"></div>
+      <div class="modal-actions">
+        <button type="button" class="btn-cancel" onclick="EditInline.cancelMobileEdit()">Batal</button>
+        <button type="button" class="btn-submit" id="editModalSaveBtn" onclick="EditInline.saveMobileEdit()">Simpan</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ============================================ -->
   <!-- 🔔 TOAST CONTAINER -->
   <!-- ============================================ -->
@@ -651,7 +722,6 @@
   <script src="js/ui/dropdowns.js"></script>
   <script src="js/ui/edit-inline.js"></script>
   <script src="js/ui/confirm-dialog.js"></script>
-  <script src="js/ui/sidebar.js"></script>
   
   <!-- 5. Features -->
   <script src="js/features/input-form.js"></script>

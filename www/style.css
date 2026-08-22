@@ -60,7 +60,7 @@ body{
 }
 ::selection{background:var(--accent-dim);color:var(--accent-deep)}
 
-.container{max-width:1160px;margin:0 auto;padding:16px 20px}
+.container{max-width:1600px;margin:0 auto;padding:16px 20px}
 
 h1{
   text-align:center;color:var(--ink);margin-bottom:25px;font-size:2.1em;
@@ -69,7 +69,7 @@ h1{
 
 /* ============ APP HEADER ============ */
 .app-header{
-  max-width:1160px;margin:20px auto 16px;background:var(--surface-2);
+  max-width:1600px;margin:20px auto 16px;background:var(--surface-2);
   border:1px solid var(--line);border-radius:16px;padding:16px 22px;
   display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;
   box-shadow:var(--shadow);
@@ -77,10 +77,11 @@ h1{
 .header-left{display:flex;align-items:center;gap:14px}
 .header-icon{
   width:42px;height:42px;background:linear-gradient(155deg,var(--accent),var(--accent-deep));
-  border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:19px;
-  font-weight:700;color:var(--gold-soft);flex-shrink:0;font-family:var(--serif);
+  border-radius:12px;display:flex;align-items:center;justify-content:center;
+  color:var(--gold-soft);flex-shrink:0;overflow:hidden;
   box-shadow:inset 0 0 0 1px rgba(200,156,85,.4);
 }
+.header-icon svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
 .header-title{font-size:17px;font-weight:700;color:var(--ink);letter-spacing:-.2px;font-family:var(--serif)}
 .header-title span{color:var(--accent)}
 .header-sub{font-size:11.5px;color:var(--muted);margin-top:2px;font-weight:600}
@@ -104,14 +105,11 @@ h1{
 }
 
 /* ============ TABS NAVIGATION ============
-   .tab / .tab-label / .tab-icon are CSS hooks only — TabManager
-   matches by the onclick attribute string, never by content, so
-   this markup is free to restyle per breakpoint. */
-.tabs{
-  display:flex;justify-content:center;margin:0 auto 20px;max-width:1160px;
-  background:var(--surface-2);border:1px solid var(--line);border-radius:14px;
-  padding:5px;gap:4px;flex-wrap:wrap;
-}
+   .tab / .tab-icon are CSS hooks only — TabManager matches by the
+   onclick attribute string, never by content, so this markup is free
+   to restyle per context. Base .tab styling below is the shared
+   default for .tabbar-mobile (phones) and .float-nav-item (desktop
+   rail, styles further down) — no bare .tabs bar anymore. */
 .tab{
   background:transparent;color:var(--ink-soft);border:none;padding:11px 16px;cursor:pointer;
   border-radius:10px;transition:.2s ease;font-weight:700;flex:1;min-width:120px;font-size:13px;
@@ -209,29 +207,50 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .filter label{width:auto;font-weight:700;color:var(--ink);font-size:13px}
 .filter select{flex:none;width:160px}
 
+/* Output tab filter: tiap select punya label KECIL DI ATASNYA sendiri
+   (pakai .field, sama dgn form Input/modal edit) — supaya di HP (label
+   .filter biasa disembunyikan lewat CSS lain) tetap jelas mana filter
+   Kelas/Jenis/Bulan/Tahun, bukan cuma deretan "Semua" tanpa keterangan. */
+#output .filter{align-items:flex-start}
+#output .filter-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;flex:1;min-width:0}
+#output .filter-grid .field select{width:100%}
+
 .export-buttons{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
 .table-info{margin-bottom:15px}
 .summary{background:var(--surface-2);border:1px solid var(--line);padding:10px 15px;border-radius:9px;font-weight:700;color:var(--accent);font-size:13.5px}
 
 .scroll-container{
   overflow-x:auto;border:1px solid var(--line);border-radius:12px;margin-bottom:20px;
-  background:var(--surface-2);max-height:60vh;overflow-y:auto;
+  background:var(--surface-2);max-height:74vh;overflow-y:auto;
 }
 
-.student-table{width:100%;border-collapse:collapse;background:transparent;min-width:900px;font-size:13.5px}
-.student-table th,.student-table td{border:1px solid var(--line-soft);padding:11px 9px;text-align:center;white-space:nowrap}
+.student-table{width:100%;border-collapse:collapse;background:transparent;min-width:1180px;font-size:12.5px}
+.student-table th,.student-table td{border:1px solid var(--line-soft);padding:8px 8px;text-align:center;white-space:nowrap}
 .student-table th{
   background:linear-gradient(155deg,var(--accent),var(--accent-deep));color:#fff;font-weight:700;
-  position:sticky;top:0;z-index:10;font-size:11px;text-transform:uppercase;letter-spacing:.5px;
+  position:sticky;top:0;z-index:10;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;
 }
-/* Class-based, not nth-child: a student's rowspan-grouped rows must stay
-   one color, and nth-child only sees flat DOM position — it can't tell
-   a 3-row group from 3 different students, so it striped mid-group. */
-.student-table tr.even td{background:var(--surface-3)}
-.student-table tr.odd td{background:var(--surface-2)}
+/* Header 2-baris (Awal/Akhir masing2 pecah Surat+Ayat) — baris kedua
+   perlu offset top sendiri supaya tetap sticky tanpa tumpang-tindih
+   baris pertama. */
+.student-table thead tr:nth-child(2) th{top:33px}
+
+/* Warna baris mengikuti JENIS (bukan lagi selang-seling even/odd) —
+   satu kelompok jenis jadi satu blok warna utuh, menyambung sampai ke
+   kolom Total (lihat createRow/buildStudentRows di output-table.js). */
+.student-table tr.jenis-ziyadah td{background:rgba(127,90,224,.07)}
+.student-table tr.jenis-murojaah td{background:rgba(51,68,125,.09)}
+.student-table tr.jenis-tilawah td{background:rgba(189,126,42,.1)}
 .student-table tr:hover td{background:var(--accent-dim)}
-.student-table td.total-cell{font-weight:800;color:var(--accent);background:var(--accent-soft) !important;font-size:14.5px}
-.student-table .not-memorizing{color:var(--danger) !important;font-style:italic;background:rgba(177,79,62,.07) !important}
+/* Pemisah antar siswa: garis tebal di baris pertama siswa baru */
+.student-table tr.new-student td{border-top:3px solid var(--ink)}
+
+.student-table .jenis-tag{display:inline-block;padding:3px 9px;border-radius:6px;font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.02em;margin:0}
+.student-table .jenis-tag.ziyadah{background:rgba(127,90,224,.16);color:#6b4fd0}
+.student-table .jenis-tag.murojaah{background:rgba(51,68,125,.18);color:var(--accent-deep)}
+.student-table .jenis-tag.tilawah{background:rgba(189,126,42,.2);color:#8a5c1e}
+.student-table .total-cell{font-weight:800;color:var(--accent-deep);font-size:12px}
+.student-table .not-memorizing{color:var(--danger);font-style:italic;text-align:left;padding-left:12px;white-space:normal}
 .no-data{text-align:center;color:var(--muted);font-style:italic;padding:40px !important;font-size:15px}
 
 /* ============ TABLE LEGEND ============ */
@@ -282,7 +301,6 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .master-actions{display:flex;gap:10px;flex-wrap:wrap}
 
 .kelas-badge{background:var(--accent-soft);color:var(--accent-deep);padding:4px 10px;border-radius:8px;font-size:11.5px;font-weight:700;display:inline-block}
-.jenis-tag{display:inline-block;background:rgba(127,90,224,.12);color:#6b4fd0;font-size:9.5px;font-weight:800;padding:2px 7px;border-radius:6px;margin-right:6px;vertical-align:middle;text-transform:uppercase;letter-spacing:.03em}
 .token-cell{font-family:monospace;font-size:12px;color:var(--muted)}
 
 /* ============ MODAL ============ */
@@ -381,16 +399,6 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .tpl-j-ico svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 .tpl-jenis-btn.active .tpl-j-ico{background:var(--accent);color:#fff}
 .tpl-j-sub{font-size:11px;font-weight:500;color:var(--muted)}
-.tpl-level2{display:flex;gap:5px;margin:0 0 18px;background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:5px;flex-wrap:wrap}
-.tpl-level2-btn{
-  flex:1;min-width:120px;padding:9px 12px;border:none;border-radius:9px;background:transparent;
-  color:var(--ink-soft);font-family:var(--sans);font-size:12.5px;font-weight:700;
-  cursor:pointer;transition:.15s ease;display:flex;align-items:center;justify-content:center;gap:6px;
-}
-.tpl-level2-btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
-.tpl-level2-btn:hover{background:var(--accent-dim)}
-.tpl-level2-btn.active{background:linear-gradient(155deg,var(--accent),var(--accent-deep));color:#fff}
-.tpl-level2-hint{font-size:11px;color:var(--muted);margin:-10px 0 16px;display:block}
 .tpl-breadcrumb{font-size:11.5px;color:var(--muted);margin-bottom:10px;font-weight:600}
 .tpl-breadcrumb b{color:var(--accent-deep)}
 .tpl-grid{display:grid;grid-template-columns:1.1fr 1fr;gap:18px}
@@ -416,7 +424,6 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   .tpl-jenis-btn{padding:10px 11px;font-size:12.5px}
   .tpl-j-ico{width:28px;height:28px}
   .tpl-j-sub{font-size:10px}
-  .tpl-level2-btn{min-width:45%;font-size:11.5px;padding:8px 8px}
   .tpl-grid{grid-template-columns:1fr}
   .tpl-test-row{flex-direction:column;align-items:stretch}
   .tpl-test-row .btn-export{text-align:center}
@@ -430,14 +437,88 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .card-icon{width:17px;height:17px;flex-shrink:0;color:var(--accent)}
 .card-icon svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
 
+/* ============ AKTIVITAS KBM (Data Setoran) ============
+   Mobile: satu daftar menyatu, baris dipisah garis tipis, buka inline.
+   Desktop (>=1025px): 3 kolom berdampingan, tiap kolom kartu sendiri. */
+.activity-list{border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--surface-3)}
+.activity-row{background:var(--surface-2)}
+.activity-row + .activity-row{border-top:1px solid var(--line)}
+.activity-row.on{background:var(--accent-dim)}
+
+.activity-head{display:flex;align-items:center;gap:12px;padding:13px 14px;cursor:pointer;user-select:none;margin:0}
+
+.chk-native{
+  appearance:none;-webkit-appearance:none;width:21px;height:21px;margin:0;padding:0;flex:none;
+  border-radius:6px;border:1.5px solid var(--line);background:var(--surface-3);
+  flex-shrink:0;cursor:pointer;display:grid;place-content:center;transition:.15s ease;
+}
+.chk-native:checked{background:linear-gradient(155deg,var(--accent),var(--accent-deep));border-color:var(--accent-deep)}
+.chk-native:checked::after{
+  content:'';width:11px;height:11px;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='20 6 9 17 4 12'/%3E%3C/svg%3E") center/contain no-repeat;
+}
+.chk-native:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chk-native:disabled{cursor:not-allowed;opacity:.5}
+/* Murajaah/Tilawah dikunci saat Status Ziyadah bukan "Ya" — baris aktivitas
+   ikut ditandai non-aktif (bukan cuma checkbox-nya) supaya jelas kenapa
+   tidak bisa diklik. */
+.activity-row:has(.chk-native:disabled) .activity-head{cursor:not-allowed;opacity:.55}
+
+.act-icon{width:19px;height:19px;color:var(--accent);flex-shrink:0}
+.act-icon svg{width:100%;height:100%;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.act-text{flex:1;min-width:0;display:flex;flex-direction:column}
+.act-label{font-family:var(--serif);font-weight:700;font-size:14.5px;color:var(--ink);line-height:1.2}
+.act-hint{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:1px}
+.act-chev{width:14px;height:14px;color:var(--muted);flex-shrink:0;transition:transform .2s ease}
+.act-chev svg{width:100%;height:100%}
+.activity-row.on .act-chev{transform:rotate(180deg);color:var(--accent)}
+
+.activity-body-inner{padding:2px 14px 18px 47px;display:flex;flex-direction:column;gap:12px}
+
+.field{display:flex;flex-direction:column;gap:5px;min-width:0}
+.field label{font-size:9.5px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.field select,.field input{min-width:0}
+.row2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+
+/* Baris Awal/Akhir/Baris-Halaman — class SENDIRI (bukan .target-range-row
+   punya fitur Kelola Target), supaya tidak ketiban style .target-range-row
+   yang didefinisikan belakangan di file ini untuk konteks .tcard. */
+.range{display:flex;align-items:center;gap:8px;min-width:0}
+.range select,.range input{min-width:0}
+.range-tag{font-size:9px;font-weight:800;color:var(--gold-soft);text-transform:uppercase;letter-spacing:.06em;width:30px;flex-shrink:0}
+
+.activity-note{
+  margin-top:14px;padding:10px 12px;border-radius:10px;background:rgba(46,143,92,.08);
+  border:1px solid rgba(46,143,92,.25);color:#1f6b45;font-size:11px;font-weight:600;
+  display:flex;gap:8px;align-items:flex-start;line-height:1.5;
+}
+.activity-note svg{width:15px;height:15px;flex-shrink:0;margin-top:1px;stroke:#2E8F5C;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+
+/* 3 kolom baru aktif di 1280px, bukan 1025px seperti .form-grid — kartu ini
+   duduk di sebelah sidebar 216px, jadi di 1025px ruang yang tersisa untuk
+   3 kolom cuma ~190px/kolom (field kepotong). Di 1280px ruangnya ~320px/kolom. */
+@media (min-width:1280px){
+  .activity-list{
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;align-items:start;
+    border:none;border-radius:0;overflow:visible;background:transparent;
+  }
+  .activity-row{background:var(--surface-3);border:1.5px solid var(--line);border-radius:12px;overflow:hidden}
+  .activity-row + .activity-row{border-top:1.5px solid var(--line)}
+  .activity-row.on{background:var(--surface-2);border-color:var(--accent)}
+  .act-chev{display:none}
+  .activity-body-inner{padding:14px 16px 16px;margin-top:2px;border-top:1px solid var(--line)}
+}
+
 /* ============ FORM GRID ============ */
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px 20px}
-.form-grid .form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:0}
+/* align-items:stretch WAJIB di-set ulang di sini — .form-group dasarnya
+   (baris 130) pakai align-items:center (buat layout label+input sejajar
+   horizontal), yang kalau tidak ditimpa bikin select/input/textarea di
+   dalam grid ini menyusut ke lebar kontennya sendiri & "mengambang" di
+   tengah kolom alih-alih melebar penuh. */
+.form-grid .form-group{display:flex;flex-direction:column;align-items:stretch;gap:5px;margin-bottom:0}
 .form-grid .form-group label{width:auto;text-align:left;font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px;flex-shrink:0}
 .form-grid .form-group.full,.form-grid .full{grid-column:1/-1}
-/* Pane tab Setoran yang tampil ikut grid 2 kolom induk, agar status aktivitas
-   dan keterangan nilai berdampingan (tidak menumpuk) di desktop */
-#ziyadahPane:not(.hidden),#murojaahPane:not(.hidden),#tilawahPane:not(.hidden){display:contents}
 .form-grid .form-inline{display:flex;align-items:center;gap:8px;margin-bottom:0}
 .form-grid .form-inline span{color:var(--muted);font-weight:600;font-size:13px}
 
@@ -495,7 +576,7 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 @media print{
   body{background:white !important;color:black !important;padding:0 !important}
   .container{background:white !important;box-shadow:none !important;margin:0 !important;padding:10px !important}
-  .tabs,.filter,.btn-submit,.btn-export,.table-legend,.btn-edit,.btn-delete{display:none !important}
+  .float-nav,.filter,.btn-submit,.btn-export,.table-legend,.btn-edit,.btn-delete{display:none !important}
   .tab-content{display:block !important}
   .student-table{background:white !important;color:black !important}
   .student-table th{background:#f0f0f0 !important;color:black !important}
@@ -541,12 +622,40 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 .oerow .ometa{display:flex;align-items:center;gap:7px;margin-top:4px;flex-wrap:wrap}
 .oerow .obaris{font-size:11px;color:var(--muted)}
 .oerow .oacts{display:flex;gap:4px;flex-shrink:0}
-.oerow.absent .osurat{color:var(--muted);font-style:italic}
-.oerow.absent{background:rgba(177,79,62,.04)}
+/* Absen: hanya teks yang ditandai merah, background tetap warna
+   kelompok jenis (.jgroup) supaya tidak rancu dengan pewarnaan jenis. */
+.oerow.absent .osurat{color:var(--danger);font-style:italic}
 .opill{display:inline-flex;font-size:10px;font-weight:800;padding:2.5px 8px;border-radius:20px;white-space:nowrap}
 .opill.mumtaz{color:var(--good);background:rgba(46,143,92,.12)}
 .opill.jj{color:var(--info);background:rgba(62,127,138,.12)}
 .opill.jayid{color:var(--warn);background:rgba(189,126,42,.12)}
+
+/* ============ KARTU MOBILE: KELOMPOK PER JENIS ============
+   Tiap .ocard dipecah jadi maks 3 .jgroup (Ziyadah/Murajaah/Tilawah),
+   masing2 punya tint background sendiri + subtotal di header, dan
+   cuma menampilkan 3 entri terakhir — selebihnya di balik tombol
+   .jmore yang membuka modal detail lengkap. */
+.jgroup.ziyadah{background:rgba(127,90,224,.07)}
+.jgroup.murojaah{background:rgba(51,68,125,.09)}
+.jgroup.tilawah{background:rgba(189,126,42,.1)}
+.jgroup + .jgroup{border-top:1px solid var(--line-soft)}
+.jgroup-h{display:flex;align-items:center;justify-content:space-between;padding:9px 13px 6px}
+.jgroup-h .jgroup-name{font-size:10.5px;font-weight:800;text-transform:uppercase;letter-spacing:.04em;color:var(--ink-soft)}
+.jgroup-h .jgroup-total{font-size:11.5px;font-weight:800;color:var(--ink)}
+.jmore{display:block;width:100%;text-align:center;background:none;border:0;border-top:1px dashed var(--line-soft);padding:9px 13px;font-size:11.5px;font-weight:700;color:var(--accent-deep);cursor:pointer;font-family:var(--sans)}
+.jmore:hover{background:rgba(255,255,255,.35)}
+
+/* ============ MODAL LIHAT DETAIL ============ */
+.detail-modal-sub{font-size:11.5px;color:var(--muted);margin-top:3px;font-weight:600}
+.detail-modal-body{max-height:60vh;overflow-y:auto}
+.detail-modal-body .oerow{padding:10px 16px}
+
+/* ============ MODAL UBAH DATA (mobile) ============
+   Form vertikal touch-friendly — dipakai EditInline.openMobileEdit()
+   sebagai pengganti edit inline tabel desktop di layar sempit. */
+.edit-modal-body{padding:18px 20px;display:flex;flex-direction:column;gap:14px;max-height:65vh;overflow-y:auto}
+.edit-modal-body .field select,.edit-modal-body .field input{width:100%}
+.edit-modal-body .field input:disabled{background:var(--surface-3);color:var(--muted);cursor:not-allowed}
 
 /* =============================================
    TARGET mobile cards — real second render (see
@@ -611,47 +720,49 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 
 /* =============================================
    RESPONSIVE NAV — a real bottom tab bar on phones
-   (fixed, 5 icons+labels) and a real left sidebar on
-   tablet/laptop (same .tabs buttons, reshaped, not
-   just recolored). Both sets of buttons keep class
-   "tab" with the same onclick="TabManager.show(...)"
-   strings the original single bar used, so
-   TabManager's existing .tab active-state matching
-   highlights every nav in sync — no JS changed here.
-   Tablet intentionally shares the laptop layout.
+   (fixed, 5 icons+labels) and, at ≥641px, a floating
+   icon-only rail at the left-center (not a full-height
+   sidebar) so the wide table/content area stays maximal.
+   Both sets of buttons keep class "tab" with the same
+   onclick="TabManager.show(...)" strings the original
+   single bar used, so TabManager's existing .tab
+   active-state matching highlights every nav in sync —
+   no JS changed here. Tablet shares the laptop layout.
    ============================================= */
-.app-shell{max-width:1300px;margin:0 auto}
 .tabbar-mobile{display:none}
 
+/* Rail navigasi mengambang — ikon saja, tooltip label muncul saat
+   hover (bukan teks selalu tampil seperti sidebar lama). */
+.float-nav{
+  display:none;
+  position:fixed;left:18px;top:50%;transform:translateY(-50%);
+  flex-direction:column;gap:6px;z-index:900;
+  background:var(--surface-2);border:1px solid var(--line);border-radius:20px;
+  padding:8px;box-shadow:0 10px 28px rgba(37,33,49,.16);
+}
+.float-nav-item{
+  position:relative;width:38px;height:38px;border-radius:13px;
+  flex:none;min-width:0;padding:0;gap:0;
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s ease,color .2s ease,transform .15s ease;
+}
+.float-nav-item:hover{transform:scale(1.1)}
+.float-nav-item:active{transform:scale(.96)}
+.float-nav-item .tip{
+  position:absolute;left:50px;top:50%;transform:translateY(-50%) translateX(-6px);
+  background:var(--ink);color:#fff;font-size:11.5px;font-weight:700;padding:6px 11px;border-radius:8px;
+  white-space:nowrap;opacity:0;pointer-events:none;transition:opacity .18s ease,transform .18s ease;
+  box-shadow:0 6px 16px rgba(0,0,0,.22);
+}
+.float-nav-item:hover .tip{opacity:1;transform:translateY(-50%) translateX(0)}
+.float-nav-item .dot-new{
+  position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;
+  background:var(--gold);border:1.5px solid var(--surface-2);
+}
+
 @media (min-width:641px){
-  .app-shell{display:flex;align-items:flex-start;gap:22px;padding:0 20px}
-  .app-shell > .tabs{
-    flex-direction:column;width:216px;flex-shrink:0;max-width:none;margin:0;
-    justify-content:flex-start;position:sticky;top:20px;transition:width .2s ease;
-  }
-  .app-shell > .tabs .tab{flex:none;justify-content:flex-start;padding:11px 13px;min-width:0}
-  .app-shell > .container{flex:1;min-width:0;padding:16px 0;margin:0}
-
-  .app-shell.sidebar-collapsed > .tabs{width:60px}
-  .app-shell.sidebar-collapsed > .tabs .tab-label,
-  .app-shell.sidebar-collapsed > .tabs .badge-new{display:none}
-  .app-shell.sidebar-collapsed > .tabs .tab{justify-content:center;padding:11px}
-
-  .sidebar-collapse-btn{
-    display:flex;align-items:center;justify-content:center;gap:7px;width:100%;
-    padding:9px;margin-bottom:6px;border-radius:9px;border:1px solid var(--line);
-    background:var(--surface-3);color:var(--ink-soft);font-weight:700;font-size:11.5px;
-    cursor:pointer;font-family:var(--sans);
-  }
-  .sidebar-collapse-btn svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:2.2;transition:transform .2s;flex-shrink:0}
-  .app-shell.sidebar-collapsed .sidebar-collapse-btn svg{transform:rotate(180deg)}
-  .app-shell.sidebar-collapsed .sidebar-collapse-btn span{display:none}
-
-  .sidebar-date{
-    margin-top:10px;padding-top:10px;border-top:1px solid var(--line);
-    font-size:10.5px;color:var(--muted-2);line-height:1.5;
-  }
-  .app-shell.sidebar-collapsed .sidebar-date{display:none}
+  .float-nav{display:flex}
+  .container{padding-left:76px}
 }
 
 @media (min-width:641px) and (max-width:1024px){
@@ -667,7 +778,6 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   .header-title{font-size:15px}
   .header-right .user-avatar-label{display:none}
 
-  .app-shell > .tabs{display:none}
   .tabbar-mobile{
     display:flex;position:fixed;left:10px;right:10px;bottom:10px;z-index:900;
     background:var(--surface-2);border:1px solid var(--line);
@@ -692,13 +802,14 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
   .export-buttons{margin-left:0;flex-direction:column}
   .btn-export{width:100%;justify-content:center}
 
-  /* Rekap: mockup keeps Kelas/Bulan/Tahun on one row (labels dropped —
-     each select's own "Semua ..." option already says what it is),
-     export buttons wrap to their own row below. */
-  #output .filter{flex-direction:row;flex-wrap:wrap;align-items:center;gap:8px}
-  #output .filter label{display:none}
-  #output .filter select{flex:1;width:auto;min-width:0}
-  #output .filter .export-buttons{flex:1 0 100%;flex-direction:row;margin-left:0}
+  /* Rekap: Kelas/Jenis/Bulan/Tahun jadi grid 2 kolom, tiap select TETAP
+     berlabel kecil di atasnya (lihat #output .filter-grid .field di atas)
+     supaya jelas filter yang mana — sebelumnya label disembunyikan total
+     dan tiap select cuma menampilkan "Semua", jadi tidak kebaca mana
+     Kelas/Jenis/Bulan/Tahun. Export buttons di baris sendiri di bawah. */
+  #output .filter{flex-direction:column;align-items:stretch;gap:10px}
+  #output .filter-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+  #output .filter .export-buttons{flex-direction:row;margin-left:0}
   #output .filter .btn-export{width:auto;flex:1}
   .btn-submit{width:calc(100% - 24px);bottom:96px;padding:14px;font-size:14px}
 
@@ -744,17 +855,11 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
      the approved phone mockup goes straight from filters to the list */
   .stat-grid{display:none}
 
-  /* Rekap: table hidden, real grouped cards shown instead */
+  /* Rekap: table hidden, real grouped cards shown instead. Edit di layar
+     ini selalu lewat modal (EditInline.openMobileEdit) sekarang, jadi
+     tabel desktop tidak pernah perlu "dibocorkan" ke layar sempit lagi. */
   #output .scroll-container{display:none}
   #output .mobile-cards{display:block}
-  /* ...unless a row is actively being inline-edited — EditInline
-     writes its <input>/<select> straight into the (still-present)
-     table row, so surface that row instead of leaving the edit
-     invisible behind the hidden table. */
-  #output .scroll-container:has(.edit-input){display:block !important}
-  #output .scroll-container:has(.edit-input) + .mobile-cards{display:none}
-  #output .scroll-container:has(.edit-input) .student-table{min-width:0;font-size:11.5px}
-  #output .scroll-container:has(.edit-input) td{white-space:normal}
 }
 
 /* ---- laptop/desktop: roomiest layout ---- */
