@@ -97,9 +97,8 @@ const InputForm = {
         const capaianInput = document.getElementById('capaianSertifikasi' + prefix);
         if (juzInput) juzInput.required = false;
         if (capaianInput) capaianInput.required = false;
-        // Ziyadah diuncek = tidak ada status aktif → tidak ada alasan mengunci
-        // Murajaah/Tilawah (beda dari status "Sakit/Sertifikasi/Lainnya").
-        this._setMurojaahTilawahLock(false);
+        // Ziyadah diuncek = tidak ada status aktif → tidak mengunci
+        // Murajaah/Tilawah (Opsi A: selalu bebas).
       }
     } else {
       // Murajaah/Tilawah: tidak ada Status untuk dibaca — cuma kelola
@@ -229,11 +228,9 @@ const InputForm = {
       if (capaianInput) capaianInput.required = true;
     }
 
-    // Ziyadah TIDAK "ya" (Sakit/Sertifikasi/Lainnya/belum dipilih) berarti
-    // siswa tidak masuk sama sekali — Murajaah & Tilawah otomatis dikunci.
-    if (prefix === '') {
-      this._setMurojaahTilawahLock(value !== 'ya');
-    }
+    // Opsi A: Murajaah & Tilawah selalu bisa dicentang, tidak terkunci
+    // oleh status Ziyadah (Ya/Sakit/Sertifikasi/Lainnya).
+    // Baris _setMurojaahTilawahLock dihapus.
   },
 
   /**
