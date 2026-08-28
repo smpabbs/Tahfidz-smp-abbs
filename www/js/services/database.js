@@ -17,12 +17,26 @@ const DatabaseService = {
       const db = SupabaseClient.get();
       if (!db) throw new Error('Database client not available');
 
-      const { data, error } = await db
-        .from('tahfidz_records')
-        .select('*')
-        .order('created_at', { ascending: false });
+      // Pagination penuh: Supabase server default max 1000 baris per request.
+      // Tanpa loop ini, bulan-bulan lama (mis. Juli) tertutup record terbaru
+      // dan tidak pernah termuat -> laporan bulan tsb tampak "hilang".
+      const PAGE = 1000;
+      const all = [];
+      let from = 0;
+      while (true) {
+        const { data, error } = await db
+          .from('tahfidz_records')
+          .select('*')
+          .order('created_at', { ascending: false })
+          .range(from, from + PAGE - 1);
 
-      if (error) throw error;
+        if (error) throw error;
+
+        all.push(...(data || []));
+        if (!data || data.length < PAGE) break;
+        from += PAGE;
+      }
+      const data = all;
 
       // Transform data ke format aplikasi
       const records = (data || []).map(item => ({
