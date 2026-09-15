@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Laporan Guru — Preview</title>
+<title>Laporan Guru</title>
 <link rel="stylesheet" href="../style.css">
 <style>
   .mock-banner{
@@ -125,7 +125,7 @@
 </head>
 <body>
 
-  <div class="mock-banner">🔧 PRATINJAU LOKAL — data real dari Supabase &amp; jadwal GitHub, belum di-commit. Klik satu baris sesi untuk lihat detail per siswa.</div>
+  <div class="mock-banner">Data real: master &amp; setoran dari Supabase, guru pengampu dari app_settings, jadwal dari GitHub. Klik satu baris sesi untuk lihat detail per siswa.</div>
 
   <div class="app-header">
     <div class="header-left">
@@ -250,31 +250,11 @@
     'Ust Yoki':   'ust Yoki'
   };
 
-  // ================= PATOKAN GURU PENGAMPU (TEMP) =================
-  // Sumber: 'Data Siswa (1).xlsx' kolom CATATAN — untuk siswa yang guru kolom
-  // terbedabeda dari catatan (18 siswa aktif). Sementara, belum dikonfirmasi
-  // manual semua. Hanya berlaku di halaman laporan ini (project utama tidak disentuh).
-  // PENTING: nilai guru WAJIB persis sama dengan master_guru Supabase
-  // (Ustadzah Ida, Ustadzah Naya, Ustadzah Rizqia, Ustadzah Usaidah,
-  //  Ustadz Andi, Us Fahmi, Ust Amiin, ust Yoki).
-  const PATOKAN_GURU = {
-    '7A': { 'Fathir Ardiansyah Alvaro': 'Ustadzah Ida' },
-    '7B': { 'Gilbran azzamy ramadhan': 'Ustadzah Naya' },
-    '7C': { 'Faqih Abrizam Rivai': 'Us Fahmi' },
-    '7D': { 'Hening Swastika': 'Ustadzah Naya' },
-    '7E': { 'Arisha Nadhifah Sari': 'Ustadzah Ida' },
-    '8A': { 'Hadrian Juvenal Putra Disena': 'Ustadzah Rizqia' },
-    '8B': { 'Gilby Alauna Rowi': 'Us Fahmi' },
-    '8C': { 'Hamasy Kayyis Syauqillah': 'Ustadzah Usaidah', 'Juan Maziz Anargya': 'Ustadzah Naya' },
-    '8E': { 'Daevika Syarifa Sunarto Putri': 'Ust Amiin' },
-    '9A': { 'Maheswara Natha Mandala': 'Us Fahmi' },
-    '9B': { 'Mochamad Afroza Miftachul Achsan': 'Us Fahmi' },
-    '9C': { 'Hanefi Mulia Hartono': 'Ustadzah Usaidah', 'Javas Natha Ganendra': 'Ust Amiin', 'Muhammad Fadhil Azami': 'Ustadz Andi' },
-    '9D': { 'Naema Nurjannah': 'Ustadz Andi' },
-    '9E': { 'Aqila Silmi Sharifa': 'Ustadzah Ida' },
-    '9F': { 'Azizah Zahratussyifa Ismail': 'Ust Amiin' }
-  };
-
+  // ================= PATOKAN GURU PENGAMPU (dari DB) =================
+  // Sumber: app_settings key 'patokan_guru_pengampu' (Supabase), diisi dari
+  // Excel 'Data Siswa' kolom guru/catatan utk semua siswa aktif (467 siswa).
+  // Struktur nilai: { kelas: { "Nama Siswa": "Nama Master Guru" } }
+  // Nama dicocokkan lewat normNameKey supaya tahan beda ejaan.
   function normNameKey(s){
     return (s || '').trim()
       .replace(/[\u2018\u2019'"\u201C\u201D`]/g, '')
@@ -282,15 +262,6 @@
       .replace(/\./g, '')
       .replace(/\s+/g, ' ');
   }
-
-  // Lookup pra-normalisasi supaya cocok beda ejaan (mis. 'Gilbran Azzamy Ramadhan')
-  const PATOKAN_GURU_NORM = {};
-  Object.entries(PATOKAN_GURU).forEach(([kelas, map]) => {
-    PATOKAN_GURU_NORM[kelas] = {};
-    Object.entries(map).forEach(([nama, guru]) => {
-      PATOKAN_GURU_NORM[kelas][normNameKey(nama)] = guru;
-    });
-  });
   const HARI_ID = { Monday:'Senin', Tuesday:'Selasa', Wednesday:'Rabu', Thursday:'Kamis', Friday:'Jumat', Saturday:'Sabtu' };
   const HARI_BY_GETDAY = { 1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thursday', 5:'Friday', 6:'Saturday' }; // 0=Minggu diabaikan
   const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -306,6 +277,7 @@
   const STATE = {
     DATA: null, siswa: [], guru: [], records: [],
     kelasSet: new Set(), quranSessions: [],
+    patokan: {},
     period: 'pekanan', pov: 'guru', refDate: new Date(),
     firstDataDate: null, unmappedClasses: new Set(), unmappedGuru: new Set()
   };
@@ -374,13 +346,43 @@
     });
   }
 
+  // ================= PATOKAN DARI DB (app_settings) =================
+  async function fetchPatokan(){
+    try {
+      const db = SupabaseClient.get();
+      const { data, error } = await db
+        .from('app_settings')
+        .select('value')
+        .eq('key', 'patokan_guru_pengampu')
+        .maybeSingle();
+      if (error) throw error;
+      let raw = data && data.value ? data.value : null;
+      if (typeof raw === 'string') raw = JSON.parse(raw);
+      const norm = {};
+      if (raw) {
+        Object.entries(raw).forEach(([kelas, map]) => {
+          norm[kelas] = {};
+          Object.entries(map || {}).forEach(([nama, guru]) => {
+            norm[kelas][normNameKey(nama)] = guru;
+          });
+        });
+      }
+      STATE.patokan = norm;
+      console.log(`✅ Patokan guru pengampu dimuat: ${Object.values(norm).reduce((a,m) => a + Object.keys(m).length, 0)} siswa`);
+    } catch (err) {
+      console.warn('⚠️ Patokan guru pengampu gagal dimuat:', err.message);
+      STATE.patokan = {};
+    }
+  }
+
   // ================= LOAD DATA =================
   async function loadAllData(){
     const [DATA, siswa, guru, records] = await Promise.all([
       fetchJadwal(),
       DatabaseService.loadMasterSiswa(),
       DatabaseService.loadMasterGuru(),
-      DatabaseService.loadTahfidzRecords()
+      DatabaseService.loadTahfidzRecords(),
+      fetchPatokan()
     ]);
 
     STATE.DATA = DATA;
@@ -466,11 +468,11 @@
 
   // ================= PJ (Penanggung Jawab) =================
   function getPJ(namaSiswa, scheduleGuru, kelas){
-    // 1) Patokan guru pengampu (data Excel, kolom catatan) — priopritas top, TEMP
-    const pk = PATOKAN_GURU_NORM[kelas];
+    // 1) Guru pengampu dari DB (app_settings.patokan_guru_pengampu)
+    const pk = STATE.patokan[kelas];
     if (pk) {
       const g = pk[normNameKey(namaSiswa)];
-      if (g) return { nama: g, sumber: 'patokan data siswa (catatan)' };
+      if (g) return { nama: g, sumber: 'guru pengampu (DB)' };
     }
     // 2) Riwayat input terakhir
     const rec = STATE.records.find(r => r.nama === namaSiswa && r.guru);
@@ -610,6 +612,7 @@
     }
 
     const unmapped = [];
+    if (!Object.keys(STATE.patokan).length) unmapped.push('patokan guru pengampu belum tersedia di DB (app_settings.patokan_guru_pengampu)');
     if (STATE.unmappedClasses.size) unmapped.push('kelas: ' + Array.from(STATE.unmappedClasses).join(', '));
     if (STATE.unmappedGuru.size) unmapped.push('guru: ' + Array.from(STATE.unmappedGuru).join(', '));
     if (unmapped.length) {
