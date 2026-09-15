@@ -246,9 +246,51 @@
     'Ust Andi':   'Ustadz Andi',
     'Ust Rizqia': 'Ustadzah Rizqia',
     'Ust Amin':   'Ust Amiin',
-    // TODO: konfirmasi nama persis di master_guru setelah "Ust Yoki" ditambahkan
-    'Ust Yoki':   'Ust Yoki'
+    // Terverifikasi: master_guru menulis 'ust Yoki' (huruf u kecil) — harus persis
+    'Ust Yoki':   'ust Yoki'
   };
+
+  // ================= PATOKAN GURU PENGAMPU (TEMP) =================
+  // Sumber: 'Data Siswa (1).xlsx' kolom CATATAN — untuk siswa yang guru kolom
+  // terbedabeda dari catatan (18 siswa aktif). Sementara, belum dikonfirmasi
+  // manual semua. Hanya berlaku di halaman laporan ini (project utama tidak disentuh).
+  // PENTING: nilai guru WAJIB persis sama dengan master_guru Supabase
+  // (Ustadzah Ida, Ustadzah Naya, Ustadzah Rizqia, Ustadzah Usaidah,
+  //  Ustadz Andi, Us Fahmi, Ust Amiin, ust Yoki).
+  const PATOKAN_GURU = {
+    '7A': { 'Fathir Ardiansyah Alvaro': 'Ustadzah Ida' },
+    '7B': { 'Gilbran azzamy ramadhan': 'Ustadzah Naya' },
+    '7C': { 'Faqih Abrizam Rivai': 'Us Fahmi' },
+    '7D': { 'Hening Swastika': 'Ustadzah Naya' },
+    '7E': { 'Arisha Nadhifah Sari': 'Ustadzah Ida' },
+    '8A': { 'Hadrian Juvenal Putra Disena': 'Ustadzah Rizqia' },
+    '8B': { 'Gilby Alauna Rowi': 'Us Fahmi' },
+    '8C': { 'Hamasy Kayyis Syauqillah': 'Ustadzah Usaidah', 'Juan Maziz Anargya': 'Ustadzah Naya' },
+    '8E': { 'Daevika Syarifa Sunarto Putri': 'Ust Amiin' },
+    '9A': { 'Maheswara Natha Mandala': 'Us Fahmi' },
+    '9B': { 'Mochamad Afroza Miftachul Achsan': 'Us Fahmi' },
+    '9C': { 'Hanefi Mulia Hartono': 'Ustadzah Usaidah', 'Javas Natha Ganendra': 'Ust Amiin', 'Muhammad Fadhil Azami': 'Ustadz Andi' },
+    '9D': { 'Naema Nurjannah': 'Ustadz Andi' },
+    '9E': { 'Aqila Silmi Sharifa': 'Ustadzah Ida' },
+    '9F': { 'Azizah Zahratussyifa Ismail': 'Ust Amiin' }
+  };
+
+  function normNameKey(s){
+    return (s || '').trim()
+      .replace(/[\u2018\u2019'"\u201C\u201D`]/g, '')
+      .toLowerCase()
+      .replace(/\./g, '')
+      .replace(/\s+/g, ' ');
+  }
+
+  // Lookup pra-normalisasi supaya cocok beda ejaan (mis. 'Gilbran Azzamy Ramadhan')
+  const PATOKAN_GURU_NORM = {};
+  Object.entries(PATOKAN_GURU).forEach(([kelas, map]) => {
+    PATOKAN_GURU_NORM[kelas] = {};
+    Object.entries(map).forEach(([nama, guru]) => {
+      PATOKAN_GURU_NORM[kelas][normNameKey(nama)] = guru;
+    });
+  });
   const HARI_ID = { Monday:'Senin', Tuesday:'Selasa', Wednesday:'Rabu', Thursday:'Kamis', Friday:'Jumat', Saturday:'Sabtu' };
   const HARI_BY_GETDAY = { 1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thursday', 5:'Friday', 6:'Saturday' }; // 0=Minggu diabaikan
   const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
@@ -423,9 +465,17 @@
   }
 
   // ================= PJ (Penanggung Jawab) =================
-  function getPJ(namaSiswa, scheduleGuru){
+  function getPJ(namaSiswa, scheduleGuru, kelas){
+    // 1) Patokan guru pengampu (data Excel, kolom catatan) — priopritas top, TEMP
+    const pk = PATOKAN_GURU_NORM[kelas];
+    if (pk) {
+      const g = pk[normNameKey(namaSiswa)];
+      if (g) return { nama: g, sumber: 'patokan data siswa (catatan)' };
+    }
+    // 2) Riwayat input terakhir
     const rec = STATE.records.find(r => r.nama === namaSiswa && r.guru);
     if (rec) return { nama: rec.guru, sumber: 'riwayat input terakhir' };
+    // 3) Jadwal mengajar
     if (scheduleGuru && scheduleGuru.length) return { nama: scheduleGuru.join(' & '), sumber: 'jadwal mengajar' };
     return { nama: '–', sumber: 'tidak diketahui' };
   }
@@ -584,7 +634,7 @@
         .sort((a,b) => a.nama.localeCompare(b.nama))
         .map(s => {
           const done = o.recordedNames.has(s.nama);
-          const pj = getPJ(s.nama, o.guru);
+          const pj = getPJ(s.nama, o.guru, o.kelas);
           return `
             <div class="lap-siswa-row">
               <div style="flex:1;min-width:0">
