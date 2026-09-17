@@ -3,718 +3,941 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Laporan Guru</title>
-<link rel="stylesheet" href="../style.css">
+<title>Laporan Tahfidz — Per Guru & Per Kelas</title>
 <style>
-  .mock-banner{
-    max-width:1160px;margin:14px auto 0;padding:10px 16px;border-radius:10px;
-    background:rgba(173,126,55,.12);border:1px dashed var(--gold);color:var(--gold);
-    font-size:12.5px;font-weight:700;text-align:center;
-  }
+@font-face{font-family:'Amiri';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/amiri-400.woff2') format('woff2')}
+@font-face{font-family:'Amiri';font-style:normal;font-weight:700;font-display:swap;src:url('../fonts/amiri-700.woff2') format('woff2')}
+@font-face{font-family:'Manrope';font-style:normal;font-weight:400 800;font-display:swap;src:url('../fonts/manrope-var.woff2') format('woff2')}
+:root{
+  --page:#ECE6D6;--surface:#FFFCF4;--surface-3:#EFE7CE;
+  --line:#D8C89B;--line-soft:#E7DCB8;
+  --ink:#252131;--ink-soft:#544E63;--muted:#7A7188;
+  --accent:#33447D;--accent-deep:#212C56;--accent-dim:rgba(51,68,125,.12);
+  --gold:#AD7E37;
+  --good:#2E8F5C;--good-bg:rgba(46,143,92,.16);
+  --warn:#BD7E2A;--warn-bg:rgba(189,126,42,.16);
+  --danger:#B14F3E;--danger-bg:rgba(177,79,62,.14);
+  --future:#9C93A8;--future-bg:rgba(156,147,168,.16);
+  --serif:'Amiri',Georgia,serif;--sans:'Manrope','Segoe UI',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-  .lap-filter{
-    display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;
-    background:var(--surface-2);border:1px solid var(--line);border-radius:12px;
-    padding:12px 16px;margin-bottom:14px;box-shadow:var(--shadow);
-  }
-  .lap-week-nav{display:flex;align-items:center;gap:10px}
-  .lap-week-btn{
-    width:34px;height:34px;border-radius:9px;border:1px solid var(--line);background:var(--surface-3);
-    color:var(--accent);cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;
-  }
-  .lap-week-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2}
-  .lap-week-label{text-align:center}
-  .lap-week-label .lw-title{font-family:var(--serif);font-weight:700;font-size:15px;color:var(--ink)}
-  .lap-week-label .lw-sub{font-size:11px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.3px}
-  .lap-refresh{
-    display:flex;align-items:center;gap:6px;padding:8px 14px;border-radius:9px;border:1px solid var(--line);
-    background:var(--surface-3);color:var(--accent);font-weight:700;font-size:12.5px;cursor:pointer;flex-shrink:0;
-  }
-  .lap-refresh svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.2}
+.mock-note{max-width:1060px;margin:12px auto 0;padding:8px 14px;border-radius:8px;background:rgba(173,126,55,.12);border:1px dashed var(--gold);color:var(--gold);font-size:12px;font-weight:700;text-align:center}
 
-  .lap-note{
-    display:flex;align-items:center;gap:8px;background:var(--accent-dim);border-left:4px solid var(--accent);
-    border-radius:8px;padding:10px 14px;margin-bottom:18px;font-size:12.5px;color:var(--ink-soft);
-  }
-  .lap-note svg{width:15px;height:15px;stroke:var(--accent);fill:none;stroke-width:2.2;flex-shrink:0}
-  .lap-note.warn{background:rgba(177,79,62,.1);border-left-color:var(--danger)}
-  .lap-note.warn svg{stroke:var(--danger)}
+/* ===== topbar ===== */
+.bar{position:sticky;top:0;z-index:30;background:rgba(247,242,228,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
+.bar-in{max-width:1060px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-weight:700;font-size:17px;cursor:pointer}
+.brand em{font-style:normal;color:var(--accent)}
+.pov{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0}
+.pov button{border:0;background:var(--surface);font:inherit;font-size:12.5px;font-weight:700;padding:7px 14px;cursor:pointer;color:var(--muted)}
+.pov button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.pov button.on{background:var(--accent);color:#fff}
+.tabs{display:flex;background:var(--surface-3);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;margin-left:auto}
+.tabs button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer}
+.tabs button.on{background:var(--surface);color:var(--accent-deep);box-shadow:0 1px 3px rgba(37,33,49,.14)}
+.weeknav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.weeknav .nav{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--accent);cursor:pointer;font-size:15px;line-height:1}
+.weeknav .nav:focus-visible{outline:2px solid var(--accent)}
+.weeklabel b{display:block;font-family:var(--serif);font-size:14px;line-height:1.3}
+.weeklabel span{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.crumb{display:flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:var(--muted);flex-wrap:wrap;flex-basis:100%;padding:0 20px 9px}
+.crumb a{color:var(--accent);cursor:pointer;text-decoration:none;padding:3px 6px;border-radius:6px}
+.crumb a:hover{background:var(--accent-dim)}
+.crumb a:focus-visible{outline:2px solid var(--accent)}
+.crumb .here{color:var(--ink);padding:3px 6px}
+.crumb .sep{color:var(--line)}
+.note{display:none;max-width:1060px;margin:10px auto 0;padding:8px 14px;border-radius:8px;background:var(--danger-bg);color:#8A3A2C;font-size:12px;font-weight:700}
 
-  .lap-legend{
-    display:flex;gap:16px;flex-wrap:wrap;background:var(--surface-2);border:1px solid var(--line);
-    border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:12px;color:var(--ink-soft);
-  }
-  .lap-legend b{color:var(--ink)}
-  .lap-legend-item{display:flex;align-items:center;gap:6px}
-  .lap-legend-dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+/* ===== layout ===== */
+.wrap{max-width:1060px;margin:0 auto;padding:18px 20px 70px}
+.view{animation:fadeUp .18s ease}
+@keyframes fadeUp{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 
-  .gcard{
-    background:var(--surface-2);border:1px solid var(--line);border-radius:16px;margin-bottom:14px;
-    overflow:hidden;box-shadow:0 1px 2px rgba(37,33,49,.05);
-  }
-  .gcard-h{display:flex;align-items:center;gap:12px;padding:14px 16px;border-bottom:1px solid var(--line-soft)}
-  .gcard-av{
-    width:42px;height:42px;border-radius:12px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
-    font-size:13.5px;font-weight:800;color:#fff;background:linear-gradient(135deg,var(--accent),var(--accent-deep));
-  }
-  .gcard-who{flex:1;min-width:0}
-  .gcard-nm{font-size:14.5px;font-weight:700;color:var(--ink);font-family:var(--serif)}
-  .gcard-role{font-size:10.5px;color:var(--muted);margin-top:1px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .gcard-pct{text-align:right;flex-shrink:0}
-  .gcard-pct .gp-v{font-family:var(--serif);font-size:20px;font-weight:700;font-variant-numeric:tabular-nums}
-  .gcard-pct .gp-l{font-size:9px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;font-weight:700}
-  .gcard-bar{padding:0 16px;margin-top:12px}
-  .gcard-sessions{padding:12px 16px 14px}
-  .gcard-baru{padding:4px 0;color:var(--muted);font-size:12.5px;font-style:italic}
+.lv-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;flex-wrap:wrap}
+.lv-head h2{font-family:var(--serif);font-size:20px;font-weight:700}
+.lv-head .sub{font-size:12px;color:var(--muted);font-weight:700}
+.back{font:inherit;font-size:12.5px;font-weight:800;color:var(--accent);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer}
+.back:focus-visible{outline:2px solid var(--accent)}
+.rule-note{font-size:11.5px;color:var(--muted);font-weight:600;background:var(--surface-3);border:1px solid var(--line-soft);border-radius:9px;padding:7px 12px;margin-bottom:16px}
+.rule-note b{color:var(--ink-soft)}
+.empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:16px;font-size:12.5px;color:var(--muted);font-weight:600}
 
-  .lap-session{
-    display:flex;align-items:center;gap:10px;padding:9px 4px;border-bottom:1px solid var(--line-soft);
-    cursor:pointer;border-radius:8px;transition:.15s ease;
-  }
-  .lap-session:last-child{border-bottom:none}
-  .lap-session:hover{background:var(--accent-dim)}
-  .lap-session:active{transform:scale(.99)}
-  .ls-day{flex-shrink:0;width:44px;text-align:center}
-  .ls-day .lsd-d{font-family:var(--serif);font-size:16px;font-weight:700;color:var(--ink)}
-  .ls-day .lsd-m{font-size:9.5px;color:var(--muted);text-transform:uppercase;font-weight:700}
-  .ls-mid{flex:1;min-width:0}
-  .ls-kelas{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
-  .ls-jam{font-size:11px;color:var(--muted);margin-top:2px}
-  .ls-mate{font-size:10.5px;color:var(--muted-2);margin-top:1px}
-  .ls-status{flex-shrink:0;text-align:right}
-  .ls-pill{
-    display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:800;padding:4px 10px;
-    border-radius:20px;white-space:nowrap;
-  }
-  .ls-pill svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.6}
-  .ls-count{font-size:10px;color:var(--muted);margin-top:3px;font-weight:700}
-  .ls-tap-hint{font-size:9px;color:var(--muted-2);margin-top:2px}
+/* ===== donut ===== */
+.donut{position:relative;width:76px;height:76px;flex-shrink:0}
+.donut svg{transform:rotate(-90deg)}
+.donut .track{stroke:var(--surface-3)}
+.donut .val{stroke-linecap:round;transition:stroke-dasharray .4s ease}
+.donut .pct{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:800;font-size:15px;font-variant-numeric:tabular-nums}
+.donut .pct small{font-size:8.5px;font-weight:800;letter-spacing:.5px;color:var(--muted);text-transform:uppercase}
+.donut.sm{width:54px;height:54px}
+.donut.sm .pct{font-size:12px}
+.c-good{color:var(--good)}.c-warn{color:var(--warn)}.c-danger{color:var(--danger)}.c-future{color:var(--future)}
 
-  .ls-done .ls-pill{color:var(--good);background:rgba(46,143,92,.12)}
-  .ls-partial .ls-pill{color:var(--warn);background:rgba(189,126,42,.12)}
-  .ls-missing .ls-pill{color:var(--danger);background:rgba(177,79,62,.12)}
-  .ls-future .ls-pill{color:var(--muted);background:var(--surface-3)}
-  .ls-noroster .ls-pill{color:var(--muted-2);background:var(--surface-3)}
+/* ===== kartu guru ===== */
+.grid-guru{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
+.gcard{background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;padding:16px;cursor:pointer;display:flex;gap:14px;align-items:center;transition:box-shadow .15s,transform .15s}
+.gcard:hover{box-shadow:0 10px 26px rgba(37,33,49,.14);transform:translateY(-2px)}
+.gcard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.gcard .av{width:46px;height:46px;border-radius:13px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
+.gcard .who{flex:1;min-width:0}
+.gcard .nm{font-family:var(--serif);font-weight:700;font-size:15.5px;line-height:1.25}
+.gcard .mt{font-size:11px;color:var(--muted);font-weight:700;margin-top:3px}
+.gcard .mt b{color:var(--ink-soft)}
+.gcard .mini{display:flex;gap:5px;margin-top:7px}
+.gcard .mini i{width:14px;height:5px;border-radius:99px;background:var(--surface-3)}
+.gcard .mini i.done{background:var(--good)}
+.gcard .mini i.part{background:var(--warn)}
+.gcard .mini i.miss{background:var(--danger)}
+.gcard .mini i.futr{background:var(--future-bg)}
 
-  .lap-no-session{
-    background:var(--surface-2);border:1px dashed var(--line);border-radius:12px;
-    padding:12px 16px;font-size:12px;color:var(--muted);line-height:1.7;
-  }
+/* ===== kartu kelas ===== */
+.grid-kelas{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.kcard{background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;padding:16px;cursor:pointer;transition:box-shadow .15s,transform .15s}
+.kcard:hover{box-shadow:0 10px 26px rgba(37,33,49,.14);transform:translateY(-2px)}
+.kcard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.kcard.worst{border-left:4px solid var(--danger)}
+.kcard .top{display:flex;gap:13px;align-items:center}
+.kcard .badge{width:46px;height:46px;border-radius:13px;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:16px;flex-shrink:0}
+.kcard .knm{font-family:var(--serif);font-weight:700;font-size:16px}
+.kcard .kmt{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
+.kcard .dots{display:flex;gap:5px;margin-top:12px}
+.kcard .dots span{flex:1;text-align:center;font-size:9.5px;font-weight:800;color:var(--muted);overflow:hidden;text-overflow:ellipsis}
+.kcard .dots i{display:block;height:6px;border-radius:99px;background:var(--surface-3);margin-bottom:3px}
+.kcard .dots i.done{background:var(--good)}
+.kcard .dots i.part{background:var(--warn)}
+.kcard .dots i.miss{background:var(--danger)}
+.kcard .dots i.futr{background:var(--future)}
 
-  .lap-siswa-row{
-    display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--line-soft);
-  }
-  .lap-siswa-row:last-child{border-bottom:none}
-  .lsr-nama{flex:1;min-width:0;font-size:13px;font-weight:700;color:var(--ink)}
-  .lsr-pj{font-size:10.5px;color:var(--muted);margin-top:2px}
-  .lsr-pj strong{color:var(--ink-soft)}
-  .pj-src{font-style:italic;margin-left:3px}
-  .lsr-status{flex-shrink:0}
-  .pill-done{color:var(--good);background:rgba(46,143,92,.12)}
-  .pill-missing{color:var(--danger);background:rgba(177,79,62,.12)}
+/* ===== daftar siswa ===== */
+.summary{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;padding:14px 18px;margin-bottom:14px;flex-wrap:wrap}
+.summary .nums{display:flex;gap:16px;flex-wrap:wrap;flex:1}
+.summary .num b{font-family:var(--serif);font-size:20px;display:block;font-variant-numeric:tabular-nums}
+.summary .num span{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.sortbar{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted);font-weight:700;margin-bottom:12px;flex-wrap:wrap}
+.sortbar select{font:inherit;font-weight:700;color:var(--accent-deep);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:5px 10px}
+.slist{background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;overflow:hidden}
+.srow{display:flex;align-items:center;gap:12px;padding:11px 16px;border-bottom:1px solid var(--line-soft);cursor:pointer}
+.srow:last-child{border-bottom:0}
+.srow:hover{background:var(--accent-dim)}
+.srow:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+.srow .dot{width:9px;height:9px;border-radius:50%;flex-shrink:0}
+.srow .dot.full{background:var(--good)}
+.srow .dot.some{background:var(--warn)}
+.srow .dot.none{background:var(--danger)}
+.srow .snm{flex:1;font-weight:800;font-size:13px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gp{font-size:10.5px;font-weight:800;padding:3px 9px;border-radius:99px;background:var(--surface-3);color:var(--ink-soft);white-space:nowrap}
+.gp.ov{background:rgba(173,126,55,.14);color:#7A5218;border:1px solid rgba(173,126,55,.4)}
+.srow .last{font-size:11px;color:var(--muted);font-weight:600;text-align:right}
+.srow .cnt2{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink-soft);width:44px;text-align:right}
+.srow .chev{color:var(--line);font-weight:800}
 
-  #loadingState,#errorState{max-width:1160px;margin:14px auto}
+/* ===== rekap ===== */
+.rekap{background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;overflow:hidden;margin-top:6px}
+.rrow{display:flex;align-items:center;gap:14px;padding:12px 18px;border-bottom:1px solid var(--line-soft)}
+.rrow:last-child{border-bottom:0}
+.rrow .rd{width:92px;flex-shrink:0}
+.rrow .rd b{display:block;font-size:13px;font-weight:800}
+.rrow .rd span{font-size:10.5px;color:var(--muted);font-weight:700}
+.rrow .ri{flex:1;min-width:0}
+.rrow .ri .t{font-weight:800;font-size:13px}
+.rrow .ri .s{font-size:11.5px;color:var(--muted);font-weight:600}
+.tag{font-size:10px;font-weight:800;padding:3px 9px;border-radius:99px;white-space:nowrap}
+.tag.z{color:#1E5C3C;background:var(--good-bg)}
+.tag.m{color:#5A4670;background:rgba(122,113,136,.16)}
+.tag.t{color:#7A5218;background:var(--warn-bg)}
+.tag.no{color:#8A3A2C;background:var(--danger-bg)}
+.tag.f{color:#5E5670;background:var(--future-bg)}
 
-  @media (max-width:640px){
-    .lap-filter{flex-direction:column;align-items:stretch}
-    .lap-week-nav{justify-content:space-between}
-    .lap-refresh{justify-content:center}
-    .lap-legend{gap:10px 16px}
-  }
+/* ===== accordion pekan/bulan ===== */
+.wrow{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;margin-bottom:8px;overflow:hidden}
+.wrow.off{opacity:.55}
+.whead{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer}
+.whead:focus-visible{outline:3px solid var(--accent);outline-offset:-3px}
+.wrow .chev{color:var(--muted);font-weight:800;transition:transform .15s;flex-shrink:0}
+.wrow.open .chev{transform:rotate(90deg)}
+.wt{flex:1;min-width:0}
+.wt b{font-size:13.5px;font-weight:800;display:block}
+.wt span{font-size:10.5px;color:var(--muted);font-weight:700}
+.wbar{width:90px;height:7px;background:var(--surface-3);border-radius:99px;overflow:hidden;flex-shrink:0}
+.wbar i{display:block;height:100%;border-radius:99px}
+.wnum{font-size:12px;font-weight:800;font-variant-numeric:tabular-nums;color:var(--ink-soft);width:52px;text-align:right;flex-shrink:0}
+.wbody{display:none;padding:2px 10px 8px;border-top:1px dashed var(--line-soft)}
+.wrow.open .wbody{display:block}
+.wrow.open{border-color:var(--line)}
+
+@media (max-width:640px){
+  .bar-in{padding:8px 12px}
+  .tabs{margin-left:0}
+  .wrap{padding:14px 12px 50px}
+  .grid-guru,.grid-kelas{grid-template-columns:1fr}
+}
 </style>
 </head>
 <body>
+<div class="mock-note">Laporan Tahfidz — data real (Supabase + jadwal GitHub) · drill-down infografis · build real-v1</div>
+<div class="note" id="warnNote"></div>
 
-  <div class="mock-banner">Data real: master &amp; setoran dari Supabase, guru pengampu dari app_settings, jadwal dari GitHub. Klik satu baris sesi untuk lihat detail per siswa.</div>
-
-  <div class="app-header">
-    <div class="header-left">
-      <div class="header-icon">﷽</div>
-      <div>
-        <div class="header-title">Laporan <span>Guru</span></div>
-        <div class="header-sub">Monitoring Pengisian Setoran Tahfidz — dari Jadwal Mengajar</div>
-      </div>
+<div class="bar">
+  <div class="bar-in">
+    <div class="brand" id="brandHome">Laporan <em>Tahfidz</em></div>
+    <div class="pov" id="pov">
+      <button class="on" data-pov="guru">👤 Per Guru</button>
+      <button data-pov="kelas">🏫 Per Kelas</button>
     </div>
-    <div class="header-right">
-      <div class="status-online" id="statusBadge"><span class="dot"></span> Memuat...</div>
-      <div class="user-avatar" title="Admin">A</div>
-    </div>
-  </div>
-
-  <div id="loadingState" style="padding:40px;text-align:center;color:var(--muted)">⏳ Memuat data dari Supabase &amp; jadwal GitHub...</div>
-  <div id="errorState" class="lap-note warn" style="display:none">
-    <svg viewBox="0 0 24 24"><path d="M12 3l10 18H2Z"/><path d="M12 10v4M12 17h.01"/></svg>
-    <span id="errorText"></span>
-  </div>
-
-  <div class="container" id="mainContent" style="display:none">
-
-    <div class="master-tabs" id="periodTabs">
-      <button class="master-tab" data-period="harian">Harian</button>
-      <button class="master-tab active" data-period="pekanan">Pekanan</button>
-      <button class="master-tab" data-period="bulanan">Bulanan</button>
-      <button class="master-tab" data-period="semester">Semester</button>
-    </div>
-
-    <div class="lap-filter">
-      <div class="lap-week-nav">
-        <button type="button" class="lap-week-btn" id="btnPrev" title="Sebelumnya">
-          <svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg>
-        </button>
-        <div class="lap-week-label">
-          <div class="lw-title" id="periodLabel">–</div>
-          <div class="lw-sub" id="periodSub">–</div>
-        </div>
-        <button type="button" class="lap-week-btn" id="btnNext" title="Berikutnya">
-          <svg viewBox="0 0 24 24"><path d="M9 18l6-6-6-6"/></svg>
-        </button>
-      </div>
-      <button type="button" class="lap-refresh" id="btnRefresh">
-        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-2.6-6.3"/><path d="M21 4v5h-5"/></svg>
-        Refresh Jadwal
-      </button>
-    </div>
-
-    <div class="lap-note" id="firstDataNote" style="display:none">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>
-      <span id="firstDataText"></span>
-    </div>
-
-    <div class="lap-note warn" id="unmappedNote" style="display:none">
-      <svg viewBox="0 0 24 24"><path d="M12 3l10 18H2Z"/><path d="M12 10v4M12 17h.01"/></svg>
-      <span id="unmappedText"></span>
-    </div>
-
-    <div class="master-tabs" id="povTabs">
-      <button class="master-tab active" data-pov="guru">👤 Per Guru</button>
-      <button class="master-tab" data-pov="kelas">🏫 Per Kelas</button>
-    </div>
-
-    <div class="lap-legend">
-      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--good)"></span> <b>Selesai</b> — semua siswa tercatat</div>
-      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--warn)"></span> <b>Sebagian</b> — ada yang belum tercatat</div>
-      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--danger)"></span> <b>Belum Diisi</b> — belum ada data</div>
-      <div class="lap-legend-item"><span class="lap-legend-dot" style="background:var(--muted-2)"></span> <b>Belum Waktunya</b> — jadwal belum lewat</div>
-    </div>
-
-    <div class="stat-grid">
-      <div class="stat-tile">
-        <div class="stat-l">Total Sesi Periode Ini</div>
-        <div class="stat-v" id="statTotal">–</div>
-        <div class="stat-d">dari jadwal Quran/Tahfidz</div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-l">Sesi Selesai</div>
-        <div class="stat-v" id="statSelesai" style="color:var(--good)">–</div>
-        <div class="stat-d">semua siswa tercatat</div>
-      </div>
-      <div class="stat-tile">
-        <div class="stat-l">Perlu Ditindaklanjuti</div>
-        <div class="stat-v" id="statTindak" style="color:var(--danger)">–</div>
-        <div class="stat-d">sebagian / belum diisi</div>
-      </div>
-    </div>
-
-    <div id="povGuru"></div>
-    <div id="povKelas" style="display:none"></div>
-
-  </div>
-
-  <!-- Detail per siswa -->
-  <div id="detailModal" class="modal">
-    <div class="modal-content" style="max-width:520px">
-      <div class="modal-header">
-        <h3 id="detailTitle">Detail Kelas</h3>
-        <span class="close" onclick="closeDetail()">&times;</span>
-      </div>
-      <div style="padding:16px 20px;max-height:60vh;overflow-y:auto" id="detailBody"></div>
+    <div class="tabs" id="tabs">
+      <button data-p="harian">Harian</button>
+      <button data-p="pekanan" class="on">Pekanan</button>
+      <button data-p="bulanan">Bulanan</button>
+      <button data-p="semester">Semester</button>
     </div>
   </div>
+  <div class="bar-in" style="padding-top:0;padding-bottom:8px">
+    <div class="weeknav">
+      <button class="nav" id="btnPrev" aria-label="Periode sebelumnya">‹</button>
+      <div class="weeklabel"><b id="periodLabel">–</b><span id="periodSub">–</span></div>
+      <button class="nav" id="btnNext" aria-label="Periode berikutnya">›</button>
+      <button class="nav" id="btnToday" aria-label="Kembali ke sekarang" title="Kembali ke periode berjalan" style="width:auto;padding:0 10px;font-size:11px;font-weight:800">Hari ini</button>
+    </div>
+  </div>
+  <nav class="crumb" id="crumb" aria-label="Navigasi" style="display:none"></nav>
+</div>
 
-  <script src="../js/vendor/supabase.min.js"></script>
-  <script src="../js/core/config.js"></script>
-  <script src="../js/core/supabase.js"></script>
-  <script src="../js/services/database.js"></script>
+<div class="wrap">
+  <div class="rule-note"><b>Aturan hitung:</b> siswa dianggap <b>"tercatat"</b> bila ada input apa pun pada sesi itu — ziyadah, murojaah, maupun tilawah (absen yang dicatat guru juga dihitung tercatat). Persentase = sesi yang sudah waktunya saja.</div>
+  <div id="view" class="view"></div>
+</div>
+
+<div id="loadingState" style="max-width:1060px;margin:14px auto;padding:40px;text-align:center;color:var(--muted);font-weight:700">⏳ Memuat data dari Supabase & jadwal GitHub…</div>
+<div class="note" id="errorNote"></div>
+
+<script src="../js/vendor/supabase.min.js"></script>
+<script src="../js/core/config.js"></script>
+<script src="../js/core/supabase.js"></script>
+<script src="../js/services/database.js"></script>
 <script>
-  // ================= KONFIGURASI =================
-  const JADWAL_URL = 'https://raw.githubusercontent.com/smpabbs/jadwalguruabbs/main/index.html';
-  const JADWAL_NAME_MAP = {
-    'Ust Fahmi':  'Us Fahmi',
-    'Us Ida':     'Ustadzah Ida',   // nickname jadwal versi baru
-    'Ust Ida':    'Ustadzah Ida',   // versi lama (jaga-jaga)
-    'Us Naya':    'Ustadzah Naya',
-    'Us Usaidah': 'Ustadzah Usaidah',
-    'Ust Andi':   'Ustadz Andi',
-    'Us Rizqia':  'Ustadzah Rizqia', // nickname jadwal versi baru
-    'Ust Rizqia': 'Ustadzah Rizqia', // versi lama (jaga-jaga)
-    'Ust Amin':   'Ust Amiin',
-    // Terverifikasi: master_guru menulis 'ust Yoki' (huruf u kecil) — harus persis
-    'Ust Yoki':   'ust Yoki'
-  };
+/* ================= KONFIG & JADWAL ================= */
+const JADWAL_URL = 'https://raw.githubusercontent.com/smpabbs/jadwalguruabbs/main/index.html';
+const JADWAL_NAME_MAP = {
+  'Ust Fahmi':  'Us Fahmi',
+  'Us Ida':     'Ustadzah Ida',
+  'Ust Ida':    'Ustadzah Ida',
+  'Us Naya':    'Ustadzah Naya',
+  'Us Usaidah': 'Ustadzah Usaidah',
+  'Ust Andi':   'Ustadz Andi',
+  'Us Rizqia':  'Ustadzah Rizqia',
+  'Ust Rizqia': 'Ustadzah Rizqia',
+  'Ust Amin':   'Ust Amiin',
+  'Ust Yoki':   'ust Yoki'
+};
+const HARI_ID = { Monday:'Senin', Tuesday:'Selasa', Wednesday:'Rabu', Thursday:'Kamis', Friday:'Jumat', Saturday:'Sabtu' };
+const HARI_BY_GETDAY = { 1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thursday', 5:'Friday', 6:'Saturday' };
+const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+const BULAN_SHORT = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+const HARI_SHORT = ['Sen','Sel','Rab','Kam','Jum','Sab'];
 
-  // ================= PATOKAN GURU PENGAMPU (dari DB) =================
-  // Sumber: app_settings key 'patokan_guru_pengampu' (Supabase), diisi dari
-  // Excel 'Data Siswa' kolom guru/catatan utk semua siswa aktif (467 siswa).
-  // Struktur nilai: { kelas: { "Nama Siswa": "Nama Master Guru" } }
-  // Nama dicocokkan lewat normNameKey supaya tahan beda ejaan.
-  function normNameKey(s){
-    return (s || '').trim()
-      .replace(/[\u2018\u2019'"\u201C\u201D`]/g, '')
-      .toLowerCase()
-      .replace(/\./g, '')
-      .replace(/\s+/g, ' ');
-  }
-  const HARI_ID = { Monday:'Senin', Tuesday:'Selasa', Wednesday:'Rabu', Thursday:'Kamis', Friday:'Jumat', Saturday:'Sabtu' };
-  const HARI_BY_GETDAY = { 1:'Monday', 2:'Tuesday', 3:'Wednesday', 4:'Thursday', 5:'Friday', 6:'Saturday' }; // 0=Minggu diabaikan
-  const BULAN_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
-
-  const STATUS_META = {
-    selesai:       { cls:'ls-done',    label:'Selesai',        icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8 12.5l2.5 2.5L16 9.5"/></svg>' },
-    sebagian:      { cls:'ls-partial', label:'Sebagian',       icon:'<svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01"/><path d="M10.3 3.9 2.8 17a2 2 0 0 0 1.7 3h15a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>' },
-    belum:         { cls:'ls-missing', label:'Belum Diisi',    icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/></svg>' },
-    'akan-datang': { cls:'ls-future',  label:'Belum Waktunya', icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 3"/></svg>' },
-    'tanpa-siswa': { cls:'ls-noroster',label:'Tanpa Roster',   icon:'<svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v5h1"/></svg>' }
-  };
-
-  const STATE = {
-    DATA: null, siswa: [], guru: [], records: [],
-    kelasSet: new Set(), quranSessions: [],
-    patokan: {},
-    period: 'pekanan', pov: 'guru', refDate: new Date(),
-    firstDataDate: null, unmappedClasses: new Set(), unmappedGuru: new Set()
-  };
-
-  // ================= FETCH JADWAL (jadwalguruabbs) =================
-  function extractDataBlob(html){
-    const marker = 'var DATA = ';
-    const start = html.indexOf(marker);
-    if (start === -1) throw new Error('Marker "var DATA = " tidak ditemukan di jadwalguruabbs');
-    const braceStart = html.indexOf('{', start);
-    let depth = 0, inStr = false, strCh = '', esc = false;
-    for (let i = braceStart; i < html.length; i++) {
-      const c = html[i];
-      if (inStr) {
-        if (esc) esc = false;
-        else if (c === '\\') esc = true;
-        else if (c === strCh) inStr = false;
-        continue;
-      }
-      if (c === '"' || c === "'") { inStr = true; strCh = c; continue; }
-      if (c === '{') depth++;
-      else if (c === '}') { depth--; if (depth === 0) return html.slice(braceStart, i + 1); }
+function extractDataBlob(html){
+  const marker = 'var DATA = ';
+  const start = html.indexOf(marker);
+  if (start === -1) throw new Error('Marker "var DATA = " tidak ditemukan di jadwalguruabbs');
+  const braceStart = html.indexOf('{', start);
+  let depth = 0, inStr = false, strCh = '', esc = false;
+  for (let i = braceStart; i < html.length; i++) {
+    const c = html[i];
+    if (inStr) {
+      if (esc) esc = false;
+      else if (c === '\\') esc = true;
+      else if (c === strCh) inStr = false;
+      continue;
     }
-    throw new Error('DATA blob tidak balanced');
+    if (c === '"' || c === "'") { inStr = true; strCh = c; continue; }
+    if (c === '{') depth++;
+    else if (c === '}') { depth--; if (depth === 0) return html.slice(braceStart, i + 1); }
   }
-
-  async function fetchJadwal(){
-    const res = await fetch(JADWAL_URL, { cache: 'no-store' });
-    if (!res.ok) throw new Error('HTTP ' + res.status + ' saat ambil jadwal dari GitHub');
-    const html = await res.text();
-    return JSON.parse(extractDataBlob(html));
-  }
-
-  function normalizeKelas(raw){
-    const m = String(raw || '').trim().toUpperCase().match(/^([789][A-F])/);
-    return m ? m[1] : null;
-  }
-
-  function buildQuranSessions(DATA, validKelasSet){
-    const sessions = new Map();
-    Object.values(DATA.teachers || {}).forEach(teacher => {
-      Object.entries(teacher.cells || {}).forEach(([cellKey, entries]) => {
-        const [day, period] = cellKey.split('|');
-        (entries || []).forEach(entry => {
-          if (entry.subject !== 'Quran') return;
-          const kelasNorm = normalizeKelas(entry.class);
-          if (!kelasNorm || !validKelasSet.has(kelasNorm)) {
-            if (entry.class) STATE.unmappedClasses.add(entry.class);
-            return;
-          }
-          const key = day + '|' + period + '|' + kelasNorm;
-          if (!sessions.has(key)) {
-            sessions.set(key, { day, period, start: entry.start, end: entry.end, kelas: kelasNorm, guruNick: new Set() });
-          }
-          sessions.get(key).guruNick.add(teacher.nickname);
-        });
+  throw new Error('DATA blob tidak balanced');
+}
+async function fetchJadwal(){
+  const res = await fetch(JADWAL_URL, { cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' saat ambil jadwal dari GitHub');
+  const html = await res.text();
+  return JSON.parse(extractDataBlob(html));
+}
+function normalizeKelas(raw){
+  const m = String(raw || '').trim().toUpperCase().match(/^([789][A-F])/);
+  return m ? m[1] : null;
+}
+function buildQuranSessions(DATA, validKelasSet){
+  const sessions = new Map();
+  const unmapped = { kelas:new Set(), guru:new Set() };
+  Object.values(DATA.teachers || {}).forEach(teacher => {
+    Object.entries(teacher.cells || {}).forEach(([cellKey, entries]) => {
+      const [day, period] = cellKey.split('|');
+      (entries || []).forEach(entry => {
+        if (entry.subject !== 'Quran') return;
+        const kelasNorm = normalizeKelas(entry.class);
+        if (!kelasNorm || !validKelasSet.has(kelasNorm)) {
+          if (entry.class) unmapped.kelas.add(entry.class);
+          return;
+        }
+        const key = day + '|' + period + '|' + kelasNorm;
+        if (!sessions.has(key)) {
+          sessions.set(key, { day, jam:period, start:entry.start, end:entry.end, kelas:kelasNorm, guruNick:new Set() });
+        }
+        sessions.get(key).guruNick.add(teacher.nickname);
       });
     });
-    return Array.from(sessions.values()).map(s => {
-      const guru = Array.from(s.guruNick).map(nick => {
-        const mapped = JADWAL_NAME_MAP[nick];
-        if (!mapped) STATE.unmappedGuru.add(nick);
-        return mapped || nick;
-      });
-      return { ...s, guru };
+  });
+  const list = Array.from(sessions.values()).map(s => {
+    const guru = Array.from(s.guruNick).map(nick => {
+      const mapped = JADWAL_NAME_MAP[nick];
+      if (!mapped) unmapped.guru.add(nick);
+      return mapped || nick;
     });
-  }
+    return { ...s, guru };
+  });
+  return { sessions:list, unmapped };
+}
 
-  // ================= PATOKAN DARI DB (app_settings) =================
-  async function fetchPatokan(){
-    try {
-      const db = SupabaseClient.get();
-      const { data, error } = await db
-        .from('app_settings')
-        .select('value')
-        .eq('key', 'patokan_guru_pengampu')
-        .maybeSingle();
-      if (error) throw error;
-      let raw = data && data.value ? data.value : null;
-      if (typeof raw === 'string') raw = JSON.parse(raw);
-      const norm = {};
-      if (raw) {
-        Object.entries(raw).forEach(([kelas, map]) => {
-          norm[kelas] = {};
-          Object.entries(map || {}).forEach(([nama, guru]) => {
-            norm[kelas][normNameKey(nama)] = guru;
-          });
+/* ================= PATOKAN (app_settings) ================= */
+function normNameKey(s){
+  return (s || '').trim()
+    .replace(/[\u2018\u2019'"\u201C\u201D`]/g, '')
+    .toLowerCase()
+    .replace(/\./g, '')
+    .replace(/\s+/g, ' ');
+}
+async function fetchPatokan(){
+  try {
+    const db = SupabaseClient.get();
+    const { data, error } = await db
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'patokan_guru_pengampu')
+      .maybeSingle();
+    if (error) throw error;
+    let raw = data && data.value ? data.value : null;
+    if (typeof raw === 'string') raw = JSON.parse(raw);
+    const norm = {};
+    if (raw) {
+      Object.entries(raw).forEach(([kelas, map]) => {
+        norm[kelas] = {};
+        Object.entries(map || {}).forEach(([nama, guru]) => {
+          norm[kelas][normNameKey(nama)] = guru;
         });
-      }
-      STATE.patokan = norm;
-      console.log(`✅ Patokan guru pengampu dimuat: ${Object.values(norm).reduce((a,m) => a + Object.keys(m).length, 0)} siswa`);
-    } catch (err) {
-      console.warn('⚠️ Patokan guru pengampu gagal dimuat:', err.message);
-      STATE.patokan = {};
+      });
     }
+    return norm;
+  } catch (err) {
+    console.warn('⚠️ Patokan guru pengampu gagal dimuat:', err.message);
+    return {};
   }
+}
 
-  // ================= LOAD DATA =================
-  async function loadAllData(){
-    const [DATA, siswa, guru, records] = await Promise.all([
-      fetchJadwal(),
-      DatabaseService.loadMasterSiswa(),
-      DatabaseService.loadMasterGuru(),
-      DatabaseService.loadTahfidzRecords(),
-      fetchPatokan()
-    ]);
+/* ================= STATE ================= */
+const STATE = {
+  siswa:[], guru:[], records:[], patokan:{}, quranSessions:[],
+  siswaByKelas:new Map(), recIdx:new Map(), namaIdx:new Map(), lastGuru:new Map(),
+  occs:[], noRosterKelas:new Set(),
+  period:'pekanan', pov:'guru', level:1, refDate:new Date(),
+  firstDataDate:null, range:null,
+  guruSel:null, kelasSel:null, siswaSel:null, sort:'nama',
+  warnKelas:new Set(), warnGuru:new Set()
+};
+/* POV guru  : level 1=guru, 2=kelas, 3=siswa, 4=rekap
+   POV kelas : level 1=kelas, 2=siswa, 3=rekap */
+function state_proxy(){ return STATE; }
 
-    STATE.DATA = DATA;
-    STATE.siswa = siswa;
-    STATE.guru = guru;
-    STATE.records = records; // sudah terurut created_at desc (terbaru dulu) dari DatabaseService
+/* ================= LOAD ================= */
+async function loadAllData(){
+  const [DATA, siswa, guru, records, patokan] = await Promise.all([
+    fetchJadwal(),
+    DatabaseService.loadMasterSiswa(),
+    DatabaseService.loadMasterGuru(),
+    DatabaseService.loadTahfidzRecords(),
+    fetchPatokan()
+  ]);
 
-    STATE.kelasSet = new Set(siswa.map(s => s.kelas_name).filter(Boolean));
-    STATE.quranSessions = buildQuranSessions(DATA, STATE.kelasSet);
+  STATE.siswa = siswa;
+  STATE.guru = guru;
+  STATE.records = records;
+  STATE.patokan = patokan;
 
-    STATE.firstDataDate = records.length
-      ? new Date(Math.min(...records.map(r => new Date(r.tanggal + 'T00:00:00')).filter(d => !isNaN(d))))
-      : null;
+  STATE.siswaByKelas = new Map();
+  siswa.forEach(s => {
+    if (!s.kelas_name) return;
+    if (!STATE.siswaByKelas.has(s.kelas_name)) STATE.siswaByKelas.set(s.kelas_name, []);
+    STATE.siswaByKelas.get(s.kelas_name).push(s.nama);
+  });
+  const kelasSet = new Set(STATE.siswaByKelas.keys());
+
+  const { sessions, unmapped } = buildQuranSessions(DATA, kelasSet);
+  STATE.quranSessions = sessions;
+  STATE.warnKelas = unmapped.kelas;
+  STATE.warnGuru = unmapped.guru;
+
+  /* index records */
+  STATE.recIdx = new Map();     // "kelas|tanggal" -> Set(nama)
+  STATE.namaIdx = new Map();    // "nama|tanggal" -> [record]
+  STATE.lastGuru = new Map();   // nama -> guru terakhir (records terurut desc)
+  records.forEach(r => {
+    const kSet = STATE.recIdx.get(r.kelas + '|' + r.tanggal) || new Set();
+    kSet.add(r.nama);
+    STATE.recIdx.set(r.kelas + '|' + r.tanggal, kSet);
+    const nArr = STATE.namaIdx.get(r.nama + '|' + r.tanggal) || [];
+    nArr.push(r);
+    STATE.namaIdx.set(r.nama + '|' + r.tanggal, nArr);
+    if (r.guru && !STATE.lastGuru.has(r.nama)) STATE.lastGuru.set(r.nama, r.guru);
+  });
+
+  const tglList = records.map(r => new Date(r.tanggal + 'T00:00:00')).filter(d => !isNaN(d));
+  STATE.firstDataDate = tglList.length ? new Date(Math.min(...tglList)) : null;
+  STATE.lastInputDate = tglList.length ? new Date(Math.max(...tglList)) : null;
+}
+function emptyPeriodNote(tot){
+  if (tot > 0 || !STATE.lastInputDate) return '';
+  return `<div class="empty" style="margin-bottom:12px">Belum ada input pada periode ini — input terakhir tercatat ${fmtTanggal(STATE.lastInputDate)}. Gunakan tombol ‹ untuk melihat periode sebelumnya.</div>`;
+}
+
+/* ================= PERIODE & OCCURRENCES ================= */
+function toDateStr(d){
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+function fmtTanggal(d){ return d.getDate() + ' ' + BULAN_ID[d.getMonth()] + ' ' + d.getFullYear(); }
+function getCurrentWeekMonday(ref){
+  const day = ref.getDay();
+  const monday = new Date(ref);
+  monday.setDate(ref.getDate() - (day === 0 ? 6 : day - 1));
+  monday.setHours(0,0,0,0);
+  return monday;
+}
+function getPeriodRange(period, ref){
+  if (period === 'harian') {
+    const d = new Date(ref); d.setHours(0,0,0,0);
+    return { start:d, end:d, label:fmtTanggal(d), sub:'Harian', note:false };
   }
-
-  // ================= PERIODE & TANGGAL =================
-  function toDateStr(d){
-    const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,'0'), dd = String(d.getDate()).padStart(2,'0');
-    return `${y}-${m}-${dd}`;
+  if (period === 'pekanan') {
+    const monday = getCurrentWeekMonday(ref);
+    const saturday = new Date(monday); saturday.setDate(monday.getDate() + 5);
+    return { start:monday, end:saturday, label:'Sen, ' + fmtTanggal(monday) + ' – Sab, ' + fmtTanggal(saturday), sub:'Pekanan', note:false };
   }
-  function formatTanggalIndo(d){ return `${d.getDate()} ${BULAN_ID[d.getMonth()]} ${d.getFullYear()}`; }
-  function getCurrentWeekMonday(ref){
-    const day = ref.getDay();
-    const monday = new Date(ref);
-    monday.setDate(ref.getDate() - (day === 0 ? 6 : day - 1));
-    monday.setHours(0,0,0,0);
-    return monday;
-  }
-
-  function getPeriodRange(period, ref){
-    if (period === 'harian') {
-      const d = new Date(ref); d.setHours(0,0,0,0);
-      return { start: d, end: d, label: formatTanggalIndo(d), sub: 'Tanggal Terpilih', note:false };
-    }
-    if (period === 'pekanan') {
-      const monday = getCurrentWeekMonday(ref);
-      const saturday = new Date(monday); saturday.setDate(monday.getDate() + 5);
-      return { start: monday, end: saturday, label: `Senin, ${formatTanggalIndo(monday)} – Sabtu, ${formatTanggalIndo(saturday)}`, sub: 'Pekan Aktif Berjalan', note:false };
-    }
-    if (period === 'bulanan') {
-      const first = new Date(ref.getFullYear(), ref.getMonth(), 1);
-      const last = new Date(ref.getFullYear(), ref.getMonth()+1, 0);
-      const start = (STATE.firstDataDate && STATE.firstDataDate > first) ? STATE.firstDataDate : first;
-      return { start, end: last, label: `${BULAN_ID[ref.getMonth()]} ${ref.getFullYear()}`, sub: 'Bulan Berjalan', note:true };
-    }
-    // semester — Ganjil: Jul-Des, Genap: Jan-Jun
-    const isGanjil = ref.getMonth() >= 6;
-    const first = isGanjil ? new Date(ref.getFullYear(),6,1) : new Date(ref.getFullYear(),0,1);
-    const last  = isGanjil ? new Date(ref.getFullYear(),11,31) : new Date(ref.getFullYear(),5,30);
+  if (period === 'bulanan') {
+    const first = new Date(ref.getFullYear(), ref.getMonth(), 1);
+    const last = new Date(ref.getFullYear(), ref.getMonth()+1, 0);
     const start = (STATE.firstDataDate && STATE.firstDataDate > first) ? STATE.firstDataDate : first;
-    const label = isGanjil ? `Semester Ganjil ${ref.getFullYear()}/${ref.getFullYear()+1}` : `Semester Genap ${ref.getFullYear()-1}/${ref.getFullYear()}`;
-    return { start, end: last, label, sub: `${formatTanggalIndo(first)} – ${formatTanggalIndo(last)}`, note:true };
+    return { start, end:last, label:BULAN_ID[ref.getMonth()] + ' ' + ref.getFullYear(), sub:'Bulanan', note:true };
   }
+  const isGanjil = ref.getMonth() >= 6;
+  const first = isGanjil ? new Date(ref.getFullYear(),6,1) : new Date(ref.getFullYear(),0,1);
+  const last  = isGanjil ? new Date(ref.getFullYear(),11,31) : new Date(ref.getFullYear(),5,30);
+  const start = (STATE.firstDataDate && STATE.firstDataDate > first) ? STATE.firstDataDate : first;
+  const label = isGanjil ? 'Semester Ganjil ' + ref.getFullYear() + '/' + (ref.getFullYear()+1) : 'Semester Genap ' + (ref.getFullYear()-1) + '/' + ref.getFullYear();
+  return { start, end:last, label, sub:'Semester', note:true };
+}
 
-  function generateOccurrences(range){
-    const occ = [];
-    const cur = new Date(range.start); cur.setHours(0,0,0,0);
-    const end = new Date(range.end); end.setHours(0,0,0,0);
-    while (cur <= end) {
-      const dayName = HARI_BY_GETDAY[cur.getDay()];
-      if (dayName) {
-        STATE.quranSessions.forEach(s => {
-          if (s.day === dayName) occ.push({ ...s, date: new Date(cur), dateStr: toDateStr(cur) });
+function buildOccs(range){
+  const occs = [];
+  const todayStr = toDateStr(new Date());
+  const cur = new Date(range.start); cur.setHours(0,0,0,0);
+  const end = new Date(range.end); end.setHours(0,0,0,0);
+  while (cur <= end) {
+    const dayName = HARI_BY_GETDAY[cur.getDay()];
+    if (dayName) {
+      STATE.quranSessions.forEach(s => {
+        if (s.day !== dayName) return;
+        const roster = STATE.siswaByKelas.get(s.kelas) || [];
+        if (roster.length === 0){ STATE.noRosterKelas.add(s.kelas); return; }
+        const dateStr = toDateStr(cur);
+        const recorded = STATE.recIdx.get(s.kelas + '|' + dateStr) || new Set();
+        let n = 0;
+        roster.forEach(nm => { if (recorded.has(nm)) n++; });
+        occs.push({
+          date:new Date(cur), dateStr, kelas:s.kelas, jam:s.jam, start:s.start, end:s.end,
+          guru:s.guru, due:dateStr <= todayStr, recorded,
+          n, t:roster.length, p: Math.round(n/roster.length*100)
         });
-      }
-      cur.setDate(cur.getDate() + 1);
+      });
     }
-    return occ;
+    cur.setDate(cur.getDate() + 1);
   }
+  return occs;
+}
 
-  function computeOccurrence(occ){
-    const todayStr = toDateStr(new Date());
-    const roster = STATE.siswa.filter(s => s.kelas_name === occ.kelas);
-    if (occ.dateStr > todayStr) return { ...occ, status:'akan-datang', total: roster.length, tercatat:0, roster, recordedNames:new Set() };
-    if (roster.length === 0) return { ...occ, status:'tanpa-siswa', total:0, tercatat:0, roster, recordedNames:new Set() };
-    const recordedNames = new Set(
-      STATE.records.filter(r => r.kelas === occ.kelas && r.tanggal === occ.dateStr).map(r => r.nama)
-    );
-    const tercatat = roster.filter(s => recordedNames.has(s.nama)).length;
-    const status = tercatat === roster.length ? 'selesai' : tercatat === 0 ? 'belum' : 'sebagian';
-    return { ...occ, status, total: roster.length, tercatat, roster, recordedNames };
+/* bucket: bulanan -> pekan; semester -> bulan; pekanan -> hari; harian -> 1 */
+function bucketList(period, occs, range){
+  if (period === 'harian'){
+    return occs.length ? [{label:HARI_SHORT[(range.start.getDay()===0?6:range.start.getDay()-1)], occs, due:true}] : [];
   }
-
-  // ================= PJ (Penanggung Jawab) =================
-  function getPJ(namaSiswa, scheduleGuru, kelas){
-    // 1) Guru pengampu dari DB (app_settings.patokan_guru_pengampu)
-    const pk = STATE.patokan[kelas];
-    if (pk) {
-      const g = pk[normNameKey(namaSiswa)];
-      if (g) return { nama: g, sumber: 'guru pengampu (DB)' };
-    }
-    // 2) Riwayat input terakhir
-    const rec = STATE.records.find(r => r.nama === namaSiswa && r.guru);
-    if (rec) return { nama: rec.guru, sumber: 'riwayat input terakhir' };
-    // 3) Jadwal mengajar
-    if (scheduleGuru && scheduleGuru.length) return { nama: scheduleGuru.join(' & '), sumber: 'jadwal mengajar' };
-    return { nama: '–', sumber: 'tidak diketahui' };
+  if (period === 'pekanan'){
+    const byDate = new Map();
+    occs.forEach(o => {
+      const key = o.dateStr;
+      if (!byDate.has(key)) byDate.set(key, {label:HARI_SHORT[(o.date.getDay()===0?6:o.date.getDay()-1)], occs:[], due:o.due});
+      byDate.get(key).occs.push(o);
+    });
+    return [...byDate.values()];
   }
-
-  // ================= RENDER =================
-  function initials(nama){
-    const p = nama.split(' ');
-    return p.length >= 2 ? (p[0][0] + p[1][0]).toUpperCase() : nama.slice(0,2).toUpperCase();
+  if (period === 'bulanan'){
+    const byWeek = new Map();
+    occs.forEach(o => {
+      const mon = getCurrentWeekMonday(o.date);
+      const key = toDateStr(mon);
+      if (!byWeek.has(key)) byWeek.set(key, []);
+      byWeek.get(key).push(o);
+    });
+    return [...byWeek.entries()].sort((a,b) => a[0].localeCompare(b[0])).map(([key, list], i) => ({
+      label:'P' + (i+1),
+      title:'Pekan ' + (i+1),
+      sub:list[0].date.getDate() + ' – ' + list[list.length-1].date.getDate() + ' ' + BULAN_SHORT[list[0].date.getMonth()],
+      occs:list, due:list.some(o => o.due)
+    }));
   }
-  function tierOf(p){
-    if (p >= 100) return { label:'Tercapai', color:'var(--good)' };
-    if (p >= 70)  return { label:'Progres Baik', color:'var(--info)' };
-    if (p >= 40)  return { label:'Cukup', color:'var(--warn)' };
-    return               { label:'Perlu Perhatian', color:'var(--danger)' };
-  }
-  function pct(o){ return o.total ? Math.round(o.tercatat / o.total * 100) : 0; }
-
-  let CURRENT_OCC = [];
-
-  function sessionRowHtml(o, mateName){
-    const meta = STATUS_META[o.status];
-    const idx = CURRENT_OCC.indexOf(o);
-    return `
-      <div class="lap-session ${meta.cls}" onclick="openDetailByIndex(${idx})">
-        <div class="ls-day"><div class="lsd-d">${o.date.getDate()}</div><div class="lsd-m">${HARI_ID[o.day].slice(0,3)}</div></div>
-        <div class="ls-mid">
-          <div class="ls-kelas"><span class="kelas-badge">${o.kelas}</span></div>
-          <div class="ls-jam">Jam ${o.period} · ${o.start || ''}${o.end ? '–'+o.end : ''}</div>
-          ${mateName ? `<div class="ls-mate">bareng ${mateName}</div>` : ''}
-          <div class="ls-tap-hint">Tap untuk detail per siswa</div>
-        </div>
-        <div class="ls-status">
-          <span class="ls-pill">${meta.icon}${meta.label}</span>
-          ${o.status !== 'akan-datang' ? `<div class="ls-count">${o.tercatat}/${o.total} siswa</div>` : ''}
-        </div>
-      </div>`;
-  }
-
-  function renderGuruView(){
-    const rows = STATE.guru.map(g => {
-      const nama = g.nama;
-      const occ = CURRENT_OCC.filter(o => o.guru.includes(nama)).sort((a,b) => a.dateStr.localeCompare(b.dateStr));
-      const scored = occ.filter(o => o.status !== 'akan-datang' && o.status !== 'tanpa-siswa');
-      const avgPct = scored.length ? Math.round(scored.reduce((a,o) => a + pct(o), 0) / scored.length) : null;
-      return { nama, occ, avgPct };
-    }).sort((a,b) => (a.avgPct ?? -1) - (b.avgPct ?? -1));
-
-    document.getElementById('povGuru').innerHTML = rows.map(r => {
-      const tier = r.avgPct === null ? null : tierOf(r.avgPct);
-      const body = r.occ.length
-        ? r.occ.map(o => sessionRowHtml(o, o.guru.find(g => g !== r.nama))).join('')
-        : `<div class="gcard-baru">Tidak ada jadwal Qur'an pada periode ini.</div>`;
-      return `
-        <div class="gcard">
-          <div class="gcard-h">
-            <div class="gcard-av">${initials(r.nama)}</div>
-            <div class="gcard-who">
-              <div class="gcard-nm">${r.nama}</div>
-              <div class="gcard-role">Guru Tahfidz</div>
-            </div>
-            <div class="gcard-pct">
-              <div class="gp-v" style="color:${tier ? tier.color : 'var(--muted)'}">${tier ? r.avgPct + '%' : '–'}</div>
-              <div class="gp-l">${tier ? tier.label : 'Tidak ada jadwal'}</div>
-            </div>
-          </div>
-          ${tier ? `<div class="gcard-bar"><div class="progress-bar"><div class="progress-fill" style="width:${r.avgPct}%;background:${tier.color}"></div></div></div>` : ''}
-          <div class="gcard-sessions">${body}</div>
-        </div>`;
-    }).join('');
-  }
-
-  function renderKelasView(){
-    const byKelas = {};
-    CURRENT_OCC.forEach(o => (byKelas[o.kelas] ||= []).push(o));
-    const kelasList = Object.keys(byKelas).sort();
-    const noSession = Array.from(STATE.kelasSet).filter(k => !byKelas[k]).sort();
-
-    const cards = kelasList.map(kelas => {
-      const occ = byKelas[kelas].sort((a,b) => a.dateStr.localeCompare(b.dateStr));
-      const guruPair = occ[0].guru;
-      const scored = occ.filter(o => o.status !== 'akan-datang' && o.status !== 'tanpa-siswa');
-      const avgPct = scored.length ? Math.round(scored.reduce((a,o) => a + pct(o), 0) / scored.length) : null;
-      const tier = avgPct === null ? null : tierOf(avgPct);
-      return `
-        <div class="gcard">
-          <div class="gcard-h">
-            <div class="gcard-av" style="background:linear-gradient(135deg,var(--gold-soft),var(--gold))">${kelas}</div>
-            <div class="gcard-who">
-              <div class="gcard-nm">Kelas ${kelas}</div>
-              <div class="gcard-role">${guruPair.join(' & ')}</div>
-            </div>
-            <div class="gcard-pct">
-              <div class="gp-v" style="color:${tier ? tier.color : 'var(--muted)'}">${tier ? avgPct+'%' : '–'}</div>
-              <div class="gp-l">${tier ? tier.label : '–'}</div>
-            </div>
-          </div>
-          <div class="gcard-sessions">${occ.map(o => sessionRowHtml(o)).join('')}</div>
-        </div>`;
-    }).join('');
-
-    const footer = noSession.length ? `
-      <div class="lap-no-session">
-        <strong>${noSession.length} kelas</strong> tidak ada jadwal Qur'an pada periode ini: ${noSession.join(', ')}
-      </div>` : '';
-
-    document.getElementById('povKelas').innerHTML = cards + footer;
-  }
-
-  function updateStats(){
-    const scored = CURRENT_OCC.filter(o => o.status !== 'akan-datang' && o.status !== 'tanpa-siswa');
-    const selesai = scored.filter(o => o.status === 'selesai').length;
-    document.getElementById('statTotal').textContent = scored.length;
-    document.getElementById('statSelesai').textContent = selesai;
-    document.getElementById('statTindak').textContent = scored.length - selesai;
-  }
-
-  function renderAll(){
-    const range = getPeriodRange(STATE.period, STATE.refDate);
-    CURRENT_OCC = generateOccurrences(range).map(computeOccurrence);
-
-    document.getElementById('periodLabel').textContent = range.label;
-    document.getElementById('periodSub').textContent = range.sub;
-
-    if (range.note) {
-      document.getElementById('firstDataText').textContent =
-        STATE.firstDataDate
-          ? `Dihitung sejak data pertama diinput guru: ${formatTanggalIndo(STATE.firstDataDate)} — periode sebelum tanggal itu tidak dihitung sebagai "belum diisi".`
-          : `Belum ada data tahfidz yang pernah diinput sama sekali.`;
-      document.getElementById('firstDataNote').style.display = 'flex';
-    } else {
-      document.getElementById('firstDataNote').style.display = 'none';
-    }
-
-    const unmapped = [];
-    if (!Object.keys(STATE.patokan).length) unmapped.push('patokan guru pengampu belum tersedia di DB (app_settings.patokan_guru_pengampu)');
-    if (STATE.unmappedClasses.size) unmapped.push('kelas: ' + Array.from(STATE.unmappedClasses).join(', '));
-    if (STATE.unmappedGuru.size) unmapped.push('guru: ' + Array.from(STATE.unmappedGuru).join(', '));
-    if (unmapped.length) {
-      document.getElementById('unmappedText').textContent = '⚠️ Ada entri jadwal yang tidak dikenali — ' + unmapped.join(' | ') + '. Perbarui pemetaan di script halaman ini.';
-      document.getElementById('unmappedNote').style.display = 'flex';
-    }
-
-    renderGuruView();
-    renderKelasView();
-    updateStats();
-  }
-
-  // ================= DETAIL MODAL =================
-  function openDetailByIndex(idx){ openDetail(CURRENT_OCC[idx]); }
-  function openDetail(o){
-    document.getElementById('detailTitle').textContent = `Kelas ${o.kelas} — ${HARI_ID[o.day]}, ${formatTanggalIndo(o.date)}`;
-    if (o.roster.length === 0) {
-      document.getElementById('detailBody').innerHTML = '<p style="color:var(--muted);font-size:13px">Tidak ada siswa terdaftar di kelas ini.</p>';
-    } else {
-      document.getElementById('detailBody').innerHTML = o.roster
-        .slice()
-        .sort((a,b) => a.nama.localeCompare(b.nama))
-        .map(s => {
-          const done = o.recordedNames.has(s.nama);
-          const pj = getPJ(s.nama, o.guru, o.kelas);
-          return `
-            <div class="lap-siswa-row">
-              <div style="flex:1;min-width:0">
-                <div class="lsr-nama">${s.nama}</div>
-                <div class="lsr-pj">PJ: <strong>${pj.nama}</strong><span class="pj-src">(${pj.sumber})</span></div>
-              </div>
-              <span class="ls-pill lsr-status ${done ? 'pill-done' : 'pill-missing'}">${done ? 'Sudah' : 'Belum'}</span>
-            </div>`;
-        }).join('');
-    }
-    document.getElementById('detailModal').style.display = 'block';
-    document.body.style.overflow = 'hidden';
-  }
-  function closeDetail(){
-    document.getElementById('detailModal').style.display = 'none';
-    document.body.style.overflow = '';
-  }
-  window.addEventListener('click', e => { if (e.target.id === 'detailModal') closeDetail(); });
-
-  // ================= TAB HANDLERS =================
-  document.getElementById('periodTabs').addEventListener('click', e => {
-    const btn = e.target.closest('.master-tab');
-    if (!btn) return;
-    document.querySelectorAll('#periodTabs .master-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    STATE.period = btn.dataset.period;
-    STATE.refDate = new Date(); // ganti jenis periode -> mulai dari periode aktif berjalan lagi
-    renderAll();
+  /* semester: per bulan */
+  const byMonth = new Map();
+  occs.forEach(o => {
+    const key = o.date.getFullYear() + '-' + o.date.getMonth();
+    if (!byMonth.has(key)) byMonth.set(key, []);
+    byMonth.get(key).push(o);
   });
-
-  function navigatePeriod(direction){
-    const d = new Date(STATE.refDate);
-    if (STATE.period === 'harian') d.setDate(d.getDate() + direction);
-    else if (STATE.period === 'pekanan') d.setDate(d.getDate() + direction * 7);
-    else if (STATE.period === 'bulanan') d.setMonth(d.getMonth() + direction);
-    else d.setMonth(d.getMonth() + direction * 6); // semester
-    STATE.refDate = d;
-    renderAll();
-  }
-  document.getElementById('btnPrev').addEventListener('click', () => navigatePeriod(-1));
-  document.getElementById('btnNext').addEventListener('click', () => navigatePeriod(1));
-  document.getElementById('povTabs').addEventListener('click', e => {
-    const btn = e.target.closest('.master-tab');
-    if (!btn) return;
-    document.querySelectorAll('#povTabs .master-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    const pov = btn.dataset.pov;
-    document.getElementById('povGuru').style.display = pov === 'guru' ? 'block' : 'none';
-    document.getElementById('povKelas').style.display = pov === 'kelas' ? 'block' : 'none';
+  return [...byMonth.entries()].sort((a,b) => a[0].localeCompare(b[0], 'en', {numeric:true})).map(([key, list]) => {
+    const d0 = list[0].date;
+    return {
+      label:BULAN_SHORT[d0.getMonth()],
+      title:BULAN_ID[d0.getMonth()],
+      sub:String(d0.getFullYear()),
+      occs:list, due:list.some(o => o.due)
+    };
   });
-  document.getElementById('btnRefresh').addEventListener('click', () => init(true));
+}
 
-  // ================= INIT =================
-  async function init(forceReload){
-    document.getElementById('loadingState').style.display = 'block';
-    document.getElementById('errorState').style.display = 'none';
-    document.getElementById('mainContent').style.display = 'none';
-    try {
-      await loadAllData();
-      document.getElementById('statusBadge').innerHTML = '<span class="dot"></span> Terhubung';
-      document.getElementById('loadingState').style.display = 'none';
-      document.getElementById('mainContent').style.display = 'block';
-      renderAll();
-    } catch (err) {
-      console.error('❌ Gagal memuat data:', err);
-      document.getElementById('loadingState').style.display = 'none';
-      document.getElementById('statusBadge').innerHTML = '<span class="dot" style="background:var(--danger)"></span> Gagal';
-      document.getElementById('errorText').textContent =
-        'Gagal memuat data: ' + err.message + '. Kalau ini dibuka langsung dari file (bukan lewat server), ' +
-        'kemungkinan browser memblokir permintaan ke GitHub/Supabase dari file lokal (CORS). ' +
-        'Coba buka lewat server lokal sebentar, atau cek koneksi internet.';
-      document.getElementById('errorState').style.display = 'flex';
-    }
+/* ================= UTIL RENDER ================= */
+function kelasPctCls(p){ return p >= 80 ? 'c-good' : p >= 40 ? 'c-warn' : 'c-danger'; }
+function donut(p, size){
+  const R = size==='sm'?22:30;
+  const C = 2*Math.PI*R;
+  const v = (Math.min(100,p)/100)*C;
+  return `<div class="donut ${size||''} ${kelasPctCls(p)}">
+    <svg width="100%" height="100%" viewBox="0 0 ${R*2+8} ${R*2+8}">
+      <circle class="track" cx="${R+4}" cy="${R+4}" r="${R}" fill="none" stroke-width="${size==='sm'?5:7}"/>
+      <circle class="val" cx="${R+4}" cy="${R+4}" r="${R}" fill="none" stroke-width="${size==='sm'?5:7}"
+        stroke="currentColor" stroke-dasharray="${v} ${C}"/>
+    </svg>
+    <div class="pct">${p}%<small>terisi</small></div>
+  </div>`;
+}
+function pengampu(kelas, nama){
+  const pk = STATE.patokan[kelas];
+  if (pk){
+    const g = pk[normNameKey(nama)];
+    if (g) return {nama:g, ov:true};
   }
-  init();
+  const rg = STATE.lastGuru.get(nama);
+  if (rg) return {nama:rg, ov:false};
+  return null; /* fallback: pasangan jadwal dihitung pemanggil */
+}
+const singkat = g => String(g).replace('Ustadzah ','Ustzh. ').replace('Ustadz ','Ust. ');
+function esc(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+
+function stripHtml(kelas){
+  const buckets = bucketList(state_proxy().period, STATE.occs.filter(o => o.kelas === kelas), STATE.range);
+  const cells = buckets.map(b => {
+    const bo = b.occs.filter(o => o.due);
+    if (!b.due || !bo.length) return {st:'futr', label:b.label};
+    let n=0,t=0;
+    bo.forEach(o => { n+=o.n; t+=o.t; });
+    const p = t ? Math.round(n/t*100) : 0;
+    return {st: p>=100?'done':p>0?'part':'miss', label:b.label};
+  });
+  return `<div class="dots">${cells.map(x =>
+    `<span title="${esc(x.label)}"><i class="${x.st}"></i>${esc(x.label)}</span>`).join('')}</div>`;
+}
+
+/* ================= VIEW: KARTU GURU ================= */
+function guruOccs(g){ return STATE.occs.filter(o => o.guru.includes(g)); }
+
+function renderGurus(){
+  const occs = STATE.occs;
+  const buckets = bucketList(state_proxy().period, occs, STATE.range);
+  const unit = bucketUnitLabel();
+  const names = [...new Set(occs.flatMap(o => o.guru))];
+  const cards = names.map(g => {
+    const goccs = occs.filter(o => o.guru.includes(g));
+    let sum=0,cnt=0, miss=0, tot=0;
+    const dots = [];
+    if (buckets.length > 1 || buckets[0] && buckets[0].occs.length > 6){
+      buckets.forEach(b => {
+        const bo = b.occs.filter(o => o.due && o.guru.includes(g));
+        if (!b.due || !bo.length){ dots.push('futr'); tot++; return; }
+        let s=0,c=0;
+        bo.forEach(o => { s += o.p; c++; });
+        const p = c ? Math.round(s/c) : 0;
+        const st = p>=100?'done':p>0?'part':'miss';
+        if (st==='miss') miss++;
+        dots.push(st); sum+=p; cnt++; tot++;
+      });
+    } else {
+      goccs.filter(o => o.due).forEach(o => {
+        const st = o.p>=100?'done':o.p>0?'part':'miss';
+        if (st==='miss') miss++;
+        dots.push(st); sum+=o.p; cnt++; tot++;
+      });
+    }
+    const p = cnt ? Math.round(sum/cnt) : 0;
+    const kelasUnik = [...new Set(goccs.map(o => o.kelas))];
+    return `<div class="gcard" tabindex="0" role="button" data-guru="${esc(g)}" aria-label="Detail ${esc(g)}">
+      <div class="av">${esc(g.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
+      <div class="who">
+        <div class="nm">${esc(g)}</div>
+        <div class="mt">${kelasUnik.length} kelas · <b>${tot}</b> ${unit} · <b style="color:var(--danger)">${miss}</b> kosong</div>
+        <div class="mini">${dots.map(d=>`<i class="${d}"></i>`).join('')}</div>
+      </div>
+      ${donut(p)}
+    </div>`;
+  }).join('');
+  document.getElementById('view').innerHTML =
+    `<div class="lv-head"><h2>Semua Guru</h2><span class="sub">${esc(STATE.range.label)} — urut paling tertinggal</span></div>
+     <div class="grid-guru">${cards || '<div class="empty">Tidak ada jadwal Quran pada periode ini.</div>'}</div>`;
+}
+function bucketUnitLabel(){
+  return state_proxy().period === 'bulanan' ? 'pekan' : state_proxy().period === 'semester' ? 'bulan' : 'sesi';
+}
+
+/* ================= VIEW: KARTU KELAS ================= */
+function renderKelasGrid(){
+  const occs = STATE.occs;
+  let list;
+  if (state_proxy().pov === 'guru'){
+    list = [...new Set(guruOccs(state_proxy().guruSel).map(o => o.kelas))].sort();
+  } else {
+    list = [...new Set(occs.map(o => o.kelas))].sort();
+  }
+  const withP = list.map(k => {
+    const koccs = occs.filter(o => o.kelas === k && o.due);
+    const n = koccs.reduce((a,o) => a+o.n, 0), t = koccs.reduce((a,o) => a+o.t, 0);
+    return {k, p: t ? Math.round(n/t*100) : 0};
+  }).sort((a,b) => state_proxy().pov === 'kelas' ? (a.p - b.p || a.k.localeCompare(b.k)) : a.k.localeCompare(b.k));
+  const worstP = withP.length ? withP[0].p : 0;
+  const cards = withP.map(({k,p}) => `
+    <div class="kcard${state_proxy().pov==='kelas' && withP.length>1 && p===worstP ? ' worst' : ''}" tabindex="0" role="button" data-kelas="${esc(k)}" aria-label="Detail kelas ${esc(k)}">
+      <div class="top">
+        <div class="badge">${esc(k)}</div>
+        <div style="flex:1">
+          <div class="knm">Kelas ${esc(k)}</div>
+          <div class="kmt">${(STATE.siswaByKelas.get(k)||[]).length} siswa · ${esc(singkat(guruPair(k)))}</div>
+        </div>
+        ${donut(p,'sm')}
+      </div>
+      ${stripHtml(k)}
+    </div>`).join('');
+  const head = state_proxy().pov === 'guru'
+    ? `<button class="back" data-lvl="1">‹ Semua guru</button><h2>${esc(state_proxy().guruSel)}</h2><span class="sub">${esc(STATE.range.label)}</span>`
+    : `<h2>Semua Kelas</h2><span class="sub">${esc(STATE.range.label)} — urut paling tertinggal</span>`;
+  document.getElementById('view').innerHTML =
+    `<div class="lv-head">${head}</div><div class="grid-kelas">${cards || '<div class="empty">Tidak ada jadwal Quran pada periode ini.</div>'}</div>`;
+}
+function guruPair(kelas){
+  const set = new Set();
+  STATE.occs.forEach(o => { if (o.kelas === kelas) o.guru.forEach(g => set.add(g)); });
+  return [...set].join(' & ') || '–';
+}
+
+/* ================= VIEW: DAFTAR SISWA ================= */
+function renderSiswa(){
+  const kelas = state_proxy().kelasSel;
+  const occs = STATE.occs.filter(o => o.kelas === kelas && o.due);
+  const roster = (STATE.siswaByKelas.get(kelas) || []).slice().sort((a,b) => a.localeCompare(b,'id'));
+  const pair = guruPair(kelas);
+  const rows = roster.map(nm => {
+    let n=0, last=null;
+    occs.forEach(o => { if (o.recorded.has(nm)){ n++; last = o; } });
+    const p = occs.length ? Math.round(n/occs.length*100) : 0;
+    const peng = pengampu(kelas, nm) || {nama:pair, ov:false};
+    return {nm, n, p, last, peng};
+  });
+  if (state_proxy().sort === 'status') rows.sort((a,b) => a.p - b.p || a.nm.localeCompare(b.nm,'id'));
+  else if (state_proxy().sort === 'guru') rows.sort((a,b) => a.peng.nama.localeCompare(b.peng.nama,'id') || a.nm.localeCompare(b.nm,'id'));
+  else rows.sort((a,b) => a.nm.localeCompare(b.nm,'id'));
+
+  const nTot = rows.reduce((a,r) => a+r.n, 0);
+  const pTot = occs.length*rows.length ? Math.round(nTot/(occs.length*rows.length)*100) : 0;
+  const full = rows.filter(r => r.p>=100).length, none = rows.filter(r => r.n===0).length;
+  const guruUnik = [...new Set(rows.map(r => r.peng.nama))];
+  const backLvl = state_proxy().pov === 'guru' ? 2 : 1;
+  const backLabel = state_proxy().pov === 'guru' ? '‹ ' + esc(state_proxy().guruSel) : '‹ Semua kelas';
+  document.getElementById('view').innerHTML =
+    `<div class="lv-head">
+       <button class="back" data-lvl="${backLvl}">${backLabel}</button>
+       <h2>Kelas ${esc(kelas)}</h2><span class="sub">${esc(STATE.range.label)}</span>
+     </div>
+     <div class="summary">
+       ${donut(pTot)}
+       <div class="nums">
+         <div class="num"><b>${rows.length}</b><span>siswa</span></div>
+         <div class="num" style="color:var(--good)"><b>${full}</b><span>selalu tercatat</span></div>
+         <div class="num" style="color:var(--danger)"><b>${none}</b><span>belum pernah</span></div>
+         <div class="num"><b>${occs.length}</b><span>sesi dihitung</span></div>
+       </div>
+     </div>
+     ${emptyPeriodNote(nTot)}
+     <div class="sortbar">
+       Urutkan
+       <select id="sortBy">
+         <option value="nama"${state_proxy().sort==='nama'?' selected':''}>Nama A–Z</option>
+         <option value="status"${state_proxy().sort==='status'?' selected':''}>Paling tertinggal</option>
+         <option value="guru"${state_proxy().sort==='guru'?' selected':''}>Guru pengampu</option>
+       </select>
+       <span>${guruUnik.length} guru pengampu: ${guruUnik.map(singkat).map(esc).join(', ')}</span>
+     </div>
+     <div class="slist">${rows.map(r => `
+       <div class="srow" tabindex="0" role="button" data-siswa="${esc(r.nm)}">
+         <span class="dot ${r.p>=100?'full':r.n>0?'some':'none'}"></span>
+         <span class="snm">${esc(r.nm)}</span>
+         <span class="gp${r.peng.ov?' ov':''}" title="${r.peng.ov?'Dari patokan guru pengampu (DB)':'Dari riwayat/jadwal'}">${esc(singkat(r.peng.nama))}</span>
+         <span class="last">${r.last ? 'terakhir '+HARI_ID[HARI_BY_GETDAY[r.last.date.getDay()]] : 'belum pernah'}</span>
+         <span class="cnt2">${r.n}/${occs.length}</span>
+         <span class="chev">›</span>
+       </div>`).join('')}
+     </div>`;
+  const sel = document.getElementById('sortBy');
+  sel.addEventListener('change', () => { STATE.sort = sel.value; renderSiswa(); });
+}
+
+/* ================= VIEW: REKAP SISWA ================= */
+function recordText(recs){
+  if (!recs || !recs.length) return null;
+  const parts = recs.slice(0,2).map(r => {
+    if (r.menghafal !== 'ya'){
+      const alasan = ({sakit:'sakit', sertifikasi:'persiapan sertifikasi'})[r.alasan] || (r.alasan ? String(r.alasan) : 'lainnya');
+      return 'Tidak menghafal · ' + alasan;
+    }
+    const j = r.jenis || 'ziyadah';
+    const jl = {ziyadah:'Ziyadah', murojaah:'Murojaah', tilawah:'Tilawah'}[j] || 'Setoran';
+    return jl + ' · ' + (r.surat || '-') + ' ' + (r.ayatDari || '?') + '–' + (r.ayatSampai || '?');
+  });
+  if (recs.length > 2) parts.push('+' + (recs.length - 2) + ' input lainnya');
+  return parts;
+}
+const dayRows = (occs, nm, kelas) => `<div class="rekap">${occs.map(o => rrowHtml(o, nm, kelas)).join('')}</div>`;
+function wrowOff(title, sub){
+  return `<div class="wrow off"><div class="whead"><span class="chev">▸</span>
+    <div class="wt"><b>${esc(title)}</b><span>${esc(sub)}</span></div>
+    <span class="tag f">Belum waktunya</span></div></div>`;
+}
+function wrowHtml(id, title, sub, n, t, open, body){
+  const p = t ? Math.round(n/t*100) : 0;
+  const cls = p>=80 ? 'var(--good)' : p>=40 ? 'var(--warn)' : 'var(--danger)';
+  return `<div class="wrow${open ? ' open' : ''}" data-acc="${id}">
+    <div class="whead" role="button" tabindex="0" aria-expanded="${open}">
+      <span class="chev">▸</span>
+      <div class="wt"><b>${esc(title)}</b><span>${esc(sub)}</span></div>
+      <div class="wbar"><i style="width:${p}%;background:${cls}"></i></div>
+      <span class="wnum">${n}/${t}</span>
+    </div>
+    <div class="wbody">${body}</div>
+  </div>`;
+}
+function rrowHtml(o, nm, kelas){
+  if (!o.due) return `<div class="rrow">
+    <div class="rd"><b>${HARI_ID[HARI_BY_GETDAY[o.date.getDay()]]}</b><span>${o.date.getDate()} ${BULAN_SHORT[o.date.getMonth()]}</span></div>
+    <div class="ri"><div class="t">Sesi Quran · jam ${esc(o.jam)}</div><div class="s">${esc(o.guru.map(singkat).join(' & '))}</div></div>
+    <span class="tag f">Belum waktunya</span></div>`;
+  const recs = STATE.namaIdx.get(nm + '|' + o.dateStr);
+  const parts = recordText(recs);
+  return `<div class="rrow">
+    <div class="rd"><b>${HARI_ID[HARI_BY_GETDAY[o.date.getDay()]]}</b><span>${o.date.getDate()} ${BULAN_SHORT[o.date.getMonth()]} · jam ${esc(o.jam)}</span></div>
+    ${parts ? `<div class="ri"><div class="t">${esc(parts[0])}</div>
+            <div class="s">${parts[1] ? esc(parts[1]) : 'dihitung sebagai input ✓'}</div></div>
+          <span class="tag ${/Ziyadah/.test(parts[0])?'z':/Murojaah/.test(parts[0])?'m':'t'}">${/Tidak menghafal/.test(parts[0])?'Absen':esc(parts[0].split(' ·')[0])}</span>`
+        : `<div class="ri"><div class="t">Tidak ada input</div><div class="s">tidak ada catatan setoran pada sesi ini</div></div>
+          <span class="tag no">Kosong</span></div>`}
+  </div>`;
+}
+function pekanWrow(b, nm, kelas){
+  if (!b.due) return wrowOff(b.title, b.sub);
+  const due = b.occs.filter(o => o.due);
+  const n = due.filter(o => o.recorded.has(nm)).length;
+  return wrowHtml('w-'+b.label+'-'+b.title, b.title, b.sub, n, due.length, b.isOpen, dayRows(b.occs, nm, kelas));
+}
+function renderRekap(){
+  const nm = state_proxy().siswaSel, k = state_proxy().kelasSel;
+  const period = state_proxy().period;
+  const koccs = STATE.occs.filter(o => o.kelas === k);
+  const buckets = bucketList(period, koccs, STATE.range);
+  const dueOccs = buckets.filter(b => b.due).flatMap(b => b.occs.filter(o => o.due));
+  const n = dueOccs.filter(o => o.recorded.has(nm)).length;
+  const p = dueOccs.length ? Math.round(n/dueOccs.length*100) : 0;
+
+  /* tandai pekan berjalan utk default-open */
+  const todayStr = toDateStr(new Date());
+  if (period === 'bulanan' || period === 'semester'){
+    buckets.forEach(b => {
+      if (!b.due) return;
+      const due = b.occs.filter(o => o.due);
+      b.isOpen = due.some(o => o.dateStr <= todayStr) && due.some(o => o.dateStr >= todayStr);
+    });
+  }
+
+  let bottom = '';
+  if (period === 'bulanan'){
+    bottom = buckets.map(b => b.due ? pekanWrow(b, nm, k) : wrowOff(b.title, b.sub)).join('');
+  } else if (period === 'semester'){
+    bottom = buckets.map(b => {
+      if (!b.due) return wrowOff(b.title, b.sub);
+      const wb = bucketList('bulanan', b.occs, STATE.range).map(w => ({
+        ...w, title:'Pekan ' + w.label.replace('P',''), isOpen:false
+      }));
+      const due = b.occs.filter(o => o.due);
+      const n2 = due.filter(o => o.recorded.has(nm)).length;
+      return wrowHtml('b-'+b.label, b.title, b.sub + ' · bulan ' + (b.occs.some(o=>o.dateStr<=todayStr) ? 'berjalan' : 'lampau'),
+        n2, due.length, false, wb.map(w => pekanWrow(w, nm, k)).join(''));
+    }).join('');
+  } else {
+    bottom = dayRows(koccs, nm, k);
+  }
+
+  const backLvl = state_proxy().pov === 'guru' ? 3 : 2;
+  document.getElementById('view').innerHTML =
+    `<div class="lv-head">
+       <button class="back" data-lvl="${backLvl}">‹ Kelas ${esc(k)}</button>
+       <h2>${esc(nm)}</h2><span class="sub">Kelas ${esc(k)} · ${esc(STATE.range.label)}</span>
+     </div>
+     <div class="summary">
+       ${donut(p)}
+       <div class="nums">
+         <div class="num"><b>${n}/${dueOccs.length}</b><span>sesi tercatat</span></div>
+         <div class="num"><b>${esc(singkat((pengampu(k, nm) || {nama:guruPair(k)}).nama))}</b><span>guru pengampu</span></div>
+       </div>
+     </div>
+     ${emptyPeriodNote(n)}
+     ${bottom || '<div class="empty">Tidak ada sesi pada periode ini.</div>'}`;
+}
+
+/* ================= CRUMB & RENDER ================= */
+function renderCrumb(){
+  const c = document.getElementById('crumb');
+  let h = state_proxy().pov === 'guru' ? `<a data-lvl="1">👤 Guru</a>` : `<a data-lvl="1">🏫 Kelas</a>`;
+  const S = STATE;
+  if (S.pov === 'guru' && S.level >= 2)
+    h += `<span class="sep">›</span>` + (S.level > 2 ? `<a data-lvl="2">${esc(S.guruSel)}</a>` : `<span class="here">${esc(S.guruSel)}</span>`);
+  const kelasShown = S.pov === 'guru' ? S.level >= 3 : S.level >= 2;
+  if (S.kelasSel && kelasShown){
+    const here = (S.pov === 'guru' && S.level === 3) || (S.pov === 'kelas' && S.level === 2);
+    h += `<span class="sep">›</span>` + (here ? `<span class="here">Kelas ${esc(S.kelasSel)}</span>`
+      : `<a data-lvl="${S.pov==='guru'?3:2}">Kelas ${esc(S.kelasSel)}</a>`);
+  }
+  if (S.siswaSel)
+    h += `<span class="sep">›</span><span class="here">${esc(S.siswaSel)}</span>`;
+  c.innerHTML = h;
+  c.style.display = S.level === 1 ? 'none' : 'flex';
+}
+function render(){
+  /* hitung range & occs utk periode+refDate aktif */
+  STATE.range = getPeriodRange(STATE.period, STATE.refDate);
+  STATE.occs = buildOccs(STATE.range);
+  document.getElementById('periodLabel').textContent = STATE.range.label;
+  document.getElementById('periodSub').textContent =
+    STATE.range.sub + (STATE.range.note && STATE.firstDataDate ? ' · dihitung sejak ' + fmtTanggal(STATE.firstDataDate) : '');
+  renderCrumb();
+  if (STATE.pov === 'guru'){
+    [renderGurus, renderKelasGrid, renderSiswa, renderRekap][STATE.level - 1]();
+  } else {
+    [renderKelasGrid, renderSiswa, renderRekap][STATE.level - 1]();
+  }
+  const v = document.getElementById('view');
+  v.classList.remove('view'); void v.offsetWidth; v.classList.add('view');
+}
+
+/* ================= INTERAKSI ================= */
+document.getElementById('view').addEventListener('click', e => {
+  const wh = e.target.closest('.whead');
+  if (wh){
+    const wr = wh.closest('.wrow');
+    if (wr && wr.dataset.acc !== undefined){ wr.classList.toggle('open'); return; }
+  }
+  const lv = e.target.closest('[data-lvl]');
+  if (lv){
+    const t = parseInt(lv.dataset.lvl, 10);
+    STATE.level = t;
+    if (STATE.pov === 'guru'){
+      if (t <= 1){ STATE.guruSel = STATE.kelasSel = STATE.siswaSel = null; }
+      else if (t === 2){ STATE.kelasSel = STATE.siswaSel = null; }
+      else if (t === 3){ STATE.siswaSel = null; }
+    } else {
+      if (t <= 1){ STATE.kelasSel = STATE.siswaSel = null; }
+      else if (t === 2){ STATE.siswaSel = null; }
+    }
+    render(); return;
+  }
+  const gc = e.target.closest('[data-guru]');
+  if (gc){ STATE.guruSel = gc.dataset.guru; STATE.kelasSel = STATE.siswaSel = null; STATE.level = 2; render(); return; }
+  const kc = e.target.closest('[data-kelas]');
+  if (kc){ STATE.kelasSel = kc.dataset.kelas; STATE.siswaSel = null; STATE.level = STATE.pov === 'guru' ? 3 : 2; render(); return; }
+  const sr = e.target.closest('[data-siswa]');
+  if (sr){ STATE.siswaSel = sr.dataset.siswa; STATE.level = STATE.pov === 'guru' ? 4 : 3; render(); return; }
+});
+document.getElementById('view').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ' '){
+    const el = e.target.closest('[role="button"]');
+    if (el){ e.preventDefault(); el.click(); }
+  }
+});
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  STATE.period = b.dataset.p;
+  render();
+});
+document.getElementById('pov').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#pov button').forEach(x => x.classList.remove('on'));
+  b.classList.add('on');
+  STATE.pov = b.dataset.pov;
+  STATE.level = 1; STATE.guruSel = STATE.kelasSel = STATE.siswaSel = null;
+  render();
+});
+document.getElementById('brandHome').addEventListener('click', () => {
+  STATE.level = 1; STATE.guruSel = STATE.kelasSel = STATE.siswaSel = null; render();
+});
+document.getElementById('btnPrev').addEventListener('click', () => navigatePeriod(-1));
+document.getElementById('btnNext').addEventListener('click', () => navigatePeriod(1));
+document.getElementById('btnToday').addEventListener('click', () => { STATE.refDate = new Date(); render(); });
+function navigatePeriod(dir){
+  const d = new Date(STATE.refDate);
+  if (STATE.period === 'harian') d.setDate(d.getDate() + dir);
+  else if (STATE.period === 'pekanan') d.setDate(d.getDate() + dir * 7);
+  else if (STATE.period === 'bulanan') d.setMonth(d.getMonth() + dir);
+  else d.setMonth(d.getMonth() + dir * 6);
+  STATE.refDate = d;
+  render();
+}
+
+/* ================= INIT ================= */
+async function init(){
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('errorNote').style.display = 'none';
+  try {
+    await loadAllData();
+    document.getElementById('loadingState').style.display = 'none';
+    if (STATE.warnGuru.size || STATE.warnKelas.size){
+      const parts = [];
+      if (STATE.warnGuru.size) parts.push('guru: ' + [...STATE.warnGuru].join(', '));
+      if (STATE.warnKelas.size) parts.push('kelas: ' + [...STATE.warnKelas].join(', '));
+      const wn = document.getElementById('warnNote');
+      wn.textContent = '⚠️ Entri jadwal tidak dikenali — ' + parts.join(' | ') + '. Perbarui JADWAL_NAME_MAP.';
+      wn.style.display = 'block';
+    }
+    render();
+  } catch (err) {
+    console.error('❌ Gagal memuat data:', err);
+    document.getElementById('loadingState').style.display = 'none';
+    const en = document.getElementById('errorNote');
+    en.textContent = '❌ Gagal memuat data: ' + err.message + ' — cek koneksi internet / buka lewat server lokal bila diblokir CORS.';
+    en.style.display = 'block';
+  }
+}
+init();
 </script>
 </body>
 </html>
