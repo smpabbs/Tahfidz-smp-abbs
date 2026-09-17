@@ -535,14 +535,169 @@ const DatabaseService = {
         .upsert({ key, value }, { onConflict: 'key' });
 
       if (error) throw error;
-      console.log(`✅ WA setting saved: ${key}`);
+      console.log(`? WA setting saved: ${key}`);
       return true;
     } catch (error) {
-      console.error('❌ Failed to save WA setting:', error.message);
+      console.error('? Failed to save WA setting:', error.message);
       return false;
     }
   },
 
+  /**
+   * Muat satu setting dari app_settings (bukan prefix wa_template).
+   * @param {string} key - key lengkap, mis. 'patokan_guru_pengampu'
+   * @returns {Promise<*|null>} - value mentah (JSON sudah di-parse jika valid)
+   */
+  async loadAppSetting(key) {
+    try {
+      const db = SupabaseClient.get();
+      if (!db) throw new Error('Database client not available');
+
+      const { data, error } = await db
+        .from('app_settings')
+        .select('value')
+        .eq('key', key)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      let value = data && data.value !== undefined ? data.value : null;
+      if (typeof value === 'string' && value.trim()) {
+        try { value = JSON.parse(value); } catch (e) { /* biarkan string */ }
+      }
+
+      console.log(`? App setting loaded: ${key}`);
+      return value;
+    } catch (error) {
+      console.error(`? Failed to load app setting ${key}:`, error.message);
+      return null;
+    }
+  },
+
+  /**
+   * Simpan satu setting ke app_settings (upsert) — generic selain WA template.
+   * @param {string} key - key lengkap
+   * @param {*} value - nilai (dijadikan JSON string jika bukan string)
+   * @returns {Promise<boolean>}
+   */
+  async saveAppSetting(key, value) {
+    try {
+      const db = SupabaseClient.get();
+      if (!db) throw new Error('Database client not available');
+
+      const stored = typeof value === 'string' ? value : JSON.stringify(value);
+
+      const { error } = await db
+        .from('app_settings')
+        .upsert({ key, value: stored }, { onConflict: 'key' });
+
+      if (error) throw error;
+      console.log(`? App setting saved: ${key}`);
+      return true;
+    } catch (error) {
+      console.error(`? Failed to save app setting ${key}:`, error.message);
+      return false;
+    }
+  },
+
+  // ==========================================
+  // TAHFIDZ PENGECUALIAN (hari tahsin/kegiatan/libur)
+  // ==========================================
+
+  /**
+   * Load semua pengecualian dari Supabase.
+   * @returns {Promise<Array<{id, kelas, tanggal, alasan, guru}>>}
+   */
+  async loadPengecualian() {
+    try {
+      const db = SupabaseClient.get();
+      if (!db) throw new Error('Database client not available');
+
+      const { data, error } = await db
+        .from('tahfidz_pengecualian')
+        .select('*')
+        .order('tanggal', { ascending: true });
+
+      if (error) throw error;
+
+      const rows = (data || []).map(r => ({
+        id: r.id,
+        kelas: r.kelas,
+        tanggal: r.tanggal,
+        alasan: r.alasan || '',
+        guru: r.guru || '',
+        catatan: r.catatan || '',
+        dibuatOleh: r.dibuat_oleh || ''
+      }));
+
+      console.log(`? Loaded ${rows.length} pengecualian`);
+      return rows;
+    } catch (error) {
+      console.error('? Failed to load pengecualian:', error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Simpan satu pengecualian (upsert per kelas+tanggal+guru).
+   * @param {object} pen - { kelas, tanggal, alasan, guru?, catatan?, dibuat_oleh? }
+   * @returns {Promise<object|null>}
+   */
+  async savePengecualian(pen) {
+    try {
+      const db = SupabaseClient.get();
+      if (!db) throw new Error('Database client not available');
+
+      const { data, error } = await db
+        .from('tahfidz_pengecualian')
+        .upsert({
+          kelas: pen.kelas,
+          tanggal: pen.tanggal,
+          alasan: pen.alasan || '',
+          guru: pen.guru || '',
+          catatan: pen.catatan || '',
+          dibuat_oleh: pen.dibuat_oleh || ''
+        }, { onConflict: 'kelas,tanggal,guru' })
+        .select()
+        .single();
+
+      if (error) throw error;
+
+      console.log('? Pengecualian saved:', data.id);
+      return data;
+    } catch (error) {
+      console.error('? Failed to save pengecualian:', error.message);
+      throw error;
+    }
+  },
+
+  /**
+   * Hapus satu pengecualian.
+   * @param {string} id
+   * @returns {Promise<boolean>}
+   */
+  async deletePengecualian(id) {
+    try {
+      const db = SupabaseClient.get();
+      if (!db) throw new Error('Database client not available');
+
+      const { error } = await db
+        .from('tahfidz_pengecualian')
+        .delete()
+        .eq('id', id);
+
+      if (error) throw error;
+
+      console.log('? Pengecualian deleted:', id);
+      return true;
+    } catch (error) {
+      console.error('? Failed to delete pengecualian:', error.message);
+      return false;
+    }
+  },
+
+  // ==========================================
+  // BATCH OPERATIONS
   // ==========================================
   // BATCH OPERATIONS
   // ==========================================

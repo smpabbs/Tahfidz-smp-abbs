@@ -31,6 +31,7 @@
          di semuanya tanpa perlu diubah. -->
     <div class="float-nav">
       <button class="tab active float-nav-item" onclick="TabManager.show('input')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="tip">Input Data</span></button>
+      <button class="tab float-nav-item" onclick="TabManager.show('tahsin')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span><span class="dot-new" title="Fitur baru"></span><span class="tip">Tahsin Teori</span></button>
       <button class="tab float-nav-item" onclick="TabManager.show('output')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="tip">Hasil Data</span></button>
       <button class="tab float-nav-item" onclick="TabManager.show('target')"><span class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg></span><span class="tip">Kelola Target</span></button>
       <button class="tab float-nav-item" onclick="TabManager.show('master')"><span class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h8"/></svg></span><span class="tip">Master Data</span></button>
@@ -153,6 +154,41 @@
 
         <button type="submit" class="btn-submit">Simpan Data Setoran</button>
       </form>
+    </div>
+
+    <!-- ============================================ -->
+    <!-- 🟣 TAB TAHSIN TEORI -->
+    <!-- ============================================ -->
+    <div id="tahsin" class="tab-content">
+      <div class="card">
+        <div class="card-header"><div class="card-title">Sesi Tahsin Teori</div></div>
+        <div class="form-grid">
+          <div class="form-group"><label>Kelas</label><select id="tahsinKelas" onchange="tahsinKelasChange()"><option value="">-- Pilih Kelas --</option></select></div>
+          <div class="form-group"><label>Tanggal</label><input type="date" id="tahsinTanggal" /></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><div class="card-title">Kelompok (guru pengampu)</div></div>
+        <div id="tahsinKelompok"><div class="tahsin-empty">Pilih kelas terlebih dahulu untuk melihat kelompok.</div></div>
+        <div id="tahsinAnggota" class="tahsin-chips" style="display:none"></div>
+
+        <div class="tahsin-divider"></div>
+
+        <label class="tahsin-toggle"><input type="checkbox" id="tahsinRangeOn" class="chk-native" onchange="toggleTahsinRange()" /> Berlaku beberapa hari?</label>
+        <div id="tahsinRange" class="tahsin-range" style="display:none">
+          <div class="field"><label>Dari</label><input type="date" id="tahsinDari" /></div>
+          <span class="range-arrow">→</span>
+          <div class="field"><label>Sampai</label><input type="date" id="tahsinSampai" /></div>
+        </div>
+
+        <div class="activity-note">
+          <svg viewBox="0 0 24 24"><path d="M12 2 L2 7 L12 12 L22 7 Z"/><path d="M2 17 L12 22 L22 17"/><path d="M2 12 L12 17 L22 12"/></svg>
+          <span>Seluruh siswa kelompok terpilih otomatis dikecualikan dari setoran pada tanggal tersebut — <b>tanpa notif WA</b>. Guru lain di kelas yang sama tetap menandai kelompoknya sendiri bila ikut Tahsin Teori.</span>
+        </div>
+      </div>
+
+      <button type="button" class="btn-submit" onclick="saveTahsin()">Simpan Tahsin Teori</button>
     </div>
 
     <!-- ============================================ -->
@@ -485,6 +521,7 @@
          whichever nav is currently visible -->
     <div class="tabbar-mobile" id="tabbarMobile">
       <button class="tab active" onclick="TabManager.show('input')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span><span class="tab-label">Input</span></button>
+      <button class="tab" onclick="TabManager.show('tahsin')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></span><span class="tab-label">Tahsin</span></button>
       <button class="tab" onclick="TabManager.show('output')"><span class="tab-icon"><svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M7 15l4-5 3 3 5-7"/></svg></span><span class="tab-label">Hasil</span></button>
       <button class="tab" onclick="TabManager.show('target')"><span class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.1" fill="currentColor"/></svg></span><span class="tab-label">Target</span></button>
       <button class="tab" onclick="TabManager.show('master')"><span class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/><path d="M8 13h8"/></svg></span><span class="tab-label">Master</span></button>
@@ -730,6 +767,7 @@
   <script src="js/features/master-data.js"></script>
   <script src="js/features/import-data.js"></script>
   <script src="js/features/template-wa.js"></script>
+  <script src="js/features/tahsin-form.js"></script>
   
   <!-- 6. Entry Point (HARUS PALING AKHIR) -->
   <script src="js/app.js"></script>

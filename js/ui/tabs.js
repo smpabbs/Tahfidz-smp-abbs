@@ -49,7 +49,7 @@ const TabManager = {
 
     // Fallback: jika tidak ada button yang match, aktifkan berdasarkan index
     if (!buttonActivated) {
-      const tabIndex = { input: 0, output: 1, target: 2, master: 3, template: 4 };
+      const tabIndex = { input: 0, tahsin: 1, output: 2, target: 3, master: 4, template: 5 };
       const idx = tabIndex[tabName] || 0;
       if (tabButtons[idx]) {
         tabButtons[idx].classList.add('active');
@@ -126,10 +126,17 @@ const TabManager = {
         }
         break;
 
-      case 'template':
-        console.log('✉️ Loading WA template data...');
+case 'template':
+        console.log('?? Loading WA template data...');
         if (typeof TemplateWaManager !== 'undefined' && TemplateWaManager.load) {
           setTimeout(() => TemplateWaManager.load(), 100);
+        }
+        break;
+
+      case 'tahsin':
+        console.log('?? Loading tahsin form data...');
+        if (typeof TahsinForm !== 'undefined' && TahsinForm.refresh) {
+          setTimeout(() => TahsinForm.refresh(), 100);
         }
         break;
 

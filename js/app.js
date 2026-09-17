@@ -43,6 +43,14 @@ const App = {
             TargetManager.init();
             await TemplateWaManager.init();
 
+            // 6b. Inisialisasi Tahsin (patokan guru pengampu + kelompok)
+            console.log('??  Step 6b: Initializing Tahsin form...');
+            await TahsinForm.loadPatokan();
+            TahsinForm.buildKelompok();
+            TahsinForm.refreshKelas();
+            try { TahsinForm.pengecualian = await DatabaseService.loadPengecualian(); }
+            catch (e) { TahsinForm.pengecualian = []; }
+
             // 7. Init anti-pause system
             console.log('⏰ Step 7: Starting anti-pause system...');
             this.initAntiPause();
@@ -218,6 +226,7 @@ window.EditInline = EditInline;
 window.Modal = Modal;
 window.DropdownManager = DropdownManager;
 window.NotificationService = NotificationService;
+window.TahsinForm = TahsinForm;
 
 // Untuk backward compatibility dengan kode lama
 window.showTab = (tab) => TabManager.show(tab);

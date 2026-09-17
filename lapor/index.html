@@ -110,6 +110,7 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .kcard .dots i.part{background:var(--warn)}
 .kcard .dots i.miss{background:var(--danger)}
 .kcard .dots i.futr{background:var(--future)}
+.kcard .dots i.tasm{background:var(--line);outline:1px dashed var(--muted)}
 
 /* ===== daftar siswa ===== */
 .summary{display:flex;gap:14px;align-items:center;background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;padding:14px 18px;margin-bottom:14px;flex-wrap:wrap}
@@ -150,6 +151,7 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .tag.t{color:#7A5218;background:var(--warn-bg)}
 .tag.no{color:#8A3A2C;background:var(--danger-bg)}
 .tag.f{color:#5E5670;background:var(--future-bg)}
+.tag.tasm{color:#8a5a9d;background:rgba(138,90,157,.14);border:1px dashed rgba(138,90,157,.45)}
 
 /* ===== accordion pekan/bulan ===== */
 .wrow{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;margin-bottom:8px;overflow:hidden}
@@ -446,6 +448,10 @@ function buildOccs(range){
     if (dayName) {
       STATE.quranSessions.forEach(s => {
         if (s.day !== dayName) return;
+        /* Aturan tetap sekolah: Rabu jam 1-2 selalu Tasmi' Akbar ->
+           sesi Quran terjadwal di slot ini TIDAK dihitung sebagai
+           kewajiban setoran (keluar dari penyebut). */
+        const isTasmi = s.day === 'Wednesday' && (s.jam === '1' || s.jam === '2');
         const roster = STATE.siswaByKelas.get(s.kelas) || [];
         if (roster.length === 0){ STATE.noRosterKelas.add(s.kelas); return; }
         const dateStr = toDateStr(cur);
@@ -454,7 +460,8 @@ function buildOccs(range){
         roster.forEach(nm => { if (recorded.has(nm)) n++; });
         occs.push({
           date:new Date(cur), dateStr, kelas:s.kelas, jam:s.jam, start:s.start, end:s.end,
-          guru:s.guru, due:dateStr <= todayStr, recorded,
+          guru:s.guru, due:dateStr <= todayStr && !isTasmi, recorded,
+          exc: isTasmi ? 'Tasmi Akbar' : null,
           n, t:roster.length, p: Math.round(n/roster.length*100)
         });
       });
@@ -543,7 +550,10 @@ function stripHtml(kelas){
   const buckets = bucketList(state_proxy().period, STATE.occs.filter(o => o.kelas === kelas), STATE.range);
   const cells = buckets.map(b => {
     const bo = b.occs.filter(o => o.due);
-    if (!b.due || !bo.length) return {st:'futr', label:b.label};
+    if (!b.due || !bo.length){
+      if (b.occs.some(o => o.exc)) return {st:'tasm', label:b.label};
+      return {st:'futr', label:b.label};
+    }
     let n=0,t=0;
     bo.forEach(o => { n+=o.n; t+=o.t; });
     const p = t ? Math.round(n/t*100) : 0;
@@ -568,7 +578,7 @@ function renderGurus(){
     if (buckets.length > 1 || buckets[0] && buckets[0].occs.length > 6){
       buckets.forEach(b => {
         const bo = b.occs.filter(o => o.due && o.guru.includes(g));
-        if (!b.due || !bo.length){ dots.push('futr'); tot++; return; }
+        if (!bo.length){ if (b.occs.some(o => o.exc && o.guru.includes(g))) return; dots.push('futr'); tot++; return; }
         let s=0,c=0;
         bo.forEach(o => { s += o.p; c++; });
         const p = c ? Math.round(s/c) : 0;
@@ -738,6 +748,10 @@ function wrowHtml(id, title, sub, n, t, open, body){
   </div>`;
 }
 function rrowHtml(o, nm, kelas){
+  if (o.exc) return `<div class="rrow">
+    <div class="rd"><b>${HARI_ID[HARI_BY_GETDAY[o.date.getDay()]]}</b><span>${o.date.getDate()} ${BULAN_SHORT[o.date.getMonth()]}</span></div>
+    <div class="ri"><div class="t">Tasmi' Akbar · jam ${esc(o.jam)}</div><div class="s">${esc(o.guru.map(singkat).join(' & '))}</div></div>
+    <span class="tag tasm">Tasmi' Akbar</span></div>`;
   if (!o.due) return `<div class="rrow">
     <div class="rd"><b>${HARI_ID[HARI_BY_GETDAY[o.date.getDay()]]}</b><span>${o.date.getDate()} ${BULAN_SHORT[o.date.getMonth()]}</span></div>
     <div class="ri"><div class="t">Sesi Quran · jam ${esc(o.jam)}</div><div class="s">${esc(o.guru.map(singkat).join(' & '))}</div></div>
@@ -754,10 +768,21 @@ function rrowHtml(o, nm, kelas){
   </div>`;
 }
 function pekanWrow(b, nm, kelas){
-  if (!b.due) return wrowOff(b.title, b.sub);
+  if (!b.due){
+    if (b.occs.some(o => o.exc)) return tasmiWrow(b, nm, kelas);
+    return wrowOff(b.title, b.sub);
+  }
   const due = b.occs.filter(o => o.due);
   const n = due.filter(o => o.recorded.has(nm)).length;
   return wrowHtml('w-'+b.label+'-'+b.title, b.title, b.sub, n, due.length, b.isOpen, dayRows(b.occs, nm, kelas));
+}
+function tasmiWrow(b, nm, kelas){
+  return `<div class="wrow off"><div class="whead">
+    <span class="chev">◈</span>
+    <div class="wt"><b>${esc(b.title)}</b><span>${esc(b.sub)}</span></div>
+    <span class="tag tasm">Tasmi' Akbar</span></div>
+    <div class="wbody" style="display:block">${dayRows(b.occs.filter(o => o.exc), nm, kelas)}</div>
+  </div>`;
 }
 function renderRekap(){
   const nm = state_proxy().siswaSel, k = state_proxy().kelasSel;

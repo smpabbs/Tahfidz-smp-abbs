@@ -494,6 +494,27 @@ textarea{resize:vertical;min-height:80px;line-height:1.5}
 }
 .activity-note svg{width:15px;height:15px;flex-shrink:0;margin-top:1px;stroke:#2E8F5C;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 
+/* ============ TAHSIN (Sesi Tahsin Teori) ============ */
+.tahsin-kelompok-list, #tahsinKelompok{display:flex;flex-direction:column;gap:8px;margin-top:4px}
+.tahsin-grp{border:1.5px solid var(--line);border-radius:12px;padding:10px 13px;background:var(--surface-3);cursor:pointer;display:flex;align-items:center;gap:11px;transition:.15s ease}
+.tahsin-grp:hover{border-color:var(--accent)}
+.tahsin-grp.on{background:var(--accent-dim);border-color:var(--accent)}
+.tahsin-grp input[type=checkbox]{accent-color:var(--accent);width:17px;height:17px;margin:0;flex:none;border-radius:5px}
+.tahsin-grp input[type=checkbox]:checked{background:linear-gradient(155deg,var(--accent),var(--accent-deep))}
+.tahsin-grp .tg-body{flex:1;min-width:0}
+.tahsin-grp .tg-nama{font-family:var(--serif);font-weight:700;font-size:14.5px;color:var(--ink);line-height:1.2}
+.tahsin-grp .tg-sub{font-size:10.5px;color:var(--muted);font-weight:600}
+.tahsin-grp .tg-badge{margin-left:auto;flex-shrink:0;font-size:9.5px;font-weight:800;color:var(--good);background:rgba(46,143,92,.16);padding:2px 9px;border-radius:99px;border:1px solid rgba(46,143,92,.4)}
+.tahsin-chips{display:flex;flex-wrap:wrap;gap:5px;padding:10px 12px;border:1px dashed var(--line);border-radius:10px;background:var(--surface-2);margin-top:10px;max-height:150px;overflow:auto}
+.tahsin-chips .tchip{font-size:10.5px;font-weight:700;background:var(--surface-3);border:1px solid var(--line);border-radius:20px;padding:3px 10px;color:var(--ink-soft)}
+.tahsin-divider{height:1px;background:var(--line-soft);margin:14px 0}
+.tahsin-toggle{display:flex;align-items:center;gap:8px;font-size:12.5px;font-weight:700;color:var(--ink);cursor:pointer;user-select:none;margin-bottom:10px}
+.tahsin-toggle .chk-native{width:18px;height:18px}
+.tahsin-range{display:flex;align-items:flex-end;gap:10px}
+.tahsin-range .field{flex:1}
+.tahsin-range .range-arrow{font-size:15px;color:var(--muted);padding-bottom:12px;flex-shrink:0}
+.tahsin-empty{border:1px dashed var(--line);border-radius:10px;padding:14px 16px;text-align:center;color:var(--muted);font-size:12.5px;font-weight:600}
+
 /* 3 kolom baru aktif di 1280px, bukan 1025px seperti .form-grid — kartu ini
    duduk di sebelah sidebar 216px, jadi di 1025px ruang yang tersisa untuk
    3 kolom cuma ~190px/kolom (field kepotong). Di 1280px ruangnya ~320px/kolom. */
