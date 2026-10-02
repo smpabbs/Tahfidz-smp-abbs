@@ -193,5 +193,26 @@ const before = w.eval('STATE.pengecualian.length');
 await w.eval(`adminDelete({tanggal:'${TUE}', alasan:'Rapat Wali Kelas', guru:'', ids:['x1'], kelas:['8B'], oleh:new Set()})`);
 ok(w.eval('STATE.pengecualian.length') === before, 'confirm=false → tidak ada yang terhapus');
 
+console.log('\n== 10. Rekomendasi kaldik ==');
+ok(doc.getElementById('admKaldik') !== null, 'section rekomendasi kaldik tampil');
+const nKaldik = w.eval('KALDIK_RECS.length');
+ok(nKaldik >= 30, `KALDIK_RECS lengkap (${nKaldik} acara)`);
+ok(doc.querySelectorAll('#admKaldik input[data-ki]:checked').length === 17, '17 libur & hari besar tercentang default');
+ok(doc.querySelectorAll('#admKaldik input[data-ki]').length === nKaldik, 'semua acara ter-render');
+ok(doc.getElementById('admKaldik').innerHTML.includes('L8 · L9'), 'badge lingkup jenjang (L8 · L9) tampil');
+
+bulkCalls = [];
+w.eval(`document.querySelectorAll('#admKaldik input[data-ki]').forEach(c => {
+    c.checked = false; c.closest('.krow').classList.remove('on'); });
+  const first = document.querySelector('#admKaldik input[data-ki="0"]');
+  first.checked = true; first.closest('.krow').classList.add('on');`);
+await w.eval('adminApproveKaldik()');
+ok(bulkCalls.length === 1, 'approve kaldik = 1 request bulk');
+const hutri = (bulkCalls[0] || []).filter(r => r.alasan === 'HUT RI');
+ok(hutri.length === 2 && hutri.every(r => r.tanggal === '2026-08-17' && r.guru === '' && r.dibuat_oleh === 'kaldik' && ['7A','8B'].includes(r.kelas)),
+  'HUT RI → 2 kelas × 1 tanggal, dibuat_oleh=kaldik');
+ok(w.eval(`!!STATE.excIdx.get('7A|2026-08-17')`), 'excIdx berisi HUT RI (berlaku surut)');
+ok(doc.getElementById('admKaldik').innerHTML.includes('tersimpan'), 'baris kaldik bertanda ✓ tersimpan');
+
 console.log(`\n=== ${pass} pass, ${fail} fail ===`);
 process.exit(fail ? 1 : 0);

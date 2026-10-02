@@ -203,6 +203,15 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .asec{border-top:1px dashed var(--line);margin-top:16px;padding-top:14px}
 .afilter{display:flex;gap:8px;align-items:center;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
 .afilter select{font:inherit;font-weight:700;color:var(--accent-deep);background:var(--page);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+.krow{display:flex;align-items:center;gap:9px;padding:6px 10px;border:1px solid var(--line-soft);border-radius:9px;margin-bottom:4px;font-size:12px;font-weight:700;cursor:pointer;user-select:none;background:var(--page)}
+.krow:hover{border-color:var(--line)}
+.krow.on{background:var(--accent-dim);border-color:var(--line)}
+.krow input{accent-color:var(--accent)}
+.kr-tgl{width:132px;flex-shrink:0;font-size:11px;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
+.kr-nm{flex:1;min-width:0}
+.kr-badge{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--surface-3);color:var(--muted);white-space:nowrap;flex-shrink:0}
+.kr-saved{font-size:10px;font-weight:800;color:var(--good);white-space:nowrap;flex-shrink:0}
+.kgroup{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin:10px 0 5px}
 
 @media (max-width:640px){
   .bar-in{padding:8px 12px}
@@ -1039,6 +1048,72 @@ const ADMIN_KEY = 'laporAdmin';
 /* 'Tasmi Akbar' (kunci internal) -> tampilan dengan apostrof */
 function excLabel(a){ return a === 'Tasmi Akbar' ? "Tasmi' Akbar" : a; }
 
+/* Rekomendasi dari KALDIK SMP ABBS TA 2026/2027 (sumber: KALDIK 2026-2027.xlsx).
+   lvl: 'all' | '7' | '8' | '9' | '89' — filter digit depan kelas.
+   cek: tercentang default (libur & hari besar). Kegiatan ujian/dutan
+   sengaja tak tercentang — sesi Quran jalan atau tidak, admin memutuskan. */
+const KALDIK_RECS = [
+  { d:'2026-08-17', nama:'HUT RI', lvl:'all', cek:true },
+  { d:'2026-08-25', nama:'Maulid Nabi', lvl:'all', cek:true },
+  { d1:'2026-12-21', d2:'2026-12-31', nama:'Libur Semester 1', lvl:'all', cek:true },
+  { d1:'2027-01-01', d2:'2027-01-03', nama:'Libur Semester 1 (lanjutan) · Tahun Baru Masehi', lvl:'all', cek:true },
+  { d:'2027-01-05', nama:'Isra Mikraj Nabi SAW', lvl:'all', cek:true },
+  { d:'2027-02-06', nama:'Tahun Baru Imlek', lvl:'all', cek:true },
+  { d1:'2027-02-08', d2:'2027-02-10', nama:'Libur Awal Puasa', lvl:'all', cek:true },
+  { d:'2027-03-09', nama:'Hari Raya Nyepi', lvl:'all', cek:true },
+  { d1:'2027-03-10', d2:'2027-03-11', nama:'Idulfitri 1448 H', lvl:'all', cek:true },
+  { d1:'2027-03-23', d2:'2027-03-24', nama:'Cuti Bersama Idulfitri', lvl:'all', cek:true },
+  { d:'2027-03-26', nama:'Wafat Yesus Kristus', lvl:'all', cek:true },
+  { d:'2027-05-01', nama:'Hari Buruh Internasional', lvl:'all', cek:true },
+  { d:'2027-05-06', nama:'Kenaikan Isa Al Masih', lvl:'all', cek:true },
+  { d:'2027-05-17', nama:'Iduladha 1448 H', lvl:'all', cek:true },
+  { d:'2027-05-20', nama:'Waisak', lvl:'all', cek:true },
+  { d:'2027-06-06', nama:'Tahun Baru Hijriyah 1449', lvl:'all', cek:true },
+  { d1:'2027-06-21', d2:'2027-06-30', nama:'Libur Semester Genap', lvl:'all', cek:true },
+  /* kegiatan besar — opsional */
+  { d1:'2026-07-13', d2:'2026-07-15', nama:'MPLS / Pra KBM', lvl:'all', cek:false },
+  { d:'2026-08-22', nama:'PHBN', lvl:'all', cek:false },
+  { d1:'2026-09-07', d2:'2026-09-08', nama:'Kokurikuler', lvl:'7', cek:false },
+  { d1:'2026-09-22', d2:'2026-09-23', nama:'Kokurikuler', lvl:'8', cek:false },
+  { d1:'2026-09-29', d2:'2026-09-30', nama:'Kokurikuler', lvl:'9', cek:false },
+  { d1:'2026-09-14', d2:'2026-09-19', nama:'PTS 1', lvl:'all', cek:false },
+  { d1:'2026-10-07', d2:'2026-10-09', nama:'Leadership Camp', lvl:'7', cek:false },
+  { d1:'2026-10-07', d2:'2026-10-09', nama:'Social Philanthropy', lvl:'89', cek:false },
+  { d1:'2026-11-05', d2:'2026-11-07', nama:'Kemah', lvl:'8', cek:false },
+  { d1:'2026-12-01', d2:'2026-12-10', nama:'SAS 1', lvl:'all', cek:false },
+  { d1:'2027-02-22', d2:'2027-02-27', nama:'STS 2', lvl:'all', cek:false },
+  { d1:'2027-04-05', d2:'2027-04-15', nama:'TKA SMP/MTs', lvl:'all', cek:false },
+  { d1:'2027-04-21', d2:'2027-04-28', nama:'PSAJ', lvl:'9', cek:false },
+  { d1:'2027-05-24', d2:'2027-05-31', nama:'SAS 2', lvl:'all', cek:false },
+  { d1:'2027-06-02', d2:'2027-06-03', nama:'SAS 2 (lanjutan)', lvl:'all', cek:false }
+];
+function kaldikDates(r){
+  if (!r.d1 || !r.d2) return [r.d];
+  const out = [];
+  const cur = new Date(r.d1 + 'T00:00:00'), e = new Date(r.d2 + 'T00:00:00');
+  while (cur <= e){ out.push(toDateStr(cur)); cur.setDate(cur.getDate() + 1); }
+  return out;
+}
+function kaldikScope(r){
+  return [...STATE.siswaByKelas.keys()]
+    .filter(k => r.lvl === 'all' || r.lvl.includes(k[0]))
+    .sort((a,b) => a.localeCompare(b, 'id'));
+}
+function kaldikSavedInfo(r){
+  let saved = 0, tot = 0;
+  kaldikScope(r).forEach(k => kaldikDates(r).forEach(t => {
+    tot++;
+    const rows = STATE.excIdx.get(k + '|' + t);
+    if (rows && rows.some(x => !x.guru)) saved++;
+  }));
+  return {saved, tot};
+}
+function kaldikTglLabel(r){
+  const f = s => { const d = new Date(s + 'T00:00:00'); return d.getDate() + ' ' + BULAN_SHORT[d.getMonth()] + ' ' + d.getFullYear(); };
+  return (r.d1 && r.d2) ? f(r.d1) + ' – ' + f(r.d2) : f(r.d);
+}
+function kaldikLvlLabel(lvl){ return lvl === 'all' ? 'Semua' : lvl === '89' ? 'L8 · L9' : 'L' + lvl; }
+
 /* Bangun ulang index pengecualian "kelas|tanggal" -> [rows] */
 function rebuildExcIdx(){
   STATE.excIdx = new Map();
@@ -1136,6 +1211,16 @@ function renderAdminPanel(){
       </div>
 
       <div class="asec">
+        <h4>📅 Rekomendasi Kaldik TA 2026/2027</h4>
+        <div class="asub">Sumber: KALDIK SMP ABBS 2026/2027. Libur & hari besar tercentang otomatis — sesi Quran pada tanggal tersebut keluar dari penyebut (berlaku surut untuk bulan lalu juga). Kegiatan ujian/dutan: centang sendiri bila Quran ikut libur.</div>
+        <div id="admKaldik"></div>
+        <div class="frow" style="justify-content:flex-end;align-items:center;margin-bottom:0">
+          <span id="admKaldikPreview" style="font-size:11.5px;font-weight:700;color:var(--muted)"></span>
+          <button class="abtn pri" id="admKaldikSave">Setujui yang tercentang</button>
+        </div>
+      </div>
+
+      <div class="asec">
         <h4>Daftar pengecualian aktif</h4>
         <div class="asub">Termasuk Tahsin Teori yang ditandai guru (per kelompok). Hapus bila salah input.</div>
         <div class="afilter">Filter kelas
@@ -1182,8 +1267,73 @@ function renderAdminPanel(){
   ['admTgl1','admTgl2'].forEach(id => document.getElementById(id).addEventListener('change', adminPreview));
   document.getElementById('admTgl1').value = toDateStr(new Date());
   document.getElementById('admSave').addEventListener('click', adminSaveKegiatan);
+  document.getElementById('admKaldikSave').addEventListener('click', adminApproveKaldik);
   document.getElementById('admFilterKelas').addEventListener('change', adminRenderRows);
   adminRenderRows();
+  renderKaldik();
+}
+
+/* ===== rekomendasi kaldik ===== */
+function renderKaldik(){
+  const host = document.getElementById('admKaldik');
+  if (!host) return;
+  const row = (r, i) => {
+    const info = kaldikSavedInfo(r);
+    const done = info.tot > 0 && info.saved === info.tot;
+    const part = !done && info.saved > 0;
+    return `<label class="krow${r.cek ? ' on' : ''}">
+      <input type="checkbox" data-ki="${i}" ${r.cek ? 'checked' : ''}>
+      <span class="kr-tgl">${esc(kaldikTglLabel(r))}</span>
+      <span class="kr-nm">${esc(r.nama)}</span>
+      <span class="kr-badge">${kaldikLvlLabel(r.lvl)}</span>
+      ${done ? '<span class="kr-saved">✓ tersimpan</span>' : part ? `<span class="kr-saved" style="color:var(--warn)">${info.saved}/${info.tot} tersimpan</span>` : ''}
+    </label>`;
+  };
+  let html = '<div class="kgroup">Libur & hari besar</div>';
+  KALDIK_RECS.forEach((r, i) => { if (r.cek) html += row(r, i); });
+  html += '<div class="kgroup">Kegiatan besar (opsional)</div>';
+  KALDIK_RECS.forEach((r, i) => { if (!r.cek) html += row(r, i); });
+  host.innerHTML = html;
+  host.querySelectorAll('input[data-ki]').forEach(c => c.addEventListener('change', () => {
+    c.closest('.krow').classList.toggle('on', c.checked);
+    kaldikPreview();
+  }));
+  kaldikPreview();
+}
+function kaldikChecked(){
+  return [...document.querySelectorAll('#admKaldik input[data-ki]:checked')]
+    .map(c => KALDIK_RECS[parseInt(c.dataset.ki, 10)]).filter(Boolean);
+}
+function kaldikPreview(){
+  const pv = document.getElementById('admKaldikPreview');
+  if (!pv) return;
+  const rows = kaldikChecked();
+  let n = 0;
+  rows.forEach(r => n += kaldikScope(r).length * kaldikDates(r).length);
+  pv.textContent = rows.length ? `= ${rows.length} acara · ${n} catatan` : '';
+}
+async function adminApproveKaldik(){
+  const rows = kaldikChecked();
+  if (!rows.length){ adminNote('❌ Centang minimal satu acara kaldik dulu.', true); return; }
+  const btn = document.getElementById('admKaldikSave');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+  try {
+    const out = [];
+    rows.forEach(r => kaldikScope(r).forEach(k => kaldikDates(r).forEach(t => out.push({
+      kelas:k, tanggal:t, alasan:r.nama, guru:'', catatan:'', dibuat_oleh:'kaldik'
+    }))));
+    await DatabaseService.savePengecualianBulk(out);
+    STATE.pengecualian = await DatabaseService.loadPengecualian();
+    rebuildExcIdx();
+    render();
+    adminRenderRows();
+    renderKaldik();
+    adminNote(`✅ ${rows.length} acara kaldik disetujui = ${out.length} catatan pengecualian.`);
+  } catch (err) {
+    adminNote('❌ Gagal menyimpan: ' + (err.message || err), true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Setujui yang tercentang';
+  }
 }
 
 function adminFormPick(){
