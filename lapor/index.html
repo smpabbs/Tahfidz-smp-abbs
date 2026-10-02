@@ -254,7 +254,7 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 </div>
 
 <div class="wrap">
-  <div class="rule-note"><b>Aturan hitung:</b> siswa dianggap <b>"tercatat"</b> bila ada input apa pun pada sesi itu — ziyadah, murojaah, maupun tilawah (absen yang dicatat guru juga dihitung tercatat). Persentase = sesi yang sudah waktunya saja. Tanggal <b>kegiatan/libur</b> (input admin) dan sesi <b>Tahsin Teori</b> (per kelompok) keluar dari penyebut.</div>
+  <div class="rule-note"><b>Aturan hitung:</b> siswa dianggap <b>"tercatat"</b> bila ada input apa pun pada sesi itu — ziyadah, murojaah, maupun tilawah (absen yang dicatat guru juga dihitung tercatat). Persentase = sesi yang sudah waktunya saja. Tanggal <b>kegiatan/libur</b> (input admin) dan sesi <b>Tahsin Teori</b> (per kelompok) keluar dari penyebut. Di POV <b>Per Guru</b>, angka dihitung hanya atas <b>siswa bimbingan guru tsb</b> (patokan guru pengampu) — 1 kelas bisa 2–4 guru.</div>
   <div id="view" class="view"></div>
 </div>
 
@@ -534,10 +534,20 @@ function buildOccs(range){
         if (!exc && excNames.size) klpAlasan = [...new Set(klpRows.map(r => r.alasan))].join(' · ');
         const recorded = STATE.recIdx.get(s.kelas + '|' + dateStr) || new Set();
         let n = 0, t = 0;
+        /* statistik per guru pengampu (kelompok) — dipakai POV guru:
+           1 kelas bisa 2-4 guru, tiap guru dihitung atas siswa bimbingannya saja */
+        const gstats = new Map();
+        (s.guru || []).forEach(g => gstats.set(normNameKey(g), {n:0, t:0}));
+        const pkKelas = STATE.patokan[s.kelas] || {};
         roster.forEach(nm => {
           if (!exc && excNames.has(nm)) return;
-          t++;
-          if (recorded.has(nm)) n++;
+          const rec = recorded.has(nm);
+          t++; if (rec) n++;
+          const gk = normNameKey(pkKelas[normNameKey(nm)] || '');
+          if (gk && gstats.has(gk)){
+            const st = gstats.get(gk);
+            st.t++; if (rec) st.n++;
+          }
         });
         if (t === 0 && !exc) exc = klpAlasan || 'Dikecualikan';
         occs.push({
@@ -547,6 +557,7 @@ function buildOccs(range){
           excNames: (!exc && excNames.size) ? excNames : null,
           excGuru: excGuru.length ? excGuru : null,
           excKlpAlasan: klpAlasan,
+          gstats,
           n, t, p: t ? Math.round(n/t*100) : 0
         });
       });
@@ -628,11 +639,24 @@ function pengampu(kelas, nama){
   if (rg) return {nama:rg, ov:false};
   return null; /* fallback: pasangan jadwal dihitung pemanggil */
 }
+/* siswa kelompok guru g di kelas tsb — berdasarkan patokan guru pengampu */
+function guruSiswaSet(kelas, g){
+  const gk = normNameKey(g);
+  const pk = STATE.patokan[kelas] || {};
+  const set = new Set();
+  (STATE.siswaByKelas.get(kelas) || []).forEach(nm => {
+    if (normNameKey(pk[normNameKey(nm)] || '') === gk) set.add(nm);
+  });
+  return set;
+}
 const singkat = g => String(g).replace('Ustadzah ','Ustzh. ').replace('Ustadz ','Ust. ');
 function esc(s){ return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 
-function stripHtml(kelas){
-  const buckets = bucketList(state_proxy().period, STATE.occs.filter(o => o.kelas === kelas), STATE.range);
+function stripHtml(kelas, guru){
+  let occs = STATE.occs.filter(o => o.kelas === kelas);
+  if (guru) occs = occs.filter(o => o.guru.includes(guru));
+  const gk = guru ? normNameKey(guru) : null;
+  const buckets = bucketList(state_proxy().period, occs, STATE.range);
   const cells = buckets.map(b => {
     const bo = b.occs.filter(o => o.due);
     if (!b.due || !bo.length){
@@ -640,7 +664,13 @@ function stripHtml(kelas){
       return {st:'futr', label:b.label};
     }
     let n=0,t=0;
-    bo.forEach(o => { n+=o.n; t+=o.t; });
+    bo.forEach(o => {
+      if (gk){
+        const gs = o.gstats && o.gstats.get(gk);
+        if (gs){ n+=gs.n; t+=gs.t; }
+      } else { n+=o.n; t+=o.t; }
+    });
+    if (gk && t===0) return {st:'futr', label:b.label};
     const p = t ? Math.round(n/t*100) : 0;
     return {st: p>=100?'done':p>0?'part':'miss', label:b.label};
   });
@@ -657,41 +687,54 @@ function renderGurus(){
   const unit = bucketUnitLabel();
   const names = [...new Set(occs.flatMap(o => o.guru))];
   const cards = names.map(g => {
+    const gk = normNameKey(g);
     const goccs = occs.filter(o => o.guru.includes(g));
-    let sum=0,cnt=0, miss=0, tot=0;
+    let sum=0,cnt=0, miss=0, tot=0, nTot=0, tTot=0;
     const dots = [];
     if (buckets.length > 1 || buckets[0] && buckets[0].occs.length > 6){
       buckets.forEach(b => {
         const bo = b.occs.filter(o => o.due && o.guru.includes(g));
         if (!bo.length){ if (b.occs.some(o => o.exc)) return; dots.push('futr'); tot++; return; }
-        let s=0,c=0;
-        bo.forEach(o => { s += o.p; c++; });
-        const p = c ? Math.round(s/c) : 0;
+        let n=0,t=0;
+        bo.forEach(o => {
+          const gs = o.gstats && o.gstats.get(gk);
+          if (gs){ n+=gs.n; t+=gs.t; }
+        });
+        if (t===0) return; /* belum ada siswa terpetakan utk guru ini */
+        const p = Math.round(n/t*100);
         const st = p>=100?'done':p>0?'part':'miss';
         if (st==='miss') miss++;
         dots.push(st); sum+=p; cnt++; tot++;
+        nTot+=n; tTot+=t;
       });
     } else {
       goccs.filter(o => o.due).forEach(o => {
-        const st = o.p>=100?'done':o.p>0?'part':'miss';
+        const gs = o.gstats && o.gstats.get(gk);
+        if (!gs || gs.t===0) return;
+        const p = Math.round(gs.n/gs.t*100);
+        const st = p>=100?'done':p>0?'part':'miss';
         if (st==='miss') miss++;
-        dots.push(st); sum+=o.p; cnt++; tot++;
+        dots.push(st); sum+=p; cnt++; tot++;
+        nTot+=gs.n; tTot+=gs.t;
       });
     }
-    const p = cnt ? Math.round(sum/cnt) : 0;
+    /* persentase guru = agregat n/t seluruh siswa bimbingannya (tertimbang) */
+    const p = tTot ? Math.round(nTot/tTot*100) : 0;
     const kelasUnik = [...new Set(goccs.map(o => o.kelas))];
+    let nSiswa = 0;
+    kelasUnik.forEach(k => { guruSiswaSet(k, g).forEach(nm => nSiswa++); });
     return `<div class="gcard" tabindex="0" role="button" data-guru="${esc(g)}" aria-label="Detail ${esc(g)}">
       <div class="av">${esc(g.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
       <div class="who">
         <div class="nm">${esc(g)}</div>
-        <div class="mt">${kelasUnik.length} kelas · <b>${tot}</b> ${unit} · <b style="color:var(--danger)">${miss}</b> kosong</div>
+        <div class="mt">${nSiswa} siswa · ${kelasUnik.length} kelas · <b>${tot}</b> ${unit} · <b style="color:var(--danger)">${miss}</b> kosong</div>
         <div class="mini">${dots.map(d=>`<i class="${d}"></i>`).join('')}</div>
       </div>
       ${donut(p)}
     </div>`;
   }).join('');
   document.getElementById('view').innerHTML =
-    `<div class="lv-head"><h2>Semua Guru</h2><span class="sub">${esc(STATE.range.label)} — urut paling tertinggal</span></div>
+    `<div class="lv-head"><h2>Semua Guru</h2><span class="sub">${esc(STATE.range.label)} — dihitung per kelompok bimbingan</span></div>
      <div class="grid-guru">${cards || '<div class="empty">Tidak ada jadwal Quran pada periode ini.</div>'}</div>`;
 }
 function bucketUnitLabel(){
@@ -701,30 +744,49 @@ function bucketUnitLabel(){
 /* ================= VIEW: KARTU KELAS ================= */
 function renderKelasGrid(){
   const occs = STATE.occs;
+  const isGuruPov = state_proxy().pov === 'guru';
+  const gSel = state_proxy().guruSel;
   let list;
-  if (state_proxy().pov === 'guru'){
-    list = [...new Set(guruOccs(state_proxy().guruSel).map(o => o.kelas))].sort();
+  if (isGuruPov){
+    list = [...new Set(guruOccs(gSel).map(o => o.kelas))].sort();
   } else {
     list = [...new Set(occs.map(o => o.kelas))].sort();
   }
   const withP = list.map(k => {
     const koccs = occs.filter(o => o.kelas === k && o.due);
-    const n = koccs.reduce((a,o) => a+o.n, 0), t = koccs.reduce((a,o) => a+o.t, 0);
-    return {k, p: t ? Math.round(n/t*100) : 0};
+    let n=0, t=0, nSesi=0;
+    if (isGuruPov){
+      const gk = normNameKey(gSel);
+      const goccs = koccs.filter(o => o.guru.includes(gSel));
+      nSesi = goccs.length;
+      goccs.forEach(o => {
+        const gs = o.gstats && o.gstats.get(gk);
+        if (gs){ n+=gs.n; t+=gs.t; }
+      });
+    } else {
+      nSesi = koccs.length;
+      n = koccs.reduce((a,o) => a+o.n, 0);
+      t = koccs.reduce((a,o) => a+o.t, 0);
+    }
+    return {k, p: t ? Math.round(n/t*100) : 0, nSesi};
   }).sort((a,b) => state_proxy().pov === 'kelas' ? (a.p - b.p || a.k.localeCompare(b.k)) : a.k.localeCompare(b.k));
   const worstP = withP.length ? withP[0].p : 0;
-  const cards = withP.map(({k,p}) => `
+  const cards = withP.map(({k,p,nSesi}) => {
+    const kmt = isGuruPov
+      ? `${guruSiswaSet(k, gSel).size} siswa bimbingan · ${nSesi} sesi`
+      : `${(STATE.siswaByKelas.get(k)||[]).length} siswa · ${esc(singkat(guruPair(k)))}`;
+    return `
     <div class="kcard${state_proxy().pov==='kelas' && withP.length>1 && p===worstP ? ' worst' : ''}" tabindex="0" role="button" data-kelas="${esc(k)}" aria-label="Detail kelas ${esc(k)}">
       <div class="top">
         <div class="badge">${esc(k)}</div>
         <div style="flex:1">
           <div class="knm">Kelas ${esc(k)}</div>
-          <div class="kmt">${(STATE.siswaByKelas.get(k)||[]).length} siswa · ${esc(singkat(guruPair(k)))}</div>
+          <div class="kmt">${kmt}</div>
         </div>
         ${donut(p,'sm')}
       </div>
-      ${stripHtml(k)}
-    </div>`).join('');
+      ${stripHtml(k, isGuruPov ? gSel : null)}
+    </div>`;}).join('');
   const head = state_proxy().pov === 'guru'
     ? `<button class="back" data-lvl="1">‹ Semua guru</button><h2>${esc(state_proxy().guruSel)}</h2><span class="sub">${esc(STATE.range.label)}</span>`
     : `<h2>Semua Kelas</h2><span class="sub">${esc(STATE.range.label)} — urut paling tertinggal</span>`;
@@ -740,8 +802,16 @@ function guruPair(kelas){
 /* ================= VIEW: DAFTAR SISWA ================= */
 function renderSiswa(){
   const kelas = state_proxy().kelasSel;
-  const occs = STATE.occs.filter(o => o.kelas === kelas && o.due);
-  const roster = (STATE.siswaByKelas.get(kelas) || []).slice().sort((a,b) => a.localeCompare(b,'id'));
+  const isGuruPov = state_proxy().pov === 'guru';
+  const gSelName = isGuruPov ? state_proxy().guruSel : null;
+  /* POV guru: hanya sesi guru itu & hanya siswa kelompoknya */
+  const occs = STATE.occs.filter(o =>
+    o.kelas === kelas && o.due && (!gSelName || o.guru.includes(gSelName)));
+  let roster = (STATE.siswaByKelas.get(kelas) || []).slice().sort((a,b) => a.localeCompare(b,'id'));
+  if (gSelName){
+    const gset = guruSiswaSet(kelas, gSelName);
+    roster = roster.filter(nm => gset.has(nm));
+  }
   const pair = guruPair(kelas);
   const rows = roster.map(nm => {
     /* sesi yang menjadi kewajiban siswa ini — pengecualian kelompok
@@ -775,7 +845,7 @@ function renderSiswa(){
          <div class="num"><b>${rows.length}</b><span>siswa</span></div>
          <div class="num" style="color:var(--good)"><b>${full}</b><span>selalu tercatat</span></div>
          <div class="num" style="color:var(--danger)"><b>${none}</b><span>belum pernah</span></div>
-         <div class="num"><b>${occs.length}</b><span>sesi kelas</span></div>
+         <div class="num"><b>${occs.length}</b><span>${isGuruPov ? 'sesi guru' : 'sesi kelas'}</span></div>
        </div>
      </div>
      ${emptyPeriodNote(nTot)}
@@ -788,7 +858,7 @@ function renderSiswa(){
        </select>
        <span>${guruUnik.length} guru pengampu: ${guruUnik.map(singkat).map(esc).join(', ')}</span>
      </div>
-     <div class="slist">${rows.map(r => `
+     <div class="slist">${rows.length ? rows.map(r => `
        <div class="srow" tabindex="0" role="button" data-siswa="${esc(r.nm)}">
          <span class="dot ${r.p>=100?'full':r.n>0?'some':'none'}"></span>
          <span class="snm">${esc(r.nm)}</span>
@@ -796,7 +866,8 @@ function renderSiswa(){
          <span class="last">${r.last ? 'terakhir '+HARI_ID[HARI_BY_GETDAY[r.last.date.getDay()]] : 'belum pernah'}</span>
          <span class="cnt2">${r.n}/${r.den}</span>
          <span class="chev">›</span>
-       </div>`).join('')}
+       </div>`).join('')
+       : `<div class="empty">Belum ada siswa terpetakan untuk ${esc(singkat(String(gSelName)))} di kelas ini — cek patokan guru pengampu di app utama.</div>`}
      </div>`;
   const sel = document.getElementById('sortBy');
   sel.addEventListener('change', () => { STATE.sort = sel.value; renderSiswa(); });
@@ -888,7 +959,10 @@ function excWrow(b, nm, kelas){
 function renderRekap(){
   const nm = state_proxy().siswaSel, k = state_proxy().kelasSel;
   const period = state_proxy().period;
-  const koccs = STATE.occs.filter(o => o.kelas === k);
+  const gname = state_proxy().pov === 'guru' ? state_proxy().guruSel : null;
+  /* POV guru: rekap atas sesi guru itu saja */
+  let koccs = STATE.occs.filter(o => o.kelas === k);
+  if (gname) koccs = koccs.filter(o => o.guru.includes(gname));
   const buckets = bucketList(period, koccs, STATE.range);
   /* penyebut siswa ini: sesi due minus yang dikecualikan utk dirinya */
   const isExc = o => o.excNames && o.excNames.has(nm);

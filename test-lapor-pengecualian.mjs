@@ -214,5 +214,37 @@ ok(hutri.length === 2 && hutri.every(r => r.tanggal === '2026-08-17' && r.guru =
 ok(w.eval(`!!STATE.excIdx.get('7A|2026-08-17')`), 'excIdx berisi HUT RI (berlaku surut)');
 ok(doc.getElementById('admKaldik').innerHTML.includes('tersimpan'), 'baris kaldik bertanda ✓ tersimpan');
 
+console.log('\n== 11. POV guru = hanya kelompok bimbingan ==');
+const gsAndi = w.eval(`(() => {
+  const o = STATE.occs.find(x => x.kelas==='7A' && x.dateStr==='${MON}');
+  const g = o.gstats.get('ustadz andi');
+  return g ? g.n + '/' + g.t : 'none';
+})()`);
+ok(gsAndi === '2/2', `gstats Us Andi di 7A Senin = 2/2 (Satu+Dua saja, Tiga tidak) — dapat ${gsAndi}`);
+
+w.eval(`STATE.pov='guru'; STATE.guruSel='Ustadz Andi'; STATE.kelasSel=null; STATE.siswaSel=null; STATE.level=2; render();`);
+let d2 = (doc.querySelector('#view .kcard .donut .pct') || {}).textContent || '';
+ok(d2.startsWith('100'), `kartu kelas 7A di POV Andi = 100% (2/2 kelompok), bukan 67% seluruh kelas — dapat ${d2}`);
+ok(doc.getElementById('view').innerHTML.includes('siswa bimbingan'), 'label "siswa bimbingan" tampil');
+
+w.eval(`STATE.level=3; STATE.kelasSel='7A'; render();`);
+htmlView = doc.getElementById('view').innerHTML;
+ok(!htmlView.includes('>Tiga<'), 'POV guru: Tiga (kelompok lain) tidak masuk daftar');
+ok(htmlView.includes('>Satu<') && htmlView.includes('>Dua<'), 'POV guru: Satu & Dua tampil');
+ok(htmlView.includes('1/1'), 'POV guru: penyebut per siswa 1/1 (sesi guru)');
+ok(htmlView.includes('sesi guru'), 'label ringkasan "sesi guru"');
+
+w.eval(`STATE.level=4; STATE.siswaSel='Satu'; render();`);
+htmlView = doc.getElementById('view').innerHTML;
+ok(htmlView.length > 100, 'rekap siswa di POV guru ter-render (sesi guru saja)');
+
+w.eval(`STATE.pov='guru'; STATE.guruSel='Us Fahmi'; STATE.level=1; STATE.kelasSel=null; STATE.siswaSel=null; render();`);
+htmlView = doc.getElementById('view').innerHTML;
+ok(htmlView.includes('Us Fahmi') && htmlView.includes('0 siswa'), 'guru tanpa siswa terpetakan: kartu tampil dengan 0 siswa');
+
+w.eval(`STATE.pov='kelas'; STATE.level=1; STATE.guruSel=null; render();`);
+htmlView = doc.getElementById('view').innerHTML;
+ok(htmlView.includes('67') , 'POV kelas tetap 67% (seluruh 3 siswa 7A) — tak berubah');
+
 console.log(`\n=== ${pass} pass, ${fail} fail ===`);
 process.exit(fail ? 1 : 0);
