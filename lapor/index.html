@@ -1534,14 +1534,28 @@ function renderAdminPanel(){
   ['admTgl1','admTgl2'].forEach(id => document.getElementById(id).addEventListener('change', adminPreview));
   document.getElementById('admTgl1').value = toDateStr(new Date());
   document.getElementById('admSave').addEventListener('click', adminSaveKegiatan);
-  document.getElementById('admKaldikSave').addEventListener('click', adminApproveKaldik);
   document.getElementById('admFilterKelas').addEventListener('change', adminRenderRows);
-  adminRenderRows();
-  renderKaldik();
-  document.getElementById('admPkKelas').addEventListener('change', renderPkKelas);
-  document.getElementById('admPkQuickBtn').addEventListener('click', pkQuick);
-  document.getElementById('admPkSave').addEventListener('click', pkSave);
-  renderPk();
+  /* tiap section di-init terpisah — satu gagal tidak boleh mematikan lainnya */
+  safeInit('daftar pengecualian', () => {
+    adminRenderRows();
+  });
+  safeInit('rekomendasi kaldik', () => {
+    document.getElementById('admKaldikSave').addEventListener('click', adminApproveKaldik);
+    renderKaldik();
+  });
+  safeInit('kelompok guru pengampu', () => {
+    document.getElementById('admPkKelas').addEventListener('change', renderPkKelas);
+    document.getElementById('admPkQuickBtn').addEventListener('click', pkQuick);
+    document.getElementById('admPkSave').addEventListener('click', pkSave);
+    renderPk();
+  });
+}
+function safeInit(label, fn){
+  try { fn(); }
+  catch (err) {
+    console.error('Panel admin — gagal init "' + label + '":', err);
+    adminNote('⚠️ Bagian "' + label + '" gagal dimuat: ' + (err.message || err), true);
+  }
 }
 
 /* ===== rekomendasi kaldik ===== */
@@ -1691,15 +1705,18 @@ function adminRenderRows(){
   const cnt = document.getElementById('admCount');
   const tb = document.getElementById('admRows');
   if (!cnt || !tb) return;
-  cnt.textContent = `(${rows.length} baris)`;
+  const CAP = 300;
+  const shown = rows.slice(0, CAP);
+  cnt.textContent = `(${rows.length} baris${rows.length > CAP ? ', tampil ' + CAP : ''})`;
   if (!rows.length){
     tb.innerHTML = `<tr><td colspan="5" style="color:var(--muted);font-weight:600">Belum ada pengecualian.</td></tr>`;
     return;
   }
-  tb.innerHTML = rows.map((g, i) => {
+  tb.innerHTML = shown.map((g, i) => {
     const d = new Date(g.tanggal + 'T00:00:00');
-    const tgl = (HARI_ID[HARI_BY_GETDAY[d.getDay()]] || '').slice(0,3) + ', ' +
-      d.getDate() + ' ' + BULAN_SHORT[d.getMonth()] + ' ' + d.getFullYear();
+    const tgl = isNaN(d) ? (g.tanggal || '–')
+      : (HARI_ID[HARI_BY_GETDAY[d.getDay()]] || '').slice(0,3) + ', ' +
+        d.getDate() + ' ' + BULAN_SHORT[d.getMonth()] + ' ' + d.getFullYear();
     const lingkup = g.guru
       ? `Kelas ${esc(g.kelas[0])} · kel. ${esc(singkat(g.guru))}`
       : `${g.kelas.length} kelas — ${esc(g.kelas.slice(0,6).join(', '))}${g.kelas.length > 6 ? '…' : ''}`;
@@ -1710,9 +1727,11 @@ function adminRenderRows(){
       <td style="font-size:11px;color:var(--muted);font-weight:700">${esc([...g.oleh].join(', ') || '–')}</td>
       <td><button class="abtn danger" data-adel="${i}" title="Hapus">✕</button></td>
     </tr>`;
-  }).join('');
+  }).join('') + (rows.length > CAP
+    ? `<tr><td colspan="5" style="color:var(--muted);font-weight:600">… ${rows.length - CAP} baris lainnya tidak ditampilkan — gunakan filter kelas.</td></tr>`
+    : '');
   tb.querySelectorAll('[data-adel]').forEach(b => b.addEventListener('click', () => {
-    const g = rows[parseInt(b.dataset.adel, 10)];
+    const g = shown[parseInt(b.dataset.adel, 10)];
     if (g) adminDelete(g);
   }));
 }

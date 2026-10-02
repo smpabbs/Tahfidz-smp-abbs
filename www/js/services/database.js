@@ -613,14 +613,26 @@ const DatabaseService = {
       const db = SupabaseClient.get();
       if (!db) throw new Error('Database client not available');
 
-      const { data, error } = await db
-        .from('tahfidz_pengecualian')
-        .select('*')
-        .order('tanggal', { ascending: true });
+      /* pagination wajib — default Supabase max 1000 baris/request.
+         Setelah rekomendasi kaldik disetujui, tabel bisa >1000 baris. */
+      const PAGE = 1000;
+      const all = [];
+      let from = 0, guard = 0;
+      for (;;) {
+        const { data, error } = await db
+          .from('tahfidz_pengecualian')
+          .select('*')
+          .order('tanggal', { ascending: true })
+          .range(from, from + PAGE - 1);
+        if (error) throw error;
+        const chunk = data || [];
+        all.push(...chunk);
+        if (chunk.length < PAGE) break;
+        from += PAGE;
+        if (++guard > 50) break; /* pengaman: maks ~50.000 baris */
+      }
 
-      if (error) throw error;
-
-      const rows = (data || []).map(r => ({
+      const rows = all.map(r => ({
         id: r.id,
         kelas: r.kelas,
         tanggal: r.tanggal,
