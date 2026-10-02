@@ -196,8 +196,8 @@ ok(w.eval('STATE.pengecualian.length') === before, 'confirm=false → tidak ada 
 console.log('\n== 10. Rekomendasi kaldik ==');
 ok(doc.getElementById('admKaldik') !== null, 'section rekomendasi kaldik tampil');
 const nKaldik = w.eval('KALDIK_RECS.length');
-ok(nKaldik >= 30, `KALDIK_RECS lengkap (${nKaldik} acara)`);
-ok(doc.querySelectorAll('#admKaldik input[data-ki]:checked').length === 17, '17 libur & hari besar tercentang default');
+ok(nKaldik >= 40, `KALDIK_RECS lengkap (${nKaldik} acara)`);
+ok(doc.querySelectorAll('#admKaldik input[data-ki]:checked').length === 18, '18 libur & hari besar tercentang default');
 ok(doc.querySelectorAll('#admKaldik input[data-ki]').length === nKaldik, 'semua acara ter-render');
 ok(doc.getElementById('admKaldik').innerHTML.includes('L8 · L9'), 'badge lingkup jenjang (L8 · L9) tampil');
 
