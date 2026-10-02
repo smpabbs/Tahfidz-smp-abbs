@@ -59,11 +59,13 @@ const PENGECUALIAN = [
 ];
 
 let bulkCalls = [];
+let appSettingCalls = [];
 const DatabaseService = {
   loadMasterSiswa: async () => SISWA.map(s => ({ ...s })),
   loadMasterGuru: async () => [],
   loadTahfidzRecords: async () => RECORDS.map(r => ({ ...r })),
   loadPengecualian: async () => PENGECUALIAN.map(r => ({ ...r })),
+  saveAppSetting: async (key, value) => { appSettingCalls.push({key, value}); return true; },
   savePengecualianBulk: async (rows) => {
     bulkCalls.push(rows);
     rows.forEach((r, i) => PENGECUALIAN.push({
@@ -245,6 +247,29 @@ ok(htmlView.includes('Us Fahmi') && htmlView.includes('0 siswa'), 'guru tanpa si
 w.eval(`STATE.pov='kelas'; STATE.level=1; STATE.guruSel=null; render();`);
 htmlView = doc.getElementById('view').innerHTML;
 ok(htmlView.includes('67') , 'POV kelas tetap 67% (seluruh 3 siswa 7A) — tak berubah');
+
+console.log('\n== 12. Assign kelompok guru pengampu ==');
+ok(doc.getElementById('admPkKelas') !== null, 'section kelompok tampil di panel admin');
+w.eval(`document.getElementById('admPkKelas').value='7A'; renderPkKelas();`);
+let pkHtml = doc.getElementById('admPkList').innerHTML;
+ok(pkHtml.includes('>Dua<') && pkHtml.includes('>Satu<') && pkHtml.includes('>Tiga<'), '3 siswa 7A tampil');
+ok(doc.querySelectorAll('#admPkList .pkrow.belum').length === 1, 'Tiga (tanpa patokan) disorot "belum"');
+ok(doc.getElementById('admPkInfo').textContent.includes('2/3'), 'info 2/3 ber-guru');
+ok(doc.getElementById('admPkQuickGuru').innerHTML.includes('Ustadz Andi'), 'dropdown guru terbatas ke guru terjadwal/patokan kelas');
+
+appSettingCalls = [];
+w.eval(`(() => {
+  const sels = [...document.querySelectorAll('#admPkList select[data-i]')];
+  const tiga = sels[2];               /* urut localeCompare: Dua, Satu, Tiga */
+  tiga.value = 'Ustadz Andi';
+  tiga.dispatchEvent(new Event('change'));
+})()`);
+await w.eval('pkSave()');
+ok(appSettingCalls.length === 1 && appSettingCalls[0].key === 'patokan_guru_pengampu', 'saveAppSetting(key benar) dipanggil');
+const vPK = appSettingCalls[0] ? appSettingCalls[0].value : {};
+ok(vPK['7A'] && vPK['7A']['Tiga'] === 'Ustadz Andi' && vPK['7A']['Satu'] === 'Ustadz Andi' && vPK['7A']['Dua'] === 'Ustadz Andi',
+  'payload: Tiga ditambah, Satu & Dua dipertahankan utuh');
+ok(doc.querySelectorAll('#admPkList .pkrow.belum').length === 0, 'setelah simpan, tidak ada lagi baris "belum"');
 
 console.log(`\n=== ${pass} pass, ${fail} fail ===`);
 process.exit(fail ? 1 : 0);

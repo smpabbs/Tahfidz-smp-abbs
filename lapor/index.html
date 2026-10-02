@@ -212,6 +212,14 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .kr-badge{font-size:9.5px;font-weight:800;padding:2px 8px;border-radius:99px;background:var(--surface-3);color:var(--muted);white-space:nowrap;flex-shrink:0}
 .kr-saved{font-size:10px;font-weight:800;color:var(--good);white-space:nowrap;flex-shrink:0}
 .kgroup{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin:10px 0 5px}
+.pkrow{display:flex;align-items:center;gap:10px;padding:5px 8px;border-bottom:1px solid var(--line-soft);font-size:12.5px;font-weight:700}
+.pkrow:last-child{border-bottom:0}
+.pkrow.belum{background:var(--warn-bg)}
+.pkrow .pk-nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pkrow select{font:inherit;font-size:12px;font-weight:700;color:var(--accent-deep);background:var(--page);border:1px solid var(--line);border-radius:8px;padding:4px 8px;max-width:190px}
+.pkbadge{font-size:10px;font-weight:800;padding:2px 8px;border-radius:99px;white-space:nowrap;flex-shrink:0}
+.pkbadge.b{background:var(--warn-bg);color:#7A5218}
+.pkbadge.o{background:var(--good-bg);color:#1E5C3C}
 
 @media (max-width:640px){
   .bar-in{padding:8px 12px}
@@ -387,7 +395,7 @@ async function fetchPatokan(){
 
 /* ================= STATE ================= */
 const STATE = {
-  siswa:[], guru:[], records:[], patokan:{}, quranSessions:[],
+  siswa:[], guru:[], records:[], patokan:{}, patokanRaw:{}, quranSessions:[],
   pengecualian:[], excIdx:new Map(),
   siswaByKelas:new Map(), recIdx:new Map(), namaIdx:new Map(), lastGuru:new Map(),
   occs:[], noRosterKelas:new Set(),
@@ -402,12 +410,14 @@ function state_proxy(){ return STATE; }
 
 /* ================= LOAD ================= */
 async function loadAllData(){
-  const [DATA, siswa, guru, records, patokan, pengecualian] = await Promise.all([
+  const [DATA, siswa, guru, records, patokan, patokanRaw, pengecualian] = await Promise.all([
     fetchJadwal(),
     DatabaseService.loadMasterSiswa(),
     DatabaseService.loadMasterGuru(),
     DatabaseService.loadTahfidzRecords(),
     fetchPatokan(),
+    /* versi mentah (ejaan asli) untuk panel admin kelompok */
+    fetchPatokanRaw(),
     /* pengecualian gagal dimuat tidak boleh mematikan lapor —
        berjalan tanpa pengecualian */
     DatabaseService.loadPengecualian().catch(err => {
@@ -420,6 +430,7 @@ async function loadAllData(){
   STATE.guru = guru;
   STATE.records = records;
   STATE.patokan = patokan;
+  STATE.patokanRaw = patokanRaw;
   STATE.pengecualian = pengecualian || [];
   rebuildExcIdx();
 
@@ -1196,6 +1207,160 @@ function kaldikTglLabel(r){
 }
 function kaldikLvlLabel(lvl){ return lvl === 'all' ? 'Semua' : lvl === '89' ? 'L8 · L9' : 'L' + lvl; }
 
+/* ===== kelompok guru pengampu (panel admin) ===== */
+/* patokan mentah (ejaan asli) — beda dengan STATE.patokan yg dinormalisasi */
+async function fetchPatokanRaw(){
+  try {
+    const db = SupabaseClient.get();
+    const { data, error } = await db
+      .from('app_settings')
+      .select('value')
+      .eq('key', 'patokan_guru_pengampu')
+      .maybeSingle();
+    if (error) throw error;
+    let raw = data && data.value ? data.value : null;
+    if (typeof raw === 'string') raw = JSON.parse(raw);
+    return raw || {};
+  } catch (err) {
+    console.warn('⚠️ Patokan mentah gagal dimuat:', err.message);
+    return {};
+  }
+}
+/* guru utk dropdown: yang terjadwal di kelas itu + yang sudah ada di patokan */
+function kelasGuruOptions(k){
+  const set = new Set();
+  STATE.quranSessions.forEach(s => { if (s.kelas === k) (s.guru || []).forEach(g => set.add(g)); });
+  Object.values(STATE.patokanRaw[k] || {}).forEach(g => { if (g) set.add(g); });
+  return [...set].sort((a,b) => a.localeCompare(b, 'id'));
+}
+function pkNote(msg, err){
+  const n = document.getElementById('admPkNote');
+  if (!n) return;
+  n.textContent = msg;
+  n.className = 'anote' + (err ? ' err' : '');
+  n.style.display = 'block';
+  if (!err) setTimeout(() => { n.style.display = 'none'; }, 6000);
+}
+function renderPk(){
+  const sel = document.getElementById('admPkKelas');
+  if (!sel) return;
+  const kelasList = [...STATE.siswaByKelas.keys()].sort((a,b) => a.localeCompare(b, 'id'));
+  const cur = sel.value;
+  sel.innerHTML = kelasList.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('');
+  if (cur && kelasList.includes(cur)) sel.value = cur;
+  renderPkKelas();
+}
+function renderPkKelas(){
+  const k = document.getElementById('admPkKelas').value;
+  const info = document.getElementById('admPkInfo');
+  const quick = document.getElementById('admPkQuickGuru');
+  const host = document.getElementById('admPkList');
+  if (!k || !host) return;
+  const rawMap = STATE.patokanRaw[k] || {};
+  const normMap = {};
+  Object.entries(rawMap).forEach(([nm, g]) => { normMap[normNameKey(nm)] = g; });
+  pkRefreshRoster(k);
+  const roster = pkRoster[k];
+  const gurus = kelasGuruOptions(k);
+  const belum = roster.filter(nm => !normMap[normNameKey(nm)]).length;
+  if (info) info.innerHTML = `<span class="pkbadge ${belum ? 'b' : 'o'}">${roster.length - belum}/${roster.length} ber-guru</span>` +
+    (belum ? ` <span class="pkbadge b">${belum} belum</span>` : '');
+  if (quick){
+    quick.innerHTML = `<option value="">— pilih guru —</option>` +
+      gurus.map(g => `<option value="${esc(g)}">${esc(singkat(g))}</option>`).join('');
+  }
+  host.innerHTML = roster.map((nm, i) => {
+    const g = normMap[normNameKey(nm)] || '';
+    return `<div class="pkrow${g ? '' : ' belum'}">
+      <span class="pk-nm">${esc(nm)}</span>
+      <select data-i="${i}">
+        <option value=""${g ? '' : ' selected'}>— belum —</option>
+        ${gurus.map(gg => `<option value="${esc(gg)}"${normNameKey(gg) === normNameKey(g) ? ' selected' : ''}>${esc(singkat(gg))}</option>`).join('')}
+      </select>
+    </div>`;
+  }).join('');
+  host.querySelectorAll('select[data-i]').forEach(sel =>
+    sel.addEventListener('change', () => {
+      sel.closest('.pkrow').classList.toggle('belum', !sel.value);
+      pkPreview();
+    }));
+  pkPreview();
+}
+function pkPreview(){
+  const pv = document.getElementById('admPkPreview');
+  const k = document.getElementById('admPkKelas')?.value;
+  if (!pv || !k) return;
+  const rawMap = STATE.patokanRaw[k] || {};
+  const normMap = {};
+  Object.entries(rawMap).forEach(([nm, g]) => { normMap[normNameKey(nm)] = g; });
+  let changed = 0;
+  document.querySelectorAll('#admPkList select[data-i]').forEach(sel => {
+    const nm = pkRoster[k][parseInt(sel.dataset.i, 10)];
+    if (normNameKey(rawMap[nm] || '') !== normNameKey(sel.value)) changed++;
+  });
+  pv.textContent = changed ? `${changed} perubahan belum disimpan` : '';
+}
+/* roster per kelas dgn urutan sama seperti render (untuk data-i) */
+const pkRoster = {};
+function pkRefreshRoster(k){
+  pkRoster[k] = (STATE.siswaByKelas.get(k) || []).slice().sort((a,b) => a.localeCompare(b, 'id'));
+}
+function pkQuick(){
+  const g = document.getElementById('admPkQuickGuru').value;
+  if (!g){ pkNote('❌ Pilih guru dulu untuk aksi cepat.', true); return; }
+  let n = 0;
+  document.querySelectorAll('#admPkList select[data-i]').forEach(sel => {
+    if (!sel.value){ sel.value = g; sel.closest('.pkrow').classList.remove('belum'); n++; }
+  });
+  pkPreview();
+  pkNote(n ? `✓ ${n} siswa diset ke ${singkat(g)} — tekan "Simpan kelompok" untuk menyimpan.` : 'Tidak ada siswa yang belum ber-guru.');
+}
+async function pkSave(){
+  const k = document.getElementById('admPkKelas').value;
+  if (!k) return;
+  pkRefreshRoster(k);
+  const roster = pkRoster[k];
+  const prevMap = STATE.patokanRaw[k] || {};
+  const rawMap = { ...prevMap };
+  const normKey = {}; /* normNameKey(nm) -> ejaan asli di rawMap */
+  Object.keys(rawMap).forEach(nm => { normKey[normNameKey(nm)] = nm; });
+  let changed = 0;
+  document.querySelectorAll('#admPkList select[data-i]').forEach(sel => {
+    const nm = roster[parseInt(sel.dataset.i, 10)];
+    if (!nm) return;
+    const g = sel.value;
+    const oldNm = normKey[normNameKey(nm)];
+    const oldG = oldNm ? rawMap[oldNm] : '';
+    if (normNameKey(oldG || '') === normNameKey(g)) return;
+    if (!g){
+      if (oldNm){ delete rawMap[oldNm]; changed++; }
+      return;
+    }
+    if (oldNm && oldNm !== nm) delete rawMap[oldNm]; /* ganti ejaan kunci */
+    rawMap[nm] = g;
+    changed++;
+  });
+  if (!changed){ pkNote('Tidak ada perubahan.'); return; }
+  const btn = document.getElementById('admPkSave');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+  try {
+    /* simpan STRUKTUR PENUH {kelas: {siswa: guru}} — bukan map kelas saja,
+       kalau tidak kelas lain akan tertimpa */
+    const newAll = { ...STATE.patokanRaw, [k]: rawMap };
+    const okSave = await DatabaseService.saveAppSetting('patokan_guru_pengampu', newAll);
+    if (!okSave) throw new Error('simpan app_settings gagal');
+    STATE.patokanRaw = newAll;
+    STATE.patokan = await fetchPatokan();
+    render();
+    renderPkKelas();
+    pkNote(`✅ ${changed} perubahan kelompok tersimpan — angka POV Per Guru langsung ter-update.`);
+  } catch (err) {
+    pkNote('❌ Gagal menyimpan: ' + (err.message || err), true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Simpan kelompok';
+  }
+}
+
 /* Bangun ulang index pengecualian "kelas|tanggal" -> [rows] */
 function rebuildExcIdx(){
   STATE.excIdx = new Map();
@@ -1303,6 +1468,26 @@ function renderAdminPanel(){
       </div>
 
       <div class="asec">
+        <h4>👥 Kelompok Guru Pengampu</h4>
+        <div class="asub">Pemetaan siswa → guru bimbingan. Dipakai perhitungan POV <b>Per Guru</b> dan tab Tahsin Teori. Baris kuning = belum punya guru.</div>
+        <div class="afilter">Kelas
+          <select id="admPkKelas"></select>
+          <span id="admPkInfo"></span>
+        </div>
+        <div class="frow" style="align-items:flex-end">
+          <div class="f" style="flex:2;min-width:180px"><label>Aksi cepat: set semua "belum" ke</label>
+            <select id="admPkQuickGuru"></select></div>
+          <button class="abtn" id="admPkQuickBtn">Terapkan</button>
+        </div>
+        <div id="admPkList"></div>
+        <div class="frow" style="justify-content:flex-end;align-items:center;margin-bottom:0">
+          <span id="admPkPreview" style="font-size:11.5px;font-weight:700;color:var(--muted)"></span>
+          <button class="abtn pri" id="admPkSave">Simpan kelompok</button>
+        </div>
+        <div class="anote" id="admPkNote"></div>
+      </div>
+
+      <div class="asec">
         <h4>Daftar pengecualian aktif</h4>
         <div class="asub">Termasuk Tahsin Teori yang ditandai guru (per kelompok). Hapus bila salah input.</div>
         <div class="afilter">Filter kelas
@@ -1353,6 +1538,10 @@ function renderAdminPanel(){
   document.getElementById('admFilterKelas').addEventListener('change', adminRenderRows);
   adminRenderRows();
   renderKaldik();
+  document.getElementById('admPkKelas').addEventListener('change', renderPkKelas);
+  document.getElementById('admPkQuickBtn').addEventListener('click', pkQuick);
+  document.getElementById('admPkSave').addEventListener('click', pkSave);
+  renderPk();
 }
 
 /* ===== rekomendasi kaldik ===== */
