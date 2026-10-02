@@ -672,6 +672,41 @@ const DatabaseService = {
   },
 
   /**
+   * Simpan banyak pengecualian sekaligus (satu request upsert).
+   * Dipakai panel admin lapor utk kegiatan multi-kelas multi-tanggal.
+   * @param {Array<object>} rows - [{ kelas, tanggal, alasan, guru?, catatan?, dibuat_oleh? }]
+   * @returns {Promise<number>} jumlah baris yang dikirim
+   */
+  async savePengecualianBulk(rows) {
+    try {
+      const db = SupabaseClient.get();
+      if (!db) throw new Error('Database client not available');
+      if (!rows || !rows.length) return 0;
+
+      const payload = rows.map(r => ({
+        kelas: r.kelas,
+        tanggal: r.tanggal,
+        alasan: r.alasan || '',
+        guru: r.guru || '',
+        catatan: r.catatan || '',
+        dibuat_oleh: r.dibuat_oleh || ''
+      }));
+
+      const { error } = await db
+        .from('tahfidz_pengecualian')
+        .upsert(payload, { onConflict: 'kelas,tanggal,guru' });
+
+      if (error) throw error;
+
+      console.log(`? ${payload.length} pengecualian saved (bulk)`);
+      return payload.length;
+    } catch (error) {
+      console.error('? Failed to bulk save pengecualian:', error.message);
+      throw error;
+    }
+  },
+
+  /**
    * Hapus satu pengecualian.
    * @param {string} id
    * @returns {Promise<boolean>}

@@ -152,6 +152,7 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .tag.no{color:#8A3A2C;background:var(--danger-bg)}
 .tag.f{color:#5E5670;background:var(--future-bg)}
 .tag.tasm{color:#8a5a9d;background:rgba(138,90,157,.14);border:1px dashed rgba(138,90,157,.45)}
+.tag.exc{color:#7A5218;background:var(--warn-bg);border:1px dashed rgba(189,126,42,.5)}
 
 /* ===== accordion pekan/bulan ===== */
 .wrow{background:var(--surface);border:1px solid var(--line-soft);border-radius:12px;margin-bottom:8px;overflow:hidden}
@@ -170,16 +171,51 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .wrow.open .wbody{display:block}
 .wrow.open{border-color:var(--line)}
 
+/* ===== admin pengecualian ===== */
+.btn-admin{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--accent);cursor:pointer;font-size:14px;line-height:1;flex-shrink:0}
+.btn-admin:focus-visible{outline:2px solid var(--accent)}
+.amask{position:fixed;inset:0;background:rgba(37,33,49,.45);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow:auto}
+.amodal{background:var(--surface);border:1px solid var(--line);border-radius:16px;max-width:720px;width:100%;padding:20px 22px;animation:fadeUp .18s ease}
+.amodal h3{font-family:var(--serif);font-size:18px;margin-bottom:4px}
+.amodal h4{font-size:13px;font-weight:800;margin-bottom:2px}
+.amodal .asub{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:10px}
+.frow{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.frow .f{display:flex;flex-direction:column;gap:4px;flex:1;min-width:130px}
+.frow label{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.frow input[type=text],.frow input[type=date],.frow input[type=password]{font:inherit;font-size:13px;font-weight:700;color:var(--ink);background:var(--page);border:1px solid var(--line);border-radius:9px;padding:8px 10px;width:100%}
+.frow input:focus-visible{outline:2px solid var(--accent);outline-offset:-1px}
+.kchips{display:flex;gap:6px;flex-wrap:wrap;margin:4px 0 12px}
+.kchip{display:inline-flex;align-items:center;gap:5px;border:1px solid var(--line);border-radius:99px;padding:4px 11px;font-size:11.5px;font-weight:800;cursor:pointer;user-select:none;color:var(--ink-soft);background:var(--page)}
+.kchip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.kchip input{display:none}
+.abtn{font:inherit;font-size:12.5px;font-weight:800;border-radius:10px;padding:9px 16px;cursor:pointer;border:1px solid var(--line);background:var(--surface-3);color:var(--ink)}
+.abtn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.abtn.danger{background:transparent;border-color:transparent;color:var(--danger);padding:5px 8px}
+.abtn:disabled{opacity:.55;cursor:default}
+.abtn:focus-visible{outline:2px solid var(--accent)}
+.atab{width:100%;border-collapse:collapse;font-size:12px;margin-top:6px}
+.atab th{text-align:left;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.atab td{padding:7px 8px;border-bottom:1px solid var(--line-soft);vertical-align:top}
+.atab tr:last-child td{border-bottom:0}
+.apill{display:inline-block;font-size:10px;font-weight:800;padding:2px 9px;border-radius:99px;background:var(--warn-bg);color:#7A5218;white-space:nowrap}
+.anote{display:none;margin:8px 0 0;padding:8px 12px;border-radius:9px;font-size:12px;font-weight:700;background:var(--good-bg);color:#1E5C3C}
+.anote.err{background:var(--danger-bg);color:#8A3A2C}
+.asec{border-top:1px dashed var(--line);margin-top:16px;padding-top:14px}
+.afilter{display:flex;gap:8px;align-items:center;font-size:11.5px;font-weight:700;color:var(--muted);margin-bottom:6px;flex-wrap:wrap}
+.afilter select{font:inherit;font-weight:700;color:var(--accent-deep);background:var(--page);border:1px solid var(--line);border-radius:8px;padding:4px 8px}
+
 @media (max-width:640px){
   .bar-in{padding:8px 12px}
   .tabs{margin-left:0}
   .wrap{padding:14px 12px 50px}
   .grid-guru,.grid-kelas{grid-template-columns:1fr}
+  .amask{padding:2vh 10px}
+  .amodal{padding:16px 14px}
 }
 </style>
 </head>
 <body>
-<div class="mock-note">Laporan Tahfidz — data real (Supabase + jadwal GitHub) · drill-down infografis · build real-v1</div>
+<div class="mock-note">Laporan Tahfidz — data real (Supabase + jadwal GitHub) · drill-down infografis · build real-v2 · pengecualian kegiatan/tahsin</div>
 <div class="note" id="warnNote"></div>
 
 <div class="bar">
@@ -195,6 +231,7 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
       <button data-p="bulanan">Bulanan</button>
       <button data-p="semester">Semester</button>
     </div>
+    <button class="btn-admin" id="btnAdmin" title="Admin — hari bebas / kegiatan" aria-label="Admin">⚙</button>
   </div>
   <div class="bar-in" style="padding-top:0;padding-bottom:8px">
     <div class="weeknav">
@@ -208,9 +245,11 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 </div>
 
 <div class="wrap">
-  <div class="rule-note"><b>Aturan hitung:</b> siswa dianggap <b>"tercatat"</b> bila ada input apa pun pada sesi itu — ziyadah, murojaah, maupun tilawah (absen yang dicatat guru juga dihitung tercatat). Persentase = sesi yang sudah waktunya saja.</div>
+  <div class="rule-note"><b>Aturan hitung:</b> siswa dianggap <b>"tercatat"</b> bila ada input apa pun pada sesi itu — ziyadah, murojaah, maupun tilawah (absen yang dicatat guru juga dihitung tercatat). Persentase = sesi yang sudah waktunya saja. Tanggal <b>kegiatan/libur</b> (input admin) dan sesi <b>Tahsin Teori</b> (per kelompok) keluar dari penyebut.</div>
   <div id="view" class="view"></div>
 </div>
+
+<div id="adminRoot"></div>
 
 <div id="loadingState" style="max-width:1060px;margin:14px auto;padding:40px;text-align:center;color:var(--muted);font-weight:700">⏳ Memuat data dari Supabase & jadwal GitHub…</div>
 <div class="note" id="errorNote"></div>
@@ -340,6 +379,7 @@ async function fetchPatokan(){
 /* ================= STATE ================= */
 const STATE = {
   siswa:[], guru:[], records:[], patokan:{}, quranSessions:[],
+  pengecualian:[], excIdx:new Map(),
   siswaByKelas:new Map(), recIdx:new Map(), namaIdx:new Map(), lastGuru:new Map(),
   occs:[], noRosterKelas:new Set(),
   period:'pekanan', pov:'guru', level:1, refDate:new Date(),
@@ -353,18 +393,26 @@ function state_proxy(){ return STATE; }
 
 /* ================= LOAD ================= */
 async function loadAllData(){
-  const [DATA, siswa, guru, records, patokan] = await Promise.all([
+  const [DATA, siswa, guru, records, patokan, pengecualian] = await Promise.all([
     fetchJadwal(),
     DatabaseService.loadMasterSiswa(),
     DatabaseService.loadMasterGuru(),
     DatabaseService.loadTahfidzRecords(),
-    fetchPatokan()
+    fetchPatokan(),
+    /* pengecualian gagal dimuat tidak boleh mematikan lapor —
+       berjalan tanpa pengecualian */
+    DatabaseService.loadPengecualian().catch(err => {
+      console.warn('⚠️ Pengecualian gagal dimuat:', err.message);
+      return [];
+    })
   ]);
 
   STATE.siswa = siswa;
   STATE.guru = guru;
   STATE.records = records;
   STATE.patokan = patokan;
+  STATE.pengecualian = pengecualian || [];
+  rebuildExcIdx();
 
   STATE.siswaByKelas = new Map();
   siswa.forEach(s => {
@@ -448,21 +496,49 @@ function buildOccs(range){
     if (dayName) {
       STATE.quranSessions.forEach(s => {
         if (s.day !== dayName) return;
-        /* Aturan tetap sekolah: Rabu jam 1-2 selalu Tasmi' Akbar ->
-           sesi Quran terjadwal di slot ini TIDAK dihitung sebagai
-           kewajiban setoran (keluar dari penyebut). */
-        const isTasmi = s.day === 'Wednesday' && (s.jam === '1' || s.jam === '2');
         const roster = STATE.siswaByKelas.get(s.kelas) || [];
         if (roster.length === 0){ STATE.noRosterKelas.add(s.kelas); return; }
         const dateStr = toDateStr(cur);
+        /* Aturan tetap sekolah: Rabu jam 1-2 selalu Tasmi' Akbar ->
+           keluar dari penyebut. Pengecualian admin (kegiatan/libur,
+           guru kosong) juga mengeluarkan SELURUH sesi; pengecualian
+           kelompok (Tahsin Teori, guru terisi) mengeluarkan siswa
+           kelompok tsb saja dari penyebut kelas itu. */
+        const isTasmi = s.day === 'Wednesday' && (s.jam === '1' || s.jam === '2');
+        const excRows = STATE.excIdx.get(s.kelas + '|' + dateStr) || [];
+        const kelasRows = excRows.filter(r => !r.guru);
+        const klpRows = excRows.filter(r => r.guru);
+        let exc = isTasmi ? 'Tasmi Akbar' : null;
+        if (!exc && kelasRows.length) exc = [...new Set(kelasRows.map(r => r.alasan))].join(' · ');
+        const excNames = new Set();
+        const excGuru = [];
+        if (klpRows.length){
+          const pk = STATE.patokan[s.kelas] || {};
+          const gset = new Set(klpRows.map(r => normNameKey(r.guru)));
+          klpRows.forEach(r => excGuru.push(r.guru));
+          roster.forEach(nm => {
+            const g = pk[normNameKey(nm)];
+            if (g && gset.has(normNameKey(g))) excNames.add(nm);
+          });
+        }
+        let klpAlasan = null;
+        if (!exc && excNames.size) klpAlasan = [...new Set(klpRows.map(r => r.alasan))].join(' · ');
         const recorded = STATE.recIdx.get(s.kelas + '|' + dateStr) || new Set();
-        let n = 0;
-        roster.forEach(nm => { if (recorded.has(nm)) n++; });
+        let n = 0, t = 0;
+        roster.forEach(nm => {
+          if (!exc && excNames.has(nm)) return;
+          t++;
+          if (recorded.has(nm)) n++;
+        });
+        if (t === 0 && !exc) exc = klpAlasan || 'Dikecualikan';
         occs.push({
           date:new Date(cur), dateStr, kelas:s.kelas, jam:s.jam, start:s.start, end:s.end,
-          guru:s.guru, due:dateStr <= todayStr && !isTasmi, recorded,
-          exc: isTasmi ? 'Tasmi Akbar' : null,
-          n, t:roster.length, p: Math.round(n/roster.length*100)
+          guru:s.guru, due:dateStr <= todayStr && !exc, recorded,
+          exc,
+          excNames: (!exc && excNames.size) ? excNames : null,
+          excGuru: excGuru.length ? excGuru : null,
+          excKlpAlasan: klpAlasan,
+          n, t, p: t ? Math.round(n/t*100) : 0
         });
       });
     }
@@ -578,7 +654,7 @@ function renderGurus(){
     if (buckets.length > 1 || buckets[0] && buckets[0].occs.length > 6){
       buckets.forEach(b => {
         const bo = b.occs.filter(o => o.due && o.guru.includes(g));
-        if (!bo.length){ if (b.occs.some(o => o.exc && o.guru.includes(g))) return; dots.push('futr'); tot++; return; }
+        if (!bo.length){ if (b.occs.some(o => o.exc)) return; dots.push('futr'); tot++; return; }
         let s=0,c=0;
         bo.forEach(o => { s += o.p; c++; });
         const p = c ? Math.round(s/c) : 0;
@@ -659,18 +735,22 @@ function renderSiswa(){
   const roster = (STATE.siswaByKelas.get(kelas) || []).slice().sort((a,b) => a.localeCompare(b,'id'));
   const pair = guruPair(kelas);
   const rows = roster.map(nm => {
+    /* sesi yang menjadi kewajiban siswa ini — pengecualian kelompok
+       (Tahsin Teori) mengeluarkan sesi tsb dari penyebutnya */
+    const myOccs = occs.filter(o => !(o.excNames && o.excNames.has(nm)));
     let n=0, last=null;
-    occs.forEach(o => { if (o.recorded.has(nm)){ n++; last = o; } });
-    const p = occs.length ? Math.round(n/occs.length*100) : 0;
+    myOccs.forEach(o => { if (o.recorded.has(nm)){ n++; last = o; } });
+    const p = myOccs.length ? Math.round(n/myOccs.length*100) : 0;
     const peng = pengampu(kelas, nm) || {nama:pair, ov:false};
-    return {nm, n, p, last, peng};
+    return {nm, n, p, den:myOccs.length, last, peng};
   });
   if (state_proxy().sort === 'status') rows.sort((a,b) => a.p - b.p || a.nm.localeCompare(b.nm,'id'));
   else if (state_proxy().sort === 'guru') rows.sort((a,b) => a.peng.nama.localeCompare(b.peng.nama,'id') || a.nm.localeCompare(b.nm,'id'));
   else rows.sort((a,b) => a.nm.localeCompare(b.nm,'id'));
 
   const nTot = rows.reduce((a,r) => a+r.n, 0);
-  const pTot = occs.length*rows.length ? Math.round(nTot/(occs.length*rows.length)*100) : 0;
+  const denTot = rows.reduce((a,r) => a+r.den, 0);
+  const pTot = denTot ? Math.round(nTot/denTot*100) : 0;
   const full = rows.filter(r => r.p>=100).length, none = rows.filter(r => r.n===0).length;
   const guruUnik = [...new Set(rows.map(r => r.peng.nama))];
   const backLvl = state_proxy().pov === 'guru' ? 2 : 1;
@@ -686,7 +766,7 @@ function renderSiswa(){
          <div class="num"><b>${rows.length}</b><span>siswa</span></div>
          <div class="num" style="color:var(--good)"><b>${full}</b><span>selalu tercatat</span></div>
          <div class="num" style="color:var(--danger)"><b>${none}</b><span>belum pernah</span></div>
-         <div class="num"><b>${occs.length}</b><span>sesi dihitung</span></div>
+         <div class="num"><b>${occs.length}</b><span>sesi kelas</span></div>
        </div>
      </div>
      ${emptyPeriodNote(nTot)}
@@ -705,7 +785,7 @@ function renderSiswa(){
          <span class="snm">${esc(r.nm)}</span>
          <span class="gp${r.peng.ov?' ov':''}" title="${r.peng.ov?'Dari patokan guru pengampu (DB)':'Dari riwayat/jadwal'}">${esc(singkat(r.peng.nama))}</span>
          <span class="last">${r.last ? 'terakhir '+HARI_ID[HARI_BY_GETDAY[r.last.date.getDay()]] : 'belum pernah'}</span>
-         <span class="cnt2">${r.n}/${occs.length}</span>
+         <span class="cnt2">${r.n}/${r.den}</span>
          <span class="chev">›</span>
        </div>`).join('')}
      </div>`;
@@ -748,14 +828,24 @@ function wrowHtml(id, title, sub, n, t, open, body){
   </div>`;
 }
 function rrowHtml(o, nm, kelas){
-  if (o.exc) return `<div class="rrow">
+  if (o.exc){
+    const isTasmi = o.exc === 'Tasmi Akbar';
+    return `<div class="rrow">
     <div class="rd"><b>${HARI_ID[HARI_BY_GETDAY[o.date.getDay()]]}</b><span>${o.date.getDate()} ${BULAN_SHORT[o.date.getMonth()]}</span></div>
-    <div class="ri"><div class="t">Tasmi' Akbar · jam ${esc(o.jam)}</div><div class="s">${esc(o.guru.map(singkat).join(' & '))}</div></div>
-    <span class="tag tasm">Tasmi' Akbar</span></div>`;
+    <div class="ri"><div class="t">${esc(excLabel(o.exc))} · jam ${esc(o.jam)}</div><div class="s">${esc(o.guru.map(singkat).join(' & '))}</div></div>
+    <span class="tag ${isTasmi ? 'tasm' : 'exc'}">${esc(excLabel(o.exc))}</span></div>`;
+  }
   if (!o.due) return `<div class="rrow">
     <div class="rd"><b>${HARI_ID[HARI_BY_GETDAY[o.date.getDay()]]}</b><span>${o.date.getDate()} ${BULAN_SHORT[o.date.getMonth()]}</span></div>
     <div class="ri"><div class="t">Sesi Quran · jam ${esc(o.jam)}</div><div class="s">${esc(o.guru.map(singkat).join(' & '))}</div></div>
     <span class="tag f">Belum waktunya</span></div>`;
+  if (o.excNames && o.excNames.has(nm)){
+    return `<div class="rrow">
+    <div class="rd"><b>${HARI_ID[HARI_BY_GETDAY[o.date.getDay()]]}</b><span>${o.date.getDate()} ${BULAN_SHORT[o.date.getMonth()]} · jam ${esc(o.jam)}</span></div>
+    <div class="ri"><div class="t">${esc(excLabel(o.excKlpAlasan) || 'Tahsin Teori')} · dikecualikan</div>
+      <div class="s">kelompok ${esc((o.excGuru || []).map(singkat).join(' & '))}</div></div>
+    <span class="tag exc">Dikecualikan</span></div>`;
+  }
   const recs = STATE.namaIdx.get(nm + '|' + o.dateStr);
   const parts = recordText(recs);
   return `<div class="rrow">
@@ -769,18 +859,20 @@ function rrowHtml(o, nm, kelas){
 }
 function pekanWrow(b, nm, kelas){
   if (!b.due){
-    if (b.occs.some(o => o.exc)) return tasmiWrow(b, nm, kelas);
+    if (b.occs.some(o => o.exc)) return excWrow(b, nm, kelas);
     return wrowOff(b.title, b.sub);
   }
-  const due = b.occs.filter(o => o.due);
+  /* penyebut siswa ini: sesi due minus yang dikecualikan utk dirinya */
+  const due = b.occs.filter(o => o.due && !(o.excNames && o.excNames.has(nm)));
   const n = due.filter(o => o.recorded.has(nm)).length;
   return wrowHtml('w-'+b.label+'-'+b.title, b.title, b.sub, n, due.length, b.isOpen, dayRows(b.occs, nm, kelas));
 }
-function tasmiWrow(b, nm, kelas){
+function excWrow(b, nm, kelas){
+  const alasan = [...new Set(b.occs.filter(o => o.exc).map(o => o.exc))].map(excLabel).join(' · ');
   return `<div class="wrow off"><div class="whead">
     <span class="chev">◈</span>
     <div class="wt"><b>${esc(b.title)}</b><span>${esc(b.sub)}</span></div>
-    <span class="tag tasm">Tasmi' Akbar</span></div>
+    <span class="tag ${alasan === "Tasmi' Akbar" ? 'tasm' : 'exc'}">${esc(alasan || "Tasmi' Akbar")}</span></div>
     <div class="wbody" style="display:block">${dayRows(b.occs.filter(o => o.exc), nm, kelas)}</div>
   </div>`;
 }
@@ -789,7 +881,9 @@ function renderRekap(){
   const period = state_proxy().period;
   const koccs = STATE.occs.filter(o => o.kelas === k);
   const buckets = bucketList(period, koccs, STATE.range);
-  const dueOccs = buckets.filter(b => b.due).flatMap(b => b.occs.filter(o => o.due));
+  /* penyebut siswa ini: sesi due minus yang dikecualikan utk dirinya */
+  const isExc = o => o.excNames && o.excNames.has(nm);
+  const dueOccs = buckets.filter(b => b.due).flatMap(b => b.occs.filter(o => o.due && !isExc(o)));
   const n = dueOccs.filter(o => o.recorded.has(nm)).length;
   const p = dueOccs.length ? Math.round(n/dueOccs.length*100) : 0;
 
@@ -812,7 +906,7 @@ function renderRekap(){
       const wb = bucketList('bulanan', b.occs, STATE.range).map(w => ({
         ...w, title:'Pekan ' + w.label.replace('P',''), isOpen:false
       }));
-      const due = b.occs.filter(o => o.due);
+      const due = b.occs.filter(o => o.due && !isExc(o));
       const n2 = due.filter(o => o.recorded.has(nm)).length;
       return wrowHtml('b-'+b.label, b.title, b.sub + ' · bulan ' + (b.occs.some(o=>o.dateStr<=todayStr) ? 'berjalan' : 'lampau'),
         n2, due.length, false, wb.map(w => pekanWrow(w, nm, k)).join(''));
@@ -937,6 +1031,285 @@ function navigatePeriod(dir){
   STATE.refDate = d;
   render();
 }
+
+/* ================= ADMIN: HARI BEBAS & KEGIATAN ================= */
+const ADMIN_PASS = 'b1sm1llahdulu';
+const ADMIN_KEY = 'laporAdmin';
+
+/* 'Tasmi Akbar' (kunci internal) -> tampilan dengan apostrof */
+function excLabel(a){ return a === 'Tasmi Akbar' ? "Tasmi' Akbar" : a; }
+
+/* Bangun ulang index pengecualian "kelas|tanggal" -> [rows] */
+function rebuildExcIdx(){
+  STATE.excIdx = new Map();
+  (STATE.pengecualian || []).forEach(r => {
+    const key = r.kelas + '|' + r.tanggal;
+    if (!STATE.excIdx.has(key)) STATE.excIdx.set(key, []);
+    STATE.excIdx.get(key).push(r);
+  });
+}
+
+function openAdmin(){
+  if (sessionStorage.getItem(ADMIN_KEY) === '1') renderAdminPanel();
+  else renderAdminLogin();
+}
+function closeAdmin(){ document.getElementById('adminRoot').innerHTML = ''; }
+function adminLogout(){ sessionStorage.removeItem(ADMIN_KEY); closeAdmin(); }
+function wireMask(){
+  const m = document.getElementById('amask');
+  if (m) m.addEventListener('click', e => { if (e.target === m) closeAdmin(); });
+}
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && document.getElementById('amask')) closeAdmin();
+});
+
+function renderAdminLogin(){
+  document.getElementById('adminRoot').innerHTML = `
+  <div class="amask" id="amask">
+    <div class="amodal" role="dialog" aria-modal="true" aria-label="Login admin" style="max-width:380px">
+      <h3>🔐 Admin</h3>
+      <div class="asub">Masukkan password admin untuk mengelola hari bebas / kegiatan.</div>
+      <div class="frow"><div class="f"><label>Password</label>
+        <input type="password" id="admPass" autocomplete="off" /></div></div>
+      <div class="frow" style="justify-content:flex-end;margin-bottom:0">
+        <button class="abtn" id="admCancel">Batal</button>
+        <button class="abtn pri" id="admLogin">Masuk</button>
+      </div>
+      <div class="anote" id="admNote"></div>
+    </div>
+  </div>`;
+  const inp = document.getElementById('admPass');
+  inp.focus();
+  inp.addEventListener('keydown', e => { if (e.key === 'Enter') adminTryLogin(); });
+  document.getElementById('admLogin').addEventListener('click', adminTryLogin);
+  document.getElementById('admCancel').addEventListener('click', closeAdmin);
+  wireMask();
+}
+function adminTryLogin(){
+  const v = document.getElementById('admPass').value;
+  if (v === ADMIN_PASS){
+    sessionStorage.setItem(ADMIN_KEY, '1');
+    renderAdminPanel();
+    return;
+  }
+  const n = document.getElementById('admNote');
+  n.textContent = '❌ Password salah.';
+  n.className = 'anote err'; n.style.display = 'block';
+  const inp = document.getElementById('admPass');
+  inp.value = ''; inp.focus();
+}
+
+function renderAdminPanel(){
+  const kelasList = [...STATE.siswaByKelas.keys()].sort((a,b) => a.localeCompare(b,'id'));
+  document.getElementById('adminRoot').innerHTML = `
+  <div class="amask" id="amask">
+    <div class="amodal" role="dialog" aria-modal="true" aria-label="Admin hari bebas dan kegiatan">
+      <div style="display:flex;align-items:flex-start;gap:10px">
+        <div style="flex:1">
+          <h3>📋 Hari Bebas & Kegiatan</h3>
+          <div class="asub">Tanggal yang diisi di sini <b>keluar dari penyebut persentase</b> kelas terkait. Tidak memicu notif WA.</div>
+        </div>
+        <button class="abtn" id="admClose" title="Tutup">✕</button>
+      </div>
+
+      <div class="asec" style="border-top:0;margin-top:0;padding-top:0">
+        <h4>Tambah kegiatan / libur</h4>
+        <div class="asub">Satu nama kegiatan, satu rentang tanggal, pilih kelas (boleh semua).</div>
+        <div class="frow">
+          <div class="f" style="flex:2;min-width:220px"><label>Nama kegiatan / alasan</label>
+            <input type="text" id="admAlasan" placeholder="mis. Kajian Akbar, Libur Idul Fitri" maxlength="80" /></div>
+        </div>
+        <div class="frow">
+          <div class="f"><label>Dari tanggal</label><input type="date" id="admTgl1" /></div>
+          <div class="f"><label>Sampai (opsional)</label><input type="date" id="admTgl2" /></div>
+        </div>
+        <label style="font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Kelas</label>
+        <div class="kchips" id="admKelas">
+          ${kelasList.map(k => `<label class="kchip"><input type="checkbox" value="${esc(k)}">${esc(k)}</label>`).join('')}
+          <label class="kchip" id="admAll"><input type="checkbox">Semua kelas</label>
+        </div>
+        <div class="frow" style="justify-content:flex-end;align-items:center">
+          <span id="admPreview" style="font-size:11.5px;font-weight:700;color:var(--muted)"></span>
+          <button class="abtn pri" id="admSave">Simpan pengecualian</button>
+        </div>
+        <div class="anote" id="admNote"></div>
+      </div>
+
+      <div class="asec">
+        <h4>Daftar pengecualian aktif</h4>
+        <div class="asub">Termasuk Tahsin Teori yang ditandai guru (per kelompok). Hapus bila salah input.</div>
+        <div class="afilter">Filter kelas
+          <select id="admFilterKelas"><option value="">Semua</option>
+            ${kelasList.map(k => `<option value="${esc(k)}">${esc(k)}</option>`).join('')}
+          </select>
+          <span id="admCount"></span>
+        </div>
+        <table class="atab">
+          <thead><tr><th style="width:118px">Tanggal</th><th>Lingkup</th><th>Alasan</th><th>Diinput</th><th></th></tr></thead>
+          <tbody id="admRows"></tbody>
+        </table>
+      </div>
+
+      <div class="asec" style="display:flex;justify-content:space-between;align-items:center">
+        <span style="font-size:11px;color:var(--muted);font-weight:700">Sesi admin berlaku sampai tab ditutup.</span>
+        <button class="abtn" id="admLogout">Keluar</button>
+      </div>
+    </div>
+  </div>`;
+
+  wireMask();
+  document.getElementById('admClose').addEventListener('click', closeAdmin);
+  document.getElementById('admLogout').addEventListener('click', adminLogout);
+
+  const all = document.getElementById('admAll');
+  all.addEventListener('change', () => {
+    document.querySelectorAll('#admKelas input[value]').forEach(c => {
+      c.checked = all.checked;
+      c.closest('.kchip').classList.toggle('on', c.checked);
+    });
+    all.classList.toggle('on', all.checked);
+    adminPreview();
+  });
+  document.querySelectorAll('#admKelas input[value]').forEach(c => {
+    c.addEventListener('change', () => {
+      c.closest('.kchip').classList.toggle('on', c.checked);
+      const allc = [...document.querySelectorAll('#admKelas input[value]')];
+      all.checked = allc.every(x => x.checked);
+      all.classList.toggle('on', all.checked);
+      adminPreview();
+    });
+  });
+  ['admTgl1','admTgl2'].forEach(id => document.getElementById(id).addEventListener('change', adminPreview));
+  document.getElementById('admTgl1').value = toDateStr(new Date());
+  document.getElementById('admSave').addEventListener('click', adminSaveKegiatan);
+  document.getElementById('admFilterKelas').addEventListener('change', adminRenderRows);
+  adminRenderRows();
+}
+
+function adminFormPick(){
+  const alasan = (document.getElementById('admAlasan').value || '').trim();
+  const d1 = document.getElementById('admTgl1').value;
+  const d2 = document.getElementById('admTgl2').value;
+  const kelass = [...document.querySelectorAll('#admKelas input[value]:checked')].map(c => c.value);
+  const dates = [];
+  if (d1){
+    const end = (d2 && d2 >= d1) ? d2 : d1;
+    const cur = new Date(d1 + 'T00:00:00'), e = new Date(end + 'T00:00:00');
+    while (cur <= e && dates.length < 62){ dates.push(toDateStr(cur)); cur.setDate(cur.getDate() + 1); }
+  }
+  return {alasan, dates, kelass};
+}
+function adminPreview(){
+  const pv = document.getElementById('admPreview');
+  if (!pv) return;
+  const {dates, kelass} = adminFormPick();
+  pv.textContent = dates.length && kelass.length
+    ? `= ${kelass.length} kelas × ${dates.length} tanggal = ${kelass.length * dates.length} catatan` : '';
+}
+function adminNote(msg, err){
+  const n = document.getElementById('admNote');
+  if (!n) return;
+  n.textContent = msg;
+  n.className = 'anote' + (err ? ' err' : '');
+  n.style.display = 'block';
+  if (!err) setTimeout(() => { n.style.display = 'none'; }, 6000);
+}
+async function adminSaveKegiatan(){
+  const {alasan, dates, kelass} = adminFormPick();
+  if (!alasan){ adminNote('❌ Isi nama kegiatan / alasan dulu.', true); document.getElementById('admAlasan').focus(); return; }
+  if (!dates.length){ adminNote('❌ Isi tanggal mulai.', true); return; }
+  if (!kelass.length){ adminNote('❌ Pilih minimal satu kelas.', true); return; }
+  const btn = document.getElementById('admSave');
+  btn.disabled = true; btn.textContent = 'Menyimpan…';
+  try {
+    const rows = [];
+    kelass.forEach(k => dates.forEach(t => rows.push({
+      kelas:k, tanggal:t, alasan, guru:'', catatan:'', dibuat_oleh:'admin'
+    })));
+    await DatabaseService.savePengecualianBulk(rows);
+    STATE.pengecualian = await DatabaseService.loadPengecualian();
+    rebuildExcIdx();
+    render();
+    adminNote(`✅ "${alasan}" tersimpan: ${kelass.length} kelas × ${dates.length} tanggal = ${rows.length} catatan.`);
+    document.getElementById('admAlasan').value = '';
+    document.getElementById('admTgl2').value = '';
+    document.querySelectorAll('#admKelas input').forEach(c => {
+      c.checked = false;
+      const chip = c.closest('.kchip'); if (chip) chip.classList.remove('on');
+    });
+    adminPreview();
+    adminRenderRows();
+  } catch (err) {
+    adminNote('❌ Gagal menyimpan: ' + (err.message || err), true);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Simpan pengecualian';
+  }
+}
+
+/* Kelompokkan utk tampilan: kelas-level per (tanggal,alasan);
+   kelompok-guru per (tanggal,alasan,kelas,guru) */
+function adminGroupRows(){
+  const f = document.getElementById('admFilterKelas').value;
+  const map = new Map();
+  (STATE.pengecualian || []).forEach(r => {
+    if (f && r.kelas !== f) return;
+    const key = r.guru ? `g|${r.tanggal}|${r.alasan}|${r.kelas}|${r.guru}`
+                       : `k|${r.tanggal}|${r.alasan}`;
+    if (!map.has(key)) map.set(key, {tanggal:r.tanggal, alasan:r.alasan, guru:r.guru, kelas:[], ids:[], oleh:new Set()});
+    const g = map.get(key);
+    g.kelas.push(r.kelas); g.ids.push(r.id);
+    if (r.dibuatOleh) g.oleh.add(r.dibuatOleh);
+  });
+  return [...map.values()].sort((a,b) =>
+    b.tanggal.localeCompare(a.tanggal) ||
+    a.alasan.localeCompare(b.alasan, 'id') ||
+    (a.guru || '').localeCompare(b.guru || '', 'id'));
+}
+function adminRenderRows(){
+  const rows = adminGroupRows();
+  const cnt = document.getElementById('admCount');
+  const tb = document.getElementById('admRows');
+  if (!cnt || !tb) return;
+  cnt.textContent = `(${rows.length} baris)`;
+  if (!rows.length){
+    tb.innerHTML = `<tr><td colspan="5" style="color:var(--muted);font-weight:600">Belum ada pengecualian.</td></tr>`;
+    return;
+  }
+  tb.innerHTML = rows.map((g, i) => {
+    const d = new Date(g.tanggal + 'T00:00:00');
+    const tgl = (HARI_ID[HARI_BY_GETDAY[d.getDay()]] || '').slice(0,3) + ', ' +
+      d.getDate() + ' ' + BULAN_SHORT[d.getMonth()] + ' ' + d.getFullYear();
+    const lingkup = g.guru
+      ? `Kelas ${esc(g.kelas[0])} · kel. ${esc(singkat(g.guru))}`
+      : `${g.kelas.length} kelas — ${esc(g.kelas.slice(0,6).join(', '))}${g.kelas.length > 6 ? '…' : ''}`;
+    return `<tr>
+      <td>${esc(tgl)}</td>
+      <td>${lingkup}</td>
+      <td><span class="apill">${esc(excLabel(g.alasan) || '–')}</span></td>
+      <td style="font-size:11px;color:var(--muted);font-weight:700">${esc([...g.oleh].join(', ') || '–')}</td>
+      <td><button class="abtn danger" data-adel="${i}" title="Hapus">✕</button></td>
+    </tr>`;
+  }).join('');
+  tb.querySelectorAll('[data-adel]').forEach(b => b.addEventListener('click', () => {
+    const g = rows[parseInt(b.dataset.adel, 10)];
+    if (g) adminDelete(g);
+  }));
+}
+async function adminDelete(g){
+  const n = g.ids.length;
+  if (!confirm(`Hapus "${excLabel(g.alasan)}" (${n} catatan${g.guru ? ', kel. ' + g.guru : ''})?`)) return;
+  try {
+    for (const id of g.ids) await DatabaseService.deletePengecualian(id);
+    STATE.pengecualian = await DatabaseService.loadPengecualian();
+    rebuildExcIdx();
+    render();
+    adminRenderRows();
+    adminNote(`🗑️ ${n} catatan dihapus.`);
+  } catch (err) {
+    adminNote('❌ Gagal menghapus: ' + (err.message || err), true);
+  }
+}
+document.getElementById('btnAdmin').addEventListener('click', openAdmin);
 
 /* ================= INIT ================= */
 async function init(){
