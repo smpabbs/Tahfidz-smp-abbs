@@ -4,51 +4,51 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Laporan Tahfidz — Per Guru & Per Kelas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
 <style>
-@font-face{font-family:'Amiri';font-style:normal;font-weight:400;font-display:swap;src:url('../fonts/amiri-400.woff2') format('woff2')}
-@font-face{font-family:'Amiri';font-style:normal;font-weight:700;font-display:swap;src:url('../fonts/amiri-700.woff2') format('woff2')}
-@font-face{font-family:'Manrope';font-style:normal;font-weight:400 800;font-display:swap;src:url('../fonts/manrope-var.woff2') format('woff2')}
 :root{
-  --page:#ECE6D6;--surface:#FFFCF4;--surface-3:#EFE7CE;
-  --line:#D8C89B;--line-soft:#E7DCB8;
-  --ink:#252131;--ink-soft:#544E63;--muted:#7A7188;
-  --accent:#33447D;--accent-deep:#212C56;--accent-dim:rgba(51,68,125,.12);
-  --gold:#AD7E37;
-  --good:#2E8F5C;--good-bg:rgba(46,143,92,.16);
-  --warn:#BD7E2A;--warn-bg:rgba(189,126,42,.16);
-  --danger:#B14F3E;--danger-bg:rgba(177,79,62,.14);
-  --future:#9C93A8;--future-bg:rgba(156,147,168,.16);
-  --serif:'Amiri',Georgia,serif;--sans:'Manrope','Segoe UI',system-ui,sans-serif;
+  --page:#F1F4F1;--surface:#FFFFFF;--surface-3:#EDF1ED;
+  --line:#E2E8E3;--line-soft:#EDF1ED;
+  --ink:#14231D;--ink-soft:#3E4F47;--muted:#6E7C74;
+  --accent:#0F5C48;--accent-deep:#0F3D31;--accent-dim:rgba(15,92,72,.10);
+  --good:#1B7F4D;--good-bg:rgba(27,127,77,.14);
+  --warn:#C08A2D;--warn-bg:rgba(192,138,45,.16);
+  --danger:#C96055;--danger-bg:rgba(201,96,85,.14);
+  --future:#9AA99F;--future-bg:rgba(154,169,159,.16);
+  --serif:'Source Serif 4',Georgia,serif;--sans:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 
-.mock-note{max-width:1060px;margin:12px auto 0;padding:8px 14px;border-radius:8px;background:rgba(173,126,55,.12);border:1px dashed var(--gold);color:var(--gold);font-size:12px;font-weight:700;text-align:center}
-
-/* ===== topbar ===== */
-.bar{position:sticky;top:0;z-index:30;background:rgba(247,242,228,.95);backdrop-filter:blur(6px);border-bottom:1px solid var(--line)}
-.bar-in{max-width:1060px;margin:0 auto;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
-.brand{font-family:var(--serif);font-weight:700;font-size:17px;cursor:pointer}
-.brand em{font-style:normal;color:var(--accent)}
-.pov{display:flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;flex-shrink:0}
-.pov button{border:0;background:var(--surface);font:inherit;font-size:12.5px;font-weight:700;padding:7px 14px;cursor:pointer;color:var(--muted)}
-.pov button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
-.pov button.on{background:var(--accent);color:#fff}
-.tabs{display:flex;background:var(--surface-3);border:1px solid var(--line);border-radius:10px;padding:3px;gap:2px;margin-left:auto}
-.tabs button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:var(--muted);padding:6px 12px;border-radius:8px;cursor:pointer}
-.tabs button.on{background:var(--surface);color:var(--accent-deep);box-shadow:0 1px 3px rgba(37,33,49,.14)}
+/* ===== topbar (band institusional) ===== */
+.bar{background:var(--accent-deep);color:#fff;padding:20px 0 50px}
+.bar-in{max-width:1060px;margin:0 auto;padding:0 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.bar-in + .bar-in{margin-top:22px;align-items:flex-end}
+.brand{font-family:var(--serif);font-weight:600;font-size:19px;cursor:pointer;letter-spacing:.1px}
+.brand em{font-style:normal;color:#fff}
+.pov{display:flex;border:1px solid rgba(255,255,255,.28);border-radius:10px;overflow:hidden;flex-shrink:0;padding:3px;gap:2px}
+.pov button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:7px;cursor:pointer;color:#CBDDD6}
+.pov button:focus-visible{outline:2px solid #fff;outline-offset:-2px}
+.pov button.on{background:#fff;color:var(--accent-deep)}
+.tabs{display:inline-flex;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:10px;padding:3px;gap:2px}
+.tabs button{border:0;background:transparent;font:inherit;font-size:12.5px;font-weight:700;color:#CBDDD6;padding:7px 12px;border-radius:7px;cursor:pointer}
+.tabs button.on{background:#fff;color:var(--accent-deep);box-shadow:none}
 .weeknav{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-.weeknav .nav{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--accent);cursor:pointer;font-size:15px;line-height:1}
-.weeknav .nav:focus-visible{outline:2px solid var(--accent)}
-.weeklabel b{display:block;font-family:var(--serif);font-size:14px;line-height:1.3}
-.weeklabel span{font-size:10.5px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
-.crumb{display:flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:var(--muted);flex-wrap:wrap;flex-basis:100%;padding:0 20px 9px}
-.crumb a{color:var(--accent);cursor:pointer;text-decoration:none;padding:3px 6px;border-radius:6px}
-.crumb a:hover{background:var(--accent-dim)}
-.crumb a:focus-visible{outline:2px solid var(--accent)}
-.crumb .here{color:var(--ink);padding:3px 6px}
-.crumb .sep{color:var(--line)}
+.weeknav .nav{width:32px;height:32px;border-radius:9px;border:1px solid rgba(255,255,255,.28);background:transparent;color:#fff;cursor:pointer;font-size:15px;line-height:1;flex-shrink:0}
+.weeknav .nav:hover{background:rgba(255,255,255,.12)}
+.weeknav .nav:focus-visible{outline:2px solid #fff}
+.weeklabel{min-width:0}
+.weeklabel b{display:block;font-family:var(--serif);font-size:20px;font-weight:600;line-height:1.25}
+.weeklabel span{font-size:11px;font-weight:700;color:#9FC3B6;text-transform:uppercase;letter-spacing:.4px}
+.crumb{display:flex;align-items:center;gap:4px;font-size:12.5px;font-weight:700;color:#9FC3B6;flex-wrap:wrap;flex-basis:100%;padding:12px 20px 0;max-width:1060px;margin:0 auto}
+.crumb a{color:#fff;cursor:pointer;text-decoration:none;padding:3px 6px;border-radius:6px}
+.crumb a:hover{background:rgba(255,255,255,.14)}
+.crumb a:focus-visible{outline:2px solid #fff}
+.crumb .here{color:#fff;padding:3px 6px}
+.crumb .sep{color:rgba(255,255,255,.35)}
 .note{display:none;max-width:1060px;margin:10px auto 0;padding:8px 14px;border-radius:8px;background:var(--danger-bg);color:#8A3A2C;font-size:12px;font-weight:700}
 
 /* ===== layout ===== */
@@ -61,7 +61,11 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .lv-head .sub{font-size:12px;color:var(--muted);font-weight:700}
 .back{font:inherit;font-size:12.5px;font-weight:800;color:var(--accent);background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:7px 12px;cursor:pointer}
 .back:focus-visible{outline:2px solid var(--accent)}
-.rule-note{font-size:11.5px;color:var(--muted);font-weight:600;background:var(--surface-3);border:1px solid var(--line-soft);border-radius:9px;padding:7px 12px;margin-bottom:16px}
+.rule-note{font-size:12px;color:var(--muted);margin-bottom:16px}
+.rule-note summary{cursor:pointer;font-weight:700;color:var(--accent);list-style:none;display:inline-flex;gap:6px;align-items:center}
+.rule-note summary::-webkit-details-marker{display:none}
+.rule-note summary .ic{width:15px;height:15px;border:1.5px solid var(--accent);border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0}
+.rule-note p{margin-top:8px;line-height:1.6;font-weight:600;background:var(--surface);border:1px solid var(--line-soft);border-radius:10px;padding:12px 14px}
 .rule-note b{color:var(--ink-soft)}
 .empty{background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:16px;font-size:12.5px;color:var(--muted);font-weight:600}
 
@@ -79,9 +83,8 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 /* ===== kartu guru ===== */
 .grid-guru{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:14px}
 .gcard{background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;padding:16px;cursor:pointer;display:flex;gap:14px;align-items:center;transition:box-shadow .15s,transform .15s}
-.gcard:hover{box-shadow:0 10px 26px rgba(37,33,49,.14);transform:translateY(-2px)}
+.gcard:hover{box-shadow:0 10px 26px rgba(15,61,49,.14);transform:translateY(-2px)}
 .gcard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
-.gcard .av{width:46px;height:46px;border-radius:13px;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;flex-shrink:0}
 .gcard .who{flex:1;min-width:0}
 .gcard .nm{font-family:var(--serif);font-weight:700;font-size:15.5px;line-height:1.25}
 .gcard .mt{font-size:11px;color:var(--muted);font-weight:700;margin-top:3px}
@@ -96,11 +99,11 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 /* ===== kartu kelas ===== */
 .grid-kelas{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
 .kcard{background:var(--surface);border:1px solid var(--line-soft);border-radius:16px;padding:16px;cursor:pointer;transition:box-shadow .15s,transform .15s}
-.kcard:hover{box-shadow:0 10px 26px rgba(37,33,49,.14);transform:translateY(-2px)}
+.kcard:hover{box-shadow:0 10px 26px rgba(15,61,49,.14);transform:translateY(-2px)}
 .kcard:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
 .kcard.worst{border-left:4px solid var(--danger)}
 .kcard .top{display:flex;gap:13px;align-items:center}
-.kcard .badge{width:46px;height:46px;border-radius:13px;background:var(--gold);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:16px;flex-shrink:0}
+.kcard .badge{width:46px;height:46px;border-radius:13px;background:var(--accent-deep);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-weight:700;font-size:16px;flex-shrink:0}
 .kcard .knm{font-family:var(--serif);font-weight:700;font-size:16px}
 .kcard .kmt{font-size:11px;color:var(--muted);font-weight:700;margin-top:2px}
 .kcard .dots{display:flex;gap:5px;margin-top:12px}
@@ -172,9 +175,11 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .wrow.open{border-color:var(--line)}
 
 /* ===== admin pengecualian ===== */
-.btn-admin{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:var(--surface);color:var(--accent);cursor:pointer;font-size:14px;line-height:1;flex-shrink:0}
-.btn-admin:focus-visible{outline:2px solid var(--accent)}
-.amask{position:fixed;inset:0;background:rgba(37,33,49,.45);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow:auto}
+.btn-admin{width:30px;height:30px;border-radius:9px;border:1px solid rgba(255,255,255,.28);background:transparent;color:#fff;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.btn-admin:hover{background:rgba(255,255,255,.12)}
+.btn-admin:focus-visible{outline:2px solid #fff}
+.btn-admin svg{width:15px;height:15px}
+.amask{position:fixed;inset:0;background:rgba(15,35,28,.45);z-index:60;display:flex;align-items:flex-start;justify-content:center;padding:4vh 14px;overflow:auto}
 .amodal{background:var(--surface);border:1px solid var(--line);border-radius:16px;max-width:720px;width:100%;padding:20px 22px;animation:fadeUp .18s ease}
 .amodal h3{font-family:var(--serif);font-size:18px;margin-bottom:4px}
 .amodal h4{font-size:13px;font-weight:800;margin-bottom:2px}
@@ -222,8 +227,12 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 .pkbadge.o{background:var(--good-bg);color:#1E5C3C}
 
 @media (max-width:640px){
-  .bar-in{padding:8px 12px}
+  .bar{padding:16px 0 40px}
+  .bar-in{padding:0 12px}
+  .crumb{padding:10px 12px 0}
   .tabs{margin-left:0}
+  .weeklabel{order:-1;flex:1 1 100%;margin-bottom:4px}
+  .weeklabel b{font-size:17px}
   .wrap{padding:14px 12px 50px}
   .grid-guru,.grid-kelas{grid-template-columns:1fr}
   .amask{padding:2vh 10px}
@@ -232,15 +241,14 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 </style>
 </head>
 <body>
-<div class="mock-note">Laporan Tahfidz — data real (Supabase + jadwal GitHub) · drill-down infografis · build real-v2 · pengecualian kegiatan/tahsin</div>
 <div class="note" id="warnNote"></div>
 
 <div class="bar">
   <div class="bar-in">
     <div class="brand" id="brandHome">Laporan <em>Tahfidz</em></div>
     <div class="pov" id="pov">
-      <button class="on" data-pov="guru">👤 Per Guru</button>
-      <button data-pov="kelas">🏫 Per Kelas</button>
+      <button class="on" data-pov="guru">Per Guru</button>
+      <button data-pov="kelas">Per Kelas</button>
     </div>
     <div class="tabs" id="tabs">
       <button data-p="harian">Harian</button>
@@ -248,9 +256,9 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
       <button data-p="bulanan">Bulanan</button>
       <button data-p="semester">Semester</button>
     </div>
-    <button class="btn-admin" id="btnAdmin" title="Admin — hari bebas / kegiatan" aria-label="Admin">⚙</button>
+    <button class="btn-admin" id="btnAdmin" title="Admin — hari bebas / kegiatan" aria-label="Admin"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33h.01a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51h.01a1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82v.01a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></button>
   </div>
-  <div class="bar-in" style="padding-top:0;padding-bottom:8px">
+  <div class="bar-in">
     <div class="weeknav">
       <button class="nav" id="btnPrev" aria-label="Periode sebelumnya">‹</button>
       <div class="weeklabel"><b id="periodLabel">–</b><span id="periodSub">–</span></div>
@@ -262,7 +270,9 @@ body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height
 </div>
 
 <div class="wrap">
-  <div class="rule-note"><b>Aturan hitung:</b> siswa dianggap <b>"tercatat"</b> bila ada input apa pun pada sesi itu — ziyadah, murojaah, maupun tilawah (absen yang dicatat guru juga dihitung tercatat). Persentase = sesi yang sudah waktunya saja. Tanggal <b>kegiatan/libur</b> (input admin) dan sesi <b>Tahsin Teori</b> (per kelompok) keluar dari penyebut. Di POV <b>Per Guru</b>, angka dihitung hanya atas <b>siswa bimbingan guru tsb</b> (patokan guru pengampu) — 1 kelas bisa 2–4 guru.</div>
+  <details class="rule-note"><summary><span class="ic">i</span>Cara angka dihitung</summary>
+    <p><b>Aturan hitung:</b> siswa dianggap <b>"tercatat"</b> bila ada input apa pun pada sesi itu — ziyadah, murojaah, maupun tilawah (absen yang dicatat guru juga dihitung tercatat). Persentase = sesi yang sudah waktunya saja. Tanggal <b>kegiatan/libur</b> (input admin) dan sesi <b>Tahsin Teori</b> (per kelompok) keluar dari penyebut. Di POV <b>Per Guru</b>, angka dihitung hanya atas <b>siswa bimbingan guru tsb</b> (patokan guru pengampu) — 1 kelas bisa 2–4 guru.</p>
+  </details>
   <div id="view" class="view"></div>
 </div>
 
@@ -735,7 +745,6 @@ function renderGurus(){
     let nSiswa = 0;
     kelasUnik.forEach(k => { guruSiswaSet(k, g).forEach(nm => nSiswa++); });
     return `<div class="gcard" tabindex="0" role="button" data-guru="${esc(g)}" aria-label="Detail ${esc(g)}">
-      <div class="av">${esc(g.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase())}</div>
       <div class="who">
         <div class="nm">${esc(g)}</div>
         <div class="mt">${nSiswa} siswa · ${kelasUnik.length} kelas · <b>${tot}</b> ${unit} · <b style="color:var(--danger)">${miss}</b> kosong</div>
@@ -1029,7 +1038,7 @@ function renderRekap(){
 /* ================= CRUMB & RENDER ================= */
 function renderCrumb(){
   const c = document.getElementById('crumb');
-  let h = state_proxy().pov === 'guru' ? `<a data-lvl="1">👤 Guru</a>` : `<a data-lvl="1">🏫 Kelas</a>`;
+  let h = state_proxy().pov === 'guru' ? `<a data-lvl="1">Guru</a>` : `<a data-lvl="1">Kelas</a>`;
   const S = STATE;
   if (S.pov === 'guru' && S.level >= 2)
     h += `<span class="sep">›</span>` + (S.level > 2 ? `<a data-lvl="2">${esc(S.guruSel)}</a>` : `<span class="here">${esc(S.guruSel)}</span>`);
