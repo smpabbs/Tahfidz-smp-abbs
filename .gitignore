@@ -11,9 +11,14 @@ dist/
 *.bak
 *.bak-*
 
+# Data siswa (PII - jangan pernah masuk git)
+*.xlsx
+*.csv
+
 # Env
 .env
 .env.local
+.db-pass
 
 # OS
 .DS_Store
