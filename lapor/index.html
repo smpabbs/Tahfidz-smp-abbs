@@ -529,12 +529,12 @@ function buildOccs(range){
         const roster = STATE.siswaByKelas.get(s.kelas) || [];
         if (roster.length === 0){ STATE.noRosterKelas.add(s.kelas); return; }
         const dateStr = toDateStr(cur);
-        /* Aturan tetap sekolah: Rabu jam 1-2 selalu Tasmi' Akbar ->
+        /* Aturan tetap sekolah: Selasa jam 1-2 selalu Tasmi' Akbar ->
            keluar dari penyebut. Pengecualian admin (kegiatan/libur,
            guru kosong) juga mengeluarkan SELURUH sesi; pengecualian
            kelompok (Tahsin Teori, guru terisi) mengeluarkan siswa
            kelompok tsb saja dari penyebut kelas itu. */
-        const isTasmi = s.day === 'Wednesday' && (s.jam === '1' || s.jam === '2');
+        const isTasmi = s.day === 'Tuesday' && (s.jam === '1' || s.jam === '2');
         const excRows = STATE.excIdx.get(s.kelas + '|' + dateStr) || [];
         const kelasRows = excRows.filter(r => !r.guru);
         const klpRows = excRows.filter(r => r.guru);

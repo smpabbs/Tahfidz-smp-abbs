@@ -20,9 +20,10 @@ let mon = new Date(today); mon.setHours(0,0,0,0);
 mon.setDate(mon.getDate() - (mon.getDay() === 0 ? 6 : mon.getDay() - 1));
 if (today.getDay() === 1) mon.setDate(mon.getDate() - 7);
 const tue = new Date(mon); tue.setDate(mon.getDate() + 1);
+const wed = new Date(mon); wed.setDate(mon.getDate() + 2);
 const dstr = d => d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
-const MON = dstr(mon), TUE = dstr(tue);
-console.log('Fixture: Senin=' + MON + ' Selasa=' + TUE);
+const MON = dstr(mon), TUE = dstr(tue), WED = dstr(wed);
+console.log('Fixture: Senin=' + MON + ' Selasa=' + TUE + ' Rabu=' + WED);
 
 /* ===== fixture data ===== */
 const DATA = {
@@ -55,7 +56,7 @@ const RECORDS = [
 ];
 const PENGECUALIAN = [
   { id: 'e1', kelas: '8B', tanggal: MON, alasan: 'Kajian Akbar', guru: '', catatan: '', dibuatOleh: 'admin' },
-  { id: 'e2', kelas: '7A', tanggal: TUE, alasan: 'Tahsin Teori', guru: 'Ustadz Andi', catatan: '', dibuatOleh: 'Ustadz Andi' }
+  { id: 'e2', kelas: '7A', tanggal: WED, alasan: 'Tahsin Teori', guru: 'Ustadz Andi', catatan: '', dibuatOleh: 'Ustadz Andi' }
 ];
 
 let bulkCalls = [];
@@ -124,23 +125,21 @@ ok(doc.getElementById('errorNote').style.display !== 'block', 'tanpa error load'
 console.log('\n== 2. buildOccs — pengecualian masuk hitungan ==');
 const occs = w.eval('STATE.occs');
 const m7A = occs.find(o => o.kelas === '7A' && o.dateStr === MON);
-const t7A = occs.find(o => o.kelas === '7A' && o.dateStr === TUE);
+const t7A = occs.find(o => o.kelas === '7A' && o.dateStr === WED);
 const m8B = occs.find(o => o.kelas === '8B' && o.dateStr === MON);
-const w7A = occs.find(o => o.kelas === '7A' && o.jam === '1' && HARI(w, o.date) === 'Wednesday');
+const w7A = occs.find(o => o.kelas === '7A' && o.dateStr === TUE);
 ok(!!m7A && m7A.due === true && m7A.t === 3 && m7A.n === 2, `7A ${MON} due, t=3 n=2 (ada ${m7A ? `${m7A.due},${m7A.t},${m7A.n}` : 'null'})`);
 ok(!!m8B && m8B.due === false && m8B.exc === 'Kajian Akbar', `8B ${MON} exc kelas "Kajian Akbar", due=false`);
-ok(!!t7A && t7A.due === true && t7A.t === 1 && t7A.n === 0, `7A ${TUE} kelompok: t=1 n=0 (Satu+Dua keluar)`);
+ok(!!t7A && t7A.due === true && t7A.t === 1 && t7A.n === 0, `7A ${WED} kelompok: t=1 n=0 (Satu+Dua keluar)`);
 ok(!!t7A && t7A.excNames.has('Satu') && t7A.excNames.has('Dua') && !t7A.excNames.has('Tiga'), 'excNames = {Satu, Dua}, Tiga tidak');
 ok(!!t7A && t7A.excKlpAlasan === 'Tahsin Teori' && t7A.excGuru[0] === 'Ustadz Andi', 'excKlpAlasan & excGuru terisi');
-ok(!!w7A && w7A.due === false && w7A.exc === 'Tasmi Akbar', 'Rabu jam 1 tetap Tasmi Akbar (statis)');
-
-function HARI(w, d) { return ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'][d.getDay()]; }
+ok(!!w7A && w7A.due === false && w7A.exc === 'Tasmi Akbar', 'Selasa jam 1 tetap Tasmi Akbar (statis)');
 
 console.log('\n== 3. renderSiswa — penyebut per siswa ==');
 w.eval(`STATE.pov='kelas'; STATE.kelasSel='7A'; STATE.level=2; STATE.siswaSel=null; render();`);
 let htmlView = doc.getElementById('view').innerHTML;
-ok(htmlView.includes('1/1'), 'Satu & Dua: 1/1 (Selasa dikecualikan dari penyebut)');
-ok(htmlView.includes('0/2'), 'Tiga: 0/2 (Selasa tetap kewajiban, tanpa input)');
+ok(htmlView.includes('1/1'), 'Satu & Dua: 1/1 (Rabu dikecualikan dari penyebut)');
+ok(htmlView.includes('0/2'), 'Tiga: 0/2 (Rabu tetap kewajiban, tanpa input)');
 const pTot = (doc.querySelector('#view .donut .pct') || {}).textContent || '';
 ok(pTot.startsWith('50'), 'donut total 50% (2 dari 4)');
 
@@ -178,21 +177,21 @@ ok(rowsHtml.includes('admin'), 'kolom diinput = admin');
 
 console.log('\n== 8. Admin: simpan kegiatan ==');
 w.eval(`document.getElementById('admAlasan').value='Rapat Wali Kelas';
-  document.getElementById('admTgl1').value='${TUE}';
+  document.getElementById('admTgl1').value='${WED}';
   document.getElementById('admTgl2').value='';
   document.querySelector('#admKelas input[value="8B"]').checked = true;
   document.querySelector('#admKelas input[value="8B"]').closest('.kchip').classList.add('on');`);
 bulkCalls = [];
 await w.eval('adminSaveKegiatan()');
 ok(bulkCalls.length === 1 && bulkCalls[0].length === 1, 'bulk upsert 1 baris');
-ok(bulkCalls[0] && bulkCalls[0][0] && bulkCalls[0][0].kelas === '8B' && bulkCalls[0][0].tanggal === TUE && bulkCalls[0][0].alasan === 'Rapat Wali Kelas' && bulkCalls[0][0].guru === '' && bulkCalls[0][0].dibuat_oleh === 'admin', 'payload benar (kelas/tanggal/alasan/guru kosong/admin)');
+ok(bulkCalls[0] && bulkCalls[0][0] && bulkCalls[0][0].kelas === '8B' && bulkCalls[0][0].tanggal === WED && bulkCalls[0][0].alasan === 'Rapat Wali Kelas' && bulkCalls[0][0].guru === '' && bulkCalls[0][0].dibuat_oleh === 'admin', 'payload benar (kelas/tanggal/alasan/guru kosong/admin)');
 ok(doc.getElementById('admRows').innerHTML.includes('Rapat Wali Kelas'), 'tabel refresh, baris baru tampil');
-const occAfter = w.eval(`STATE.occs.find(o => o.kelas==='8B' && o.dateStr==='${TUE}')`);
-ok(occAfter && occAfter.due === false && occAfter.exc === 'Rapat Wali Kelas', 'occ 8B Selasa kini dikecualikan (due=false)');
+const occAfter = w.eval(`STATE.occs.find(o => o.kelas==='8B' && o.dateStr==='${WED}')`);
+ok(occAfter && occAfter.due === false && occAfter.exc === 'Rapat Wali Kelas', 'occ 8B Rabu kini dikecualikan (due=false)');
 
 console.log('\n== 9. Admin: hapus (confirm dibatalkan) ==');
 const before = w.eval('STATE.pengecualian.length');
-await w.eval(`adminDelete({tanggal:'${TUE}', alasan:'Rapat Wali Kelas', guru:'', ids:['x1'], kelas:['8B'], oleh:new Set()})`);
+await w.eval(`adminDelete({tanggal:'${WED}', alasan:'Rapat Wali Kelas', guru:'', ids:['x1'], kelas:['8B'], oleh:new Set()})`);
 ok(w.eval('STATE.pengecualian.length') === before, 'confirm=false → tidak ada yang terhapus');
 
 console.log('\n== 10. Rekomendasi kaldik ==');
