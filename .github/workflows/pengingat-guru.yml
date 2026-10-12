@@ -11,10 +11,15 @@ on:
         description: "Opsional: belokkan semua WA ke 1 nomor test (format 62xxxx)"
         type: string
         default: ""
-
-# Catatan: blok `schedule:` ditambahkan di commit terpisah setelah hasil
-# dry-run & test kirim nyata dikonfirmasi oleh user -- lihat
-# C:\Users\kurikulum\.claude\plans\warm-mapping-teacup.md
+  schedule:
+    # Semua jam WIB (UTC+7), dikonversi ke UTC untuk cron GitHub Actions.
+    - cron: "0 5 * * 1,2,3,5"   # Senin/Selasa/Rabu/Jumat 12.00 WIB
+    - cron: "20 8 * * 1,2,3,5"  # Senin/Selasa/Rabu/Jumat 15.20 WIB
+    - cron: "0 5 * * 4"         # Kamis 12.00 WIB (sesi Kamis selalu kelar sebelum jam 12)
+    - cron: "50 3 * * 6"        # Sabtu 10.50 WIB
+    # Minggu: tidak ada jadwal Quran, sengaja tidak dibuat cron.
+    # Catatan: trigger `schedule` TIDAK membaca default `inputs.*` --
+    # DRY_RUN/TEST_OVERRIDE_PHONE otomatis kosong di run terjadwal (kirim nyata).
 
 jobs:
   kirim:
