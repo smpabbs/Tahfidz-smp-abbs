@@ -1,0 +1,14 @@
+# Jangan publikasikan kredensial, data siswa, dan file scratch
+.db-pass
+.env*
+*.xlsx
+*.csv
+*.ps1
+.claude/
+.github/
+mockup/
+supabase/
+scripts/
+resources/
+www/
+test-lapor-pengecualian.mjs
