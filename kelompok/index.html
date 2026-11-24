@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Kelompok Qur'an — SMP ABBS</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#F1F4F1;--surface:#FFFFFF;--surface-3:#EDF1ED;
+  --line:#E2E8E3;--line-soft:#EDF1ED;
+  --ink:#14231D;--ink-soft:#3E4F47;--muted:#6E7C74;
+  --accent:#0F5C48;--accent-deep:#0F3D31;--accent-dim:rgba(15,92,72,.10);
+  --good:#1B7F4D;--good-bg:rgba(27,127,77,.14);
+  --warn:#C08A2D;--warn-bg:rgba(192,138,45,.16);
+  --danger:#C96055;--danger-bg:rgba(201,96,85,.14);
+  --serif:'Source Serif 4',Georgia,serif;--sans:'Plus Jakarta Sans','Segoe UI',system-ui,sans-serif;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+[hidden]{display:none!important}
+body{font-family:var(--sans);background:var(--page);color:var(--ink);line-height:1.5;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+button{font:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ===== topbar ===== */
+.bar{background:var(--accent-deep);color:#fff;padding:18px 0 22px}
+.bar-in{max-width:1180px;margin:0 auto;padding:0 22px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand{font-family:var(--serif);font-weight:600;font-size:20px;text-decoration:none;letter-spacing:.1px;white-space:nowrap}
+.brand small{display:block;font-family:var(--sans);font-size:9.5px;font-weight:800;letter-spacing:.9px;text-transform:uppercase;color:#9FC3B6;margin-top:1px}
+.spacer{flex:1}
+.tabs{display:inline-flex;flex-wrap:wrap;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.25);border-radius:11px;padding:3px;gap:2px}
+.tabs button{border:0;background:transparent;font-size:12.5px;font-weight:700;color:#CBDDD6;padding:7px 12px;border-radius:8px;cursor:pointer;line-height:1.2}
+.tabs button:hover{background:rgba(255,255,255,.10)}
+.tabs button.on{background:#fff;color:var(--accent-deep)}
+.tabs .dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--warn);margin-left:5px;vertical-align:middle}
+.tbtns{display:flex;gap:8px;align-items:center;margin-left:auto}
+.btn{border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:12.5px;font-weight:800;padding:8px 14px;border-radius:9px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{background:var(--surface-3)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn.pri:hover{background:var(--accent-deep)}
+.btn.pri:disabled{opacity:.45;cursor:not-allowed}
+.btn.ghost{background:transparent;color:#fff;border-color:rgba(255,255,255,.28)}
+.btn.ghost:hover{background:rgba(255,255,255,.12)}
+
+/* ===== layout ===== */
+.wrap{max-width:1180px;margin:0 auto;padding:26px 22px 90px}
+h1,h2,h3{font-family:var(--serif);font-weight:600;letter-spacing:-.2px}
+.loading,.error{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:26px;font-weight:700;color:var(--muted);text-align:center}
+.error{color:var(--danger);border-color:rgba(201,96,85,.4)}
+.muted{color:var(--muted);font-weight:600;font-size:12.5px}
+.red{color:var(--danger)}
+
+/* ===== rekap ===== */
+.page-head{display:flex;align-items:flex-end;gap:22px;flex-wrap:wrap;margin-bottom:22px}
+.page-head h1{font-size:27px;line-height:1.15}
+.page-head p{font-size:12.5px;font-weight:600;color:var(--muted);margin-top:4px;max-width:520px}
+.stats{display:flex;gap:10px;margin-left:auto;flex-wrap:wrap}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:9px 15px;min-width:82px}
+.stat b{display:block;font-size:19px;letter-spacing:-.4px;line-height:1.1}
+.stat span{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.5px}
+.stat.bad b{color:var(--danger)}
+.class-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(350px,1fr));gap:15px;align-items:start}
+.ccard{background:var(--surface);border:1px solid var(--line);border-radius:15px;overflow:hidden;box-shadow:0 1px 2px rgba(20,35,29,.03)}
+.ccard.hati{border-color:rgba(201,96,85,.4)}
+.ccard>header{display:flex;align-items:center;gap:11px;padding:13px 16px;border-bottom:1px solid var(--line-soft);background:linear-gradient(180deg,#FAFCFA,#fff)}
+.kbadge{width:40px;height:40px;border-radius:11px;background:var(--accent-dim);color:var(--accent-deep);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:800;flex-shrink:0;letter-spacing:-.2px}
+.ccard.hati .kbadge{background:var(--danger-bg);color:var(--danger)}
+.ccard>header .ttl{flex:1;min-width:0}
+.ccard>header h2{font-size:16.5px;line-height:1.2}
+.ccard>header .meta{font-size:11px;font-weight:700;color:var(--muted);margin-top:2px;display:block}
+.ccard>header .meta b{color:var(--danger)}
+.open{border:0;background:transparent;color:var(--accent);font-size:12px;font-weight:800;cursor:pointer;padding:6px 8px;border-radius:7px}
+.open:hover{background:var(--accent-dim)}
+.gblock{padding:12px 16px;border-top:1px dashed var(--line)}
+.gblock:first-of-type{border-top:0}
+.ghead{display:flex;align-items:center;gap:8px}
+.gdot{width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0}
+.gblock.belum .gdot{background:var(--danger)}
+.ghead b{font-size:12.5px;font-weight:800;color:var(--ink-soft)}
+.ghead .pill{margin-left:auto;font-size:10.5px;font-weight:800;background:var(--surface-3);color:var(--muted);border-radius:20px;padding:1px 8px}
+.gblock.belum .ghead b{color:var(--danger)}
+.gblock.belum .pill{background:var(--danger-bg);color:var(--danger)}
+.gnames{font-size:11.8px;color:var(--muted);font-weight:600;margin-top:4px;line-height:1.55}
+
+/* ===== editor kelas ===== */
+.cls-head{display:flex;align-items:center;gap:14px;flex-wrap:wrap;margin-bottom:18px}
+.cls-head .kbadge{width:46px;height:46px;font-size:14px}
+.cls-head h1{font-size:24px;line-height:1.15}
+.badges{display:flex;gap:6px;flex-wrap:wrap;margin-top:5px}
+.badge{font-size:10.5px;font-weight:800;border-radius:20px;padding:2px 9px;background:var(--surface-3);color:var(--ink-soft)}
+.badge.ok{background:var(--good-bg);color:var(--good)}
+.badge.warn{background:var(--warn-bg);color:var(--warn)}
+.head-actions{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.head-actions input[type=search]{font:inherit;font-size:12.5px;font-weight:700;padding:9px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);min-width:210px}
+.bulkbar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--accent-deep);color:#fff;border-radius:12px;padding:11px 15px;margin-bottom:16px;font-size:12.5px;font-weight:800;box-shadow:0 6px 18px rgba(15,61,49,.18)}
+.bulkbar select{font:inherit;font-size:12.5px;font-weight:700;padding:7px 10px;border:0;border-radius:8px;background:#fff;color:var(--ink)}
+.bulkbar .btn.ghost{border-color:rgba(255,255,255,.4)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;align-items:start}
+.tcard{background:var(--surface);border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:0 1px 2px rgba(20,35,29,.03)}
+.tcard.belum{border-color:rgba(201,96,85,.45)}
+.tcard>header{display:flex;align-items:center;gap:9px;padding:11px 13px;background:var(--surface-3);border-bottom:1px solid var(--line)}
+.tcard.belum>header{background:var(--danger-bg)}
+.avatar{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#fff;font-size:10.5px;font-weight:800;display:flex;align-items:center;justify-content:center;letter-spacing:.4px;flex-shrink:0}
+.tcard.belum .avatar{background:var(--danger)}
+.tcard>header b{font-size:12.5px;font-weight:800}
+.tcard>header .cnt{margin-left:auto;font-size:11px;font-weight:800;background:var(--surface);border-radius:20px;padding:1px 9px;color:var(--muted)}
+.selall{display:flex;align-items:center;gap:8px;cursor:pointer;min-width:0}
+.rows{padding:4px 0}
+.srow{display:flex;align-items:center;gap:9px;padding:6px 13px}
+.srow:hover{background:#F7FAF8}
+.srow .nm{font-size:12.5px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.srow select{font:inherit;font-size:11.5px;font-weight:700;padding:4px 7px;border:1px solid var(--line);border-radius:7px;background:var(--surface);max-width:128px;color:var(--ink-soft)}
+.pad{padding:10px 13px}
+input[type=checkbox]{width:15px;height:15px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+
+/* ===== toast ===== */
+.toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--accent-deep);color:#fff;font-size:13px;font-weight:800;padding:12px 19px;border-radius:12px;box-shadow:0 10px 28px rgba(0,0,0,.24);z-index:50;max-width:92vw}
+.toast.err{background:var(--danger)}
+
+@media (max-width:640px){
+  .bar{padding:14px 0 16px}
+  .bar-in{padding:0 14px}
+  .brand{font-size:18px}
+  .tabs{order:3;flex-basis:100%}
+  .tabs button{padding:6px 9px;font-size:11.5px}
+  .wrap{padding:20px 14px 80px}
+  .page-head h1{font-size:23px}
+  .stats{margin-left:0;width:100%}
+  .stat{flex:1;min-width:0;padding:8px 11px}
+  .class-grid,.cards{grid-template-columns:1fr}
+  .cls-head{align-items:flex-start}
+  .head-actions{margin-left:0;width:100%}
+  .head-actions input[type=search]{flex:1;min-width:0}
+  .srow select{max-width:112px}
+}
+
+@media print{
+  @page{size:A4;margin:12mm}
+  body{background:#fff}
+  .bar,.toast,.head-actions,.bulkbar,.open,.tbtns{display:none!important}
+  .wrap{max-width:none;padding:0}
+  .page-head{margin-bottom:8mm}
+  .page-head h1{font-size:18pt}
+  .page-head p{display:none}
+  .stats{margin-left:auto;gap:6px}
+  .stat{border:0;padding:0 10px 0 0;min-width:0}
+  .stat b{font-size:13pt;display:inline;margin-right:4px}
+  .stat span{font-size:7.5pt}
+  .class-grid{display:block;column-count:1}
+  .ccard{border:0;border-radius:0;box-shadow:none;overflow:visible;padding:0 0 4mm;margin:0 0 4mm;border-bottom:1px solid #ddd;break-inside:auto}
+  .ccard:last-child{border-bottom:0}
+  .ccard>header{background:none;border:0;padding:0 0 1.5mm}
+  .ccard>header .kbadge{display:none}
+  .ccard>header h2{font-size:12.5pt}
+  .gblock{padding:1.2mm 0;border-top:0;break-inside:avoid}
+  .gnames{font-size:9.5pt;line-height:1.45}
+}
+</style>
+</head>
+<body>
+
+<div class="bar" id="bar" hidden>
+  <div class="bar-in">
+    <a class="brand" href="../lapor/">Kelompok <em>Qur'an</em><small>Rekap &amp; pengaturan guru pengampu</small></a>
+    <div class="tabs" id="tabs"></div>
+    <span class="spacer"></span>
+    <div class="tbtns">
+      <button class="btn" id="btnPrint">🖨 Rekap semua</button>
+      <a class="btn ghost" href="../lapor/">Laporan</a>
+      <a class="btn ghost" href="../">Aplikasi</a>
+    </div>
+  </div>
+</div>
+
+<div class="wrap" id="view" hidden><div class="loading">Memuat data…</div></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="../js/vendor/supabase.min.js"></script>
+<script src="../js/core/config.js"></script>
+<script src="../js/core/supabase.js"></script>
+<script src="../js/services/database.js"></script>
+<script>
+/* ====================================================
+   Halaman Kelompok Qur'an — rekap & editor pemetaan
+   siswa -> guru pengampu per kelas.
+   Sumber data: master_siswa, jadwal Quran (GitHub),
+   app_settings.patokan_guru_pengampu (JSON {kelas:{siswa:guru}}).
+   ==================================================== */
+
+const JADWAL_URL = 'https://raw.githubusercontent.com/smpabbs/jadwalguruabbs/main/index.html';
+const JADWAL_NAME_MAP = {
+  'Ust Fahmi':'Us Fahmi','Us Fahmi':'Us Fahmi',
+  'Us Ida':'Ustadzah Ida','Ust Ida':'Ustadzah Ida','Ustadzah Ida':'Ustadzah Ida',
+  'Us Naya':'Ustadzah Naya','Ustadzah Naya':'Ustadzah Naya',
+  'Us Usaidah':'Ustadzah Usaidah','Ustadzah Usaidah':'Ustadzah Usaidah',
+  'Ust Andi':'Ustadz Andi','Ustadz Andi':'Ustadz Andi',
+  'Us Rizqia':'Ustadzah Rizqia','Ust Rizqia':'Ustadzah Rizqia','Ustadzah Rizqia':'Ustadzah Rizqia',
+  'Ust Amin':'Ust Amiin','Amin':'Ust Amiin','Amiin':'Ust Amiin','Ust Amiin':'Ust Amiin',
+  'Ust Yoki':'ust Yoki','Yoki':'ust Yoki','ust Yoki':'ust Yoki'
+};
+
+const STATE = {
+  siswaByKelas: new Map(),   // kelas -> [nama]
+  patokanRaw: {},            // {kelas:{siswa:guru}} apa adanya dari DB
+  kelasTeachers: new Map(),  // kelas -> Set(guru) dari jadwal + patokan
+  drafts: new Map(),         // kelas -> Map(norm(nama) -> guru) editan lokal
+  jadwalOk: false,
+  tab: 'rekap', kelas: null, search: ''
+};
+
+const esc = s => String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;');
+const norm = s => (s || '').trim()
+  .replace(/[‘’'"“”`]/g,'')
+  .toLowerCase().replace(/\./g,'').replace(/\s+/g,' ');
+const singkat = g => String(g).replace('Ustadzah ','Ustzh. ').replace('Ustadz ','Ust. ');
+const inisial = g => {
+  const w = String(g).trim().split(/\s+/).pop() || '?';
+  return w.slice(0,2).toUpperCase();
+};
+const byName = (a,b) => a.localeCompare(b,'id');
+
+/* ---------- jadwal (salinan logika lapor/index.html) ---------- */
+function extractDataBlob(html){
+  const marker = 'var DATA = ';
+  const start = html.indexOf(marker);
+  if (start === -1) throw new Error('Marker "var DATA = " tidak ditemukan');
+  const braceStart = html.indexOf('{', start);
+  let depth = 0, inStr = false, strCh = '', esc2 = false;
+  for (let i = braceStart; i < html.length; i++){
+    const c = html[i];
+    if (inStr){
+      if (esc2) esc2 = false;
+      else if (c === '\\') esc2 = true;
+      else if (c === strCh) inStr = false;
+      continue;
+    }
+    if (c === '"' || c === "'"){ inStr = true; strCh = c; continue; }
+    if (c === '{') depth++;
+    else if (c === '}'){ depth--; if (depth === 0) return html.slice(braceStart, i + 1); }
+  }
+  throw new Error('DATA blob tidak balanced');
+}
+async function fetchJadwal(){
+  const res = await fetch(JADWAL_URL, { cache:'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status + ' ambil jadwal');
+  const html = await res.text();
+  return JSON.parse(extractDataBlob(html));
+}
+function normalizeKelas(raw){
+  const m = String(raw || '').trim().toUpperCase().match(/^([789][A-F])/);
+  return m ? m[1] : null;
+}
+function buildKelasTeachers(DATA){
+  const map = new Map();
+  Object.values(DATA.teachers || {}).forEach(teacher => {
+    Object.entries(teacher.cells || {}).forEach(([, entries]) => {
+      (entries || []).forEach(entry => {
+        if (entry.subject !== 'Quran') return;
+        const k = normalizeKelas(entry.class);
+        if (!k || !STATE.siswaByKelas.has(k)) return;
+        const canon = JADWAL_NAME_MAP[teacher.nickname] || teacher.nickname;
+        if (!map.has(k)) map.set(k, new Set());
+        map.get(k).add(canon);
+      });
+    });
+  });
+  return map;
+}
+
+/* ---------- draft & simpan ---------- */
+function savedNorm(k){
+  const m = new Map();
+  Object.entries(STATE.patokanRaw[k] || {}).forEach(([nm, g]) => { if (g) m.set(norm(nm), g); });
+  return m;
+}
+function draft(k){
+  if (!STATE.drafts.has(k)) STATE.drafts.set(k, new Map(savedNorm(k)));
+  return STATE.drafts.get(k);
+}
+function dirty(k){
+  const a = draft(k), b = savedNorm(k);
+  if (a.size !== b.size) return true;
+  for (const [n, g] of a) if (b.get(n) !== g) return true;
+  return false;
+}
+/* Gabungkan editan draft 1 kelas ke JSON mentah kelas itu.
+   Dipisah dari saveKelas supaya bisa di-self-check tanpa DOM. */
+function mergeKelas(rawIn, roster, d){
+  const raw = { ...rawIn };
+  const keyOf = {};
+  Object.keys(raw).forEach(nm => { keyOf[norm(nm)] = nm; });
+  let changed = 0;
+  roster.forEach(nm => {
+    const g = d.get(norm(nm)) || '';
+    const oldNm = keyOf[norm(nm)];
+    const oldG = oldNm ? raw[oldNm] : '';
+    if (norm(oldG) === norm(g)) return;
+    if (!g){ if (oldNm){ delete raw[oldNm]; changed++; } return; }
+    if (oldNm && oldNm !== nm) delete raw[oldNm]; // rapikan ejaan kunci
+    raw[nm] = g;
+    changed++;
+  });
+  return { raw, changed };
+}
+async function saveKelas(){
+  const k = STATE.kelas;
+  if (!k) return;
+  const roster = STATE.siswaByKelas.get(k) || [];
+  const { raw, changed } = mergeKelas(STATE.patokanRaw[k] || {}, roster, draft(k));
+  if (!changed){ toast('Tidak ada perubahan.'); return; }
+
+  const btn = document.getElementById('btnSave');
+  if (btn){ btn.disabled = true; btn.textContent = 'Menyimpan…'; }
+  try {
+    // simpan struktur penuh — kelas lain tidak boleh tertimpa
+    const newAll = { ...STATE.patokanRaw, [k]: raw };
+    const ok = await DatabaseService.saveAppSetting('patokan_guru_pengampu', newAll);
+    if (!ok) throw new Error('simpan app_settings gagal');
+    STATE.patokanRaw = newAll;
+    toast(`✅ ${changed} perubahan tersimpan — Laporan & pengingat WA ikut memakai data baru.`);
+    renderTabs(); render();
+  } catch (err){
+    toast('❌ Gagal menyimpan: ' + (err.message || err), true);
+    if (btn){ btn.disabled = false; btn.textContent = 'Simpan perubahan'; }
+  }
+}
+
+/* ---------- render ---------- */
+function renderTabs(){
+  const kelas = [...STATE.siswaByKelas.keys()].sort(byName);
+  document.getElementById('tabs').innerHTML =
+    `<button data-k="rekap" class="${STATE.tab === 'rekap' ? 'on' : ''}">Rekap</button>` +
+    kelas.map(k => `<button data-k="${esc(k)}" class="${STATE.tab === k ? 'on' : ''}">${esc(k)}${dirty(k) ? '<i class="dot"></i>' : ''}</button>`).join('');
+}
+function renderRekap(){
+  const kelas = [...STATE.siswaByKelas.keys()].sort(byName);
+  let totSiswa = 0, totBelum = 0;
+  const guruSet = new Set();
+
+  const blocks = kelas.map(k => {
+    const roster = (STATE.siswaByKelas.get(k) || []).slice().sort(byName);
+    const d = draft(k);
+    const groups = new Map();
+    roster.forEach(nm => {
+      const g = d.get(norm(nm)) || '';
+      if (!groups.has(g)) groups.set(g, []);
+      groups.get(g).push(nm);
+      if (g) guruSet.add(g);
+    });
+    const gurus = [...groups.keys()].filter(Boolean).sort(byName);
+    const belum = groups.get('') || [];
+    totSiswa += roster.length;
+    totBelum += belum.length;
+
+    const rows = gurus.map(g => `
+      <div class="gblock">
+        <div class="ghead"><i class="gdot"></i><b>${esc(g)}</b><span class="pill">${groups.get(g).length}</span></div>
+        <p class="gnames">${groups.get(g).map(esc).join(', ')}</p>
+      </div>`).join('') +
+      (belum.length ? `
+      <div class="gblock belum">
+        <div class="ghead"><i class="gdot"></i><b>Belum ada guru</b><span class="pill">${belum.length}</span></div>
+        <p class="gnames">${belum.map(esc).join(', ')}</p>
+      </div>` : '');
+
+    return `<article class="ccard${belum.length ? ' hati' : ''}">
+      <header>
+        <div class="kbadge">${esc(k)}</div>
+        <div class="ttl">
+          <h2>Kelas ${esc(k)}</h2>
+          <span class="meta">${roster.length} siswa · ${gurus.length} guru${belum.length ? ` · <b>${belum.length} belum</b>` : ''}</span>
+        </div>
+        <button class="open" data-k="${esc(k)}">Buka ›</button>
+      </header>
+      ${rows || '<p class="muted pad">Tidak ada siswa aktif.</p>'}
+    </article>`;
+  }).join('');
+
+  const now = new Date();
+  const tanggal = now.getDate() + '/' + (now.getMonth() + 1) + '/' + now.getFullYear();
+  document.getElementById('view').innerHTML = `
+    <div class="page-head">
+      <div>
+        <h1>Rekap Kelompok</h1>
+        <p>Pemetaan siswa ke guru pengampu per kelas. Sumber data live — perubahan di tab kelas langsung dipakai halaman Laporan dan pengingat WA.</p>
+        <p class="muted" style="margin-top:6px">${tanggal}${STATE.jadwalOk ? '' : ' · ⚠️ jadwal GitHub gagal dimuat, daftar guru dari patokan'}</p>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>${totSiswa}</b><span>siswa</span></div>
+        <div class="stat"><b>${kelas.length}</b><span>kelas</span></div>
+        <div class="stat"><b>${guruSet.size}</b><span>guru</span></div>
+        <div class="stat${totBelum ? ' bad' : ''}"><b>${totBelum}</b><span>belum</span></div>
+      </div>
+    </div>
+    <div class="class-grid">${blocks}</div>`;
+}
+function renderKelas(){
+  const k = STATE.kelas;
+  const d = draft(k);
+  const roster = (STATE.siswaByKelas.get(k) || []).slice().sort(byName);
+  const teachers = [...(STATE.kelasTeachers.get(k) || [])];
+  d.forEach(g => { if (g && !teachers.some(t => norm(t) === norm(g))) teachers.push(g); });
+  teachers.sort(byName);
+
+  const groups = new Map();
+  teachers.forEach(t => groups.set(t, []));
+  const belum = [];
+  roster.forEach(nm => {
+    const g = d.get(norm(nm)) || '';
+    if (!g){ belum.push(nm); return; }
+    const key = teachers.find(t => norm(t) === norm(g)) || g;
+    if (!groups.has(key)) groups.set(key, []);
+    groups.get(key).push(nm);
+  });
+
+  const sudah = roster.length - belum.length;
+  const isDirty = dirty(k);
+  const optsFor = cur => `<option value=""${!cur ? ' selected' : ''}>— belum —</option>` +
+    teachers.map(t => `<option value="${esc(t)}"${norm(t) === norm(cur) ? ' selected' : ''}>${esc(singkat(t))}</option>`).join('');
+
+  const card = (g, names) => `
+    <section class="tcard${g ? '' : ' belum'}">
+      <header>
+        <span class="avatar">${g ? esc(inisial(g)) : '?'}</span>
+        <label class="selall"><input type="checkbox" data-selall="${esc(g)}" /> <b>${g ? esc(g) : 'Belum ada guru'}</b></label>
+        <span class="cnt">${names.length}</span>
+      </header>
+      <div class="rows">
+        ${names.length ? names.map(nm => `
+          <div class="srow" data-nm="${esc(nm)}">
+            <input type="checkbox" data-chk="${esc(nm)}" aria-label="Pilih ${esc(nm)}" />
+            <span class="nm">${esc(nm)}</span>
+            <select data-nm="${esc(nm)}" aria-label="Guru untuk ${esc(nm)}">${optsFor(d.get(norm(nm)) || '')}</select>
+          </div>`).join('') : '<div class="muted pad">—</div>'}
+      </div>
+    </section>`;
+
+  document.getElementById('view').innerHTML = `
+    <div class="cls-head">
+      <div class="kbadge">${esc(k)}</div>
+      <div>
+        <h1>Kelas ${esc(k)}</h1>
+        <div class="badges">
+          <span class="badge">${roster.length} siswa</span>
+          <span class="badge ok">${sudah} ber-guru</span>
+          ${belum.length ? `<span class="badge warn">${belum.length} belum</span>` : ''}
+          ${isDirty ? '<span class="badge warn">perubahan belum disimpan</span>' : ''}
+        </div>
+      </div>
+      <div class="head-actions">
+        <input type="search" id="search" placeholder="Cari siswa…" value="${esc(STATE.search)}" />
+        <button class="btn pri" id="btnSave" ${isDirty ? '' : 'disabled'}>Simpan perubahan</button>
+      </div>
+    </div>
+    <div class="bulkbar" id="bulkbar" hidden>
+      <span><b id="bulkCount">0</b> dipilih →</span>
+      <select id="bulkGuru">
+        <option value="__pick" disabled selected>— pilih guru tujuan —</option>
+        ${teachers.map(t => `<option value="${esc(t)}">${esc(singkat(t))}</option>`).join('')}
+        <option value="">— hapus guru (jadi belum) —</option>
+      </select>
+      <button class="btn pri" id="bulkApply" style="background:#fff;color:var(--accent-deep);border-color:#fff">Pindahkan</button>
+      <button class="btn ghost" id="bulkCancel">Batal</button>
+    </div>
+    <div class="cards">
+      ${[...groups.entries()].filter(([, names]) => names.length).map(([g, names]) => card(g, names)).join('')}
+      ${belum.length ? card('', belum) : ''}
+    </div>`;
+}
+
+function render(){
+  document.getElementById('view').hidden = false;
+  document.getElementById('bar').hidden = false;
+  if (STATE.tab === 'rekap') renderRekap(); else renderKelas();
+  renderTabs();
+}
+function showTab(k){
+  STATE.tab = k;
+  STATE.kelas = k === 'rekap' ? null : k;
+  STATE.search = '';
+  render();
+}
+
+/* ---------- aksi editor ---------- */
+function updateBulk(){
+  const bar = document.getElementById('bulkbar');
+  if (!bar) return;
+  const n = document.querySelectorAll('#view input[data-chk]:checked').length;
+  bar.hidden = n === 0;
+  document.getElementById('bulkCount').textContent = n;
+  if (!n) document.getElementById('bulkGuru').value = '__pick';
+}
+function bulkApply(){
+  const sel = document.getElementById('bulkGuru');
+  const target = sel.value;
+  if (target === '__pick'){ toast('Pilih guru tujuan dulu.', true); return; }
+  const names = [...document.querySelectorAll('#view input[data-chk]:checked')].map(x => x.dataset.chk);
+  if (!names.length) return;
+  const d = draft(STATE.kelas);
+  names.forEach(nm => { if (target) d.set(norm(nm), target); else d.delete(norm(nm)); });
+  render();
+}
+
+let toastTimer;
+function toast(msg, err){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (err ? ' err' : '');
+  t.hidden = false;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { t.hidden = true; }, 4500);
+}
+
+/* ---------- load ---------- */
+async function loadData(){
+  const [siswa, patokan, DATA] = await Promise.all([
+    DatabaseService.loadMasterSiswa(),
+    DatabaseService.loadAppSetting('patokan_guru_pengampu'),
+    fetchJadwal().catch(err => { console.warn('⚠️ Jadwal gagal:', err.message); return null; })
+  ]);
+
+  STATE.siswaByKelas = new Map();
+  (siswa || []).forEach(s => {
+    if (!s.kelas_name) return;
+    if (!STATE.siswaByKelas.has(s.kelas_name)) STATE.siswaByKelas.set(s.kelas_name, []);
+    STATE.siswaByKelas.get(s.kelas_name).push(s.nama);
+  });
+  if (!STATE.siswaByKelas.size) throw new Error('Tidak ada siswa aktif di master_siswa.');
+
+  let raw = patokan;
+  if (typeof raw === 'string'){ try { raw = JSON.parse(raw); } catch (e) { raw = {}; } }
+  STATE.patokanRaw = raw || {};
+
+  STATE.jadwalOk = !!DATA;
+  STATE.kelasTeachers = DATA ? buildKelasTeachers(DATA) : new Map();
+  STATE.siswaByKelas.forEach((_, k) => {
+    if (!STATE.kelasTeachers.has(k)) STATE.kelasTeachers.set(k, new Set());
+    Object.values(STATE.patokanRaw[k] || {}).forEach(g => { if (g) STATE.kelasTeachers.get(k).add(g); });
+  });
+
+  STATE.drafts = new Map();
+}
+
+/* Self-check ringan: mergeKelas satu-satunya bagian yang bisa
+   merusak data kelas lain. Gagal = error di console saat halaman dibuka. */
+(function selfCheck(){
+  const d = new Map([[norm('Budi'), 'Ustadzah Ida']]);
+  const a = mergeKelas({ 'Budi': 'Ustadzah Naya', 'Siti': 'Ustadzah Ida' }, ['Budi'], d);
+  console.assert(a.changed === 1 && a.raw.Budi === 'Ustadzah Ida' && a.raw.Siti === 'Ustadzah Ida', 'mergeKelas: ganti guru');
+  const b = mergeKelas({ 'Budi': 'Ustadzah Naya' }, ['Budi'], new Map());
+  console.assert(b.changed === 1 && !('Budi' in b.raw), 'mergeKelas: hapus guru');
+  const c = mergeKelas({ 'Budi': 'Ustadzah Ida' }, ['Budi'], new Map([[norm('Budi'), 'Ustadzah Ida']]));
+  console.assert(c.changed === 0, 'mergeKelas: tanpa perubahan');
+  const e = mergeKelas({ 'budi': 'Ustadzah Ida' }, ['Budi'], new Map([[norm('Budi'), 'Ustadzah Ida']]));
+  console.assert(e.changed === 0, 'mergeKelas: ejaan berbeda tidak dihitung berubah');
+})();
+
+/* ---------- boot ---------- */
+function boot(){
+  const view = document.getElementById('view');
+  view.hidden = false;
+  view.innerHTML = '<div class="loading">Memuat siswa, jadwal, dan kelompok…</div>';
+  loadData()
+    .then(() => { STATE.tab = 'rekap'; STATE.kelas = null; render(); })
+    .catch(err => {
+      view.innerHTML = `<div class="error">Gagal memuat data: ${esc(err.message)}<br><br>
+        <button class="btn" onclick="location.reload()">Coba lagi</button></div>`;
+    });
+}
+
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button[data-k]');
+  if (b) showTab(b.dataset.k);
+});
+document.getElementById('btnPrint').addEventListener('click', () => {
+  const anyDirty = [...STATE.siswaByKelas.keys()].some(dirty);
+  if (anyDirty && !confirm('Ada perubahan kelompok yang belum disimpan. Cetak dengan tampilan sekarang?')) return;
+  if (STATE.tab !== 'rekap'){ showTab('rekap'); setTimeout(() => window.print(), 250); }
+  else window.print();
+});
+// Ctrl+P dari tab kelas tetap mencetak rekap lengkap, bukan editor
+window.addEventListener('beforeprint', () => { if (STATE.tab !== 'rekap') showTab('rekap'); });
+
+const viewEl = document.getElementById('view');
+viewEl.addEventListener('change', e => {
+  const t = e.target;
+  if (t.matches('select[data-nm]')){
+    const nm = t.dataset.nm;
+    const d = draft(STATE.kelas);
+    if (t.value) d.set(norm(nm), t.value); else d.delete(norm(nm));
+    render();
+    return;
+  }
+  if (t.matches('input[data-selall]')){
+    const card = t.closest('.tcard');
+    card.querySelectorAll('input[data-chk]').forEach(c => { c.checked = t.checked; });
+    updateBulk();
+    return;
+  }
+  if (t.matches('input[data-chk]')) updateBulk();
+});
+viewEl.addEventListener('click', e => {
+  if (e.target.closest('#btnSave')){ saveKelas(); return; }
+  if (e.target.closest('#bulkApply')){ bulkApply(); return; }
+  if (e.target.closest('#bulkCancel')){
+    viewEl.querySelectorAll('input[data-chk],input[data-selall]').forEach(c => { c.checked = false; });
+    updateBulk();
+    return;
+  }
+  const open = e.target.closest('.open');
+  if (open) showTab(open.dataset.k);
+});
+viewEl.addEventListener('input', e => {
+  if (e.target.id !== 'search') return;
+  STATE.search = e.target.value;
+  const q = norm(STATE.search);
+  viewEl.querySelectorAll('.srow').forEach(r => {
+    r.style.display = (!q || norm(r.dataset.nm).includes(q)) ? '' : 'none';
+  });
+});
+
+boot();
+</script>
+</body>
+</html>
